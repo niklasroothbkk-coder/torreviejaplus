@@ -51,12 +51,12 @@ export default function VenuesPage({ onNavigate }) {
     {
       id: 1,
       rating: 4.5,
-      title: 'The Beach Club',
+      title: 'Sweden Restaurant',
       category: 'Restaurant & Bar',
-      location: 'Hua Hin Beach',
-      cuisine: 'International',
-      priceRange: '€€€',
-      image: require('../../assets/events/Wine.png'),
+      location: 'Soi 107',
+      cuisine: 'Swedish & Thai',
+      priceRange: '€€',
+      image: require('../../assets/venuephotos/Sweden1.png'),
     },
     {
       id: 2,
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   venueTitle: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,

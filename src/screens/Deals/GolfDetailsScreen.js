@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   dealTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
   },
   section: {
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -405,9 +405,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   detailsText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   mapContainer: {
     width: '100%',
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   reviewDate: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#999',
     marginTop: 2,
   },
@@ -488,14 +488,14 @@ const styles = StyleSheet.create({
   reviewText: {
     fontSize: 11,
     color: '#666',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   viewAllButton: {
     alignItems: 'center',
     marginTop: 16,
   },
   viewAllText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     borderRadius: 8,
     padding: 12,
-    fontSize: 12,
+    fontSize: 11,
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   addMediaText: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#0077B6',
     fontWeight: '500',
     marginTop: 8,

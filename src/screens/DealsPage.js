@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   dealTitle: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   priceText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: '#00A8E1',
   },

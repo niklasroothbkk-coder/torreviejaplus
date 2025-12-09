@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -8,14 +8,17 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [reviewText, setReviewText] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const flatListRef = React.useRef(null);
 
   const venueData = {
     id: venueId || 1,
     name: 'Sweden Restaurant',
-    location: 'Soi 107',
+    location: 'Soi 18/3 poonsuk RD, Hua Hin.',
     rating: 4.0,
     reviewCount: 40,
     views: 7921,
+    registeredDate: '2025-11-15',
     description: 'Sweden restaurant is a great place that almost always are full in the highs season. They serve great Swedish, Thai and International food.',
     hours: {
       monday: '16:00 - 23:00',
@@ -27,13 +30,18 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
       sunday: '16:00 - 23:00',
     },
     kitchenCloseNote: '(Kitchen close 1 hour before closing time)',
-    phone: '+66 32 123 456',
-    email: 'info@swedenrestaurant.com',
+    phone: '+66 81 880 7119',
+    website: 'http://www.sweden-restaurant.asia/',
+    email: 'ann@sweden-restaurant.asia',
     facebook: 'https://facebook.com/swedenrestaurant',
     instagram: 'https://instagram.com/swedenrestaurant',
     line: 'swedenrestaurant',
     whatsapp: '+66321234567',
-    image: require('../../../assets/events/Wine.png'),
+    images: [
+      require('../../../assets/venuephotos/Sweden1.png'),
+      require('../../../assets/venuephotos/Sweden2.png'),
+      require('../../../assets/venuephotos/Sweden3.png'),
+    ],
     mapImage: require('../../../assets/ui/Map.png'),
     reviews: [
       {
@@ -45,6 +53,19 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         avatar: require('../../../assets/ui/Kvinna1.png'),
       },
     ],
+  };
+
+  const handleScrollEnd = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffsetX / (width - 32));
+    setCurrentImageIndex(index);
+  };
+
+  const scrollToImage = (index) => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({ index, animated: true });
+      setCurrentImageIndex(index);
+    }
   };
 
   const renderStars = (rating) => {
@@ -127,9 +148,56 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Main Image */}
+        {/* Image Gallery with Swipe */}
         <View style={styles.imageContainer}>
-          <Image source={venueData.image} style={styles.venueImage} resizeMode="cover" />
+          <FlatList
+            ref={flatListRef}
+            data={venueData.images}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            decelerationRate="fast"
+            snapToInterval={width - 32}
+            snapToAlignment="center"
+            keyExtractor={(item, index) => index.toString()}
+            onMomentumScrollEnd={handleScrollEnd}
+            renderItem={({ item }) => (
+              <Image source={item} style={styles.venueImage} resizeMode="cover" />
+            )}
+          />
+          
+          {/* Navigation Arrows */}
+          {currentImageIndex > 0 && (
+            <TouchableOpacity 
+              style={styles.leftArrow}
+              onPress={() => scrollToImage(currentImageIndex - 1)}
+            >
+              <Ionicons name="chevron-back" size={50} color="#FFF" />
+            </TouchableOpacity>
+          )}
+          
+          {currentImageIndex < venueData.images.length - 1 && (
+            <TouchableOpacity 
+              style={styles.rightArrow}
+              onPress={() => scrollToImage(currentImageIndex + 1)}
+            >
+              <Ionicons name="chevron-forward" size={50} color="#FFF" />
+            </TouchableOpacity>
+          )}
+          
+          {/* Dot Indicators */}
+          <View style={styles.dotContainer}>
+            {venueData.images.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  index === currentImageIndex && styles.activeDot
+                ]}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Content Card */}
@@ -144,13 +212,16 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
             
             <View style={styles.metaItem}>
+              <Ionicons name="eye" size={14} color="#0077B6" />
+              <Text style={styles.metaText}>{venueData.views} views (Registered {venueData.registeredDate})</Text>
+            </View>
+          </View>
+
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Ionicons name="thumbs-up" size={14} color="#0077B6" />
               <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
               <Text style={styles.metaText}>{venueData.rating} ({venueData.reviewCount} Reviews)</Text>
-            </View>
-            
-            <View style={styles.metaItem}>
-              <Ionicons name="eye" size={14} color="#0077B6" />
-              <Text style={styles.metaText}>{venueData.views} views</Text>
             </View>
           </View>
 
@@ -179,9 +250,27 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 <Text style={styles.contactButtonText}>Phone</Text>
               </TouchableOpacity>
               
+              <TouchableOpacity 
+                style={styles.contactButton} 
+                onPress={() => Linking.openURL(venueData.website)}
+              >
+                <Ionicons name="globe" size={20} color="#0077B6" />
+                <Text style={styles.contactButtonText}>Web</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.contactButtons}>
               <TouchableOpacity style={styles.contactButton} onPress={handleChatPress}>
                 <Ionicons name="chatbubbles" size={20} color="#0077B6" />
                 <Text style={styles.contactButtonText}>Chat</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.contactButton} 
+                onPress={() => Linking.openURL(`mailto:${venueData.email}`)}
+              >
+                <Ionicons name="mail" size={20} color="#0077B6" />
+                <Text style={styles.contactButtonText}>E-mail</Text>
               </TouchableOpacity>
             </View>
 
@@ -375,8 +464,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   venueImage: {
-    width: '100%',
-    height: '100%',
+    width: width - 32,
+    height: 222,
+  },
+  leftArrow: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    transform: [{ translateY: -25 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    borderRadius: 50,
+    padding: 8,
+  },
+  rightArrow: {
+    position: 'absolute',
+    right: 0,
+    top: '50%',
+    transform: [{ translateY: -25 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    borderRadius: 50,
+    padding: 8,
+  },
+  dotContainer: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  activeDot: {
+    backgroundColor: '#FFF',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   contentCard: {
     backgroundColor: '#FFF',
@@ -386,7 +515,7 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   venueTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 8,
@@ -403,7 +532,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
   },
   starsRow: {
@@ -411,9 +540,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   description: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
+    fontSize: 11,
+    color: '#666',
+    lineHeight: 16,
     marginBottom: 20,
   },
   section: {
@@ -423,7 +552,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -434,15 +563,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   dayText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#333',
   },
   hoursText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#666',
   },
   kitchenNote: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#999',
     fontStyle: 'italic',
     marginTop: 8,
@@ -465,12 +594,12 @@ const styles = StyleSheet.create({
     borderColor: '#0077B6',
   },
   contactButtonText: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
     color: '#0077B6',
   },
   socialTitle: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -496,7 +625,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   viewLink: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#0077B6',
     fontWeight: '600',
   },
@@ -521,7 +650,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reviewsCount: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
     marginTop: 4,
   },
@@ -547,7 +676,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reviewUserName: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     color: '#000',
   },
@@ -566,14 +695,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   reviewRatingText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#000',
   },
   reviewComment: {
-    fontSize: 13,
-    color: '#333',
-    lineHeight: 18,
+    fontSize: 11,
+    color: '#666',
+    lineHeight: 16,
   },
   giveReviewHeader: {
     flexDirection: 'row',
@@ -586,7 +715,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   maxWords: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#999',
     marginBottom: 8,
   },
@@ -594,7 +723,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     borderRadius: 8,
     padding: 12,
-    fontSize: 14,
+    fontSize: 11,
     color: '#000',
     minHeight: 100,
     textAlignVertical: 'top',
@@ -612,7 +741,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F8FF',
   },
   addMediaText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#0077B6',
     marginTop: 8,
   },
@@ -634,7 +763,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: '700',
     color: '#FFF',
   },
