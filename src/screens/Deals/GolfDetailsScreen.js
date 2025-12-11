@@ -8,6 +8,7 @@ export default function GolfDetailsScreen({ onNavigate }) {
   const [reviewText, setReviewText] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -59,8 +60,11 @@ export default function GolfDetailsScreen({ onNavigate }) {
             )}
           </View>
 
-          <TouchableOpacity style={styles.headerButtonFavorite}>
-            <Ionicons name="heart-outline" size={28} color="#FFFFFF" />
+          <TouchableOpacity 
+            style={styles.headerButtonFavorite}
+            onPress={() => setIsFavorite(!isFavorite)}
+          >
+            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </View>

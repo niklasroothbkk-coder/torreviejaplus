@@ -9,9 +9,11 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [reviewText, setReviewText] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [venueData, setVenueData] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [visibleReviews, setVisibleReviews] = useState(3);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const flatListRef = React.useRef(null);
@@ -229,6 +231,27 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     }
   };
 
+  const handleShare = (platform) => {
+    const shareUrl = `https://huahin.app/venue/${venueId}`;
+    const shareText = `Check out ${venueData?.name} on Hua Hin App!`;
+    
+    switch(platform) {
+      case 'facebook':
+        Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`);
+        break;
+      case 'instagram':
+        alert('Please share via Instagram app');
+        break;
+      case 'tiktok':
+        alert('Please share via TikTok app');
+        break;
+      case 'twitter':
+        Linking.openURL(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
+        break;
+    }
+    setShowShareMenu(false);
+  };
+
   const imageUrls = venueData.images || [];
 
   return (
@@ -241,12 +264,46 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.headerButtonFavorite}
-          onPress={() => setIsFavorite(!isFavorite)}
-        >
-          <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={24} color="#0077B6" />
-        </TouchableOpacity>
+        <View style={styles.headerRightButtons}>
+          <View>
+            <TouchableOpacity 
+              style={styles.shareButton}
+              onPress={() => setShowShareMenu(!showShareMenu)}
+            >
+              <Ionicons name="share-social" size={20} color="#FFFFFF" />
+              <Text style={styles.shareButtonText}>SHARE</Text>
+            </TouchableOpacity>
+
+            {/* Share Dropdown Menu */}
+            {showShareMenu && (
+              <View style={styles.shareDropdown}>
+                <TouchableOpacity style={styles.shareOption} onPress={() => handleShare('facebook')}>
+                  <Ionicons name="logo-facebook" size={20} color="#1877F2" />
+                  <Text style={styles.shareOptionText}>Facebook</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.shareOption} onPress={() => handleShare('instagram')}>
+                  <Ionicons name="logo-instagram" size={20} color="#E4405F" />
+                  <Text style={styles.shareOptionText}>Instagram</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.shareOption} onPress={() => handleShare('tiktok')}>
+                  <Ionicons name="logo-tiktok" size={20} color="#000000" />
+                  <Text style={styles.shareOptionText}>TikTok</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.shareOption} onPress={() => handleShare('twitter')}>
+                  <Ionicons name="logo-twitter" size={20} color="#1DA1F2" />
+                  <Text style={styles.shareOptionText}>X (Twitter)</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.headerButtonFavorite}
+            onPress={() => setIsFavorite(!isFavorite)}
+          >
+            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView 
@@ -254,7 +311,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 600 }}
+        contentContainerStyle={{ paddingBottom: 25 }}
       >
         {/* Image Gallery */}
         {imageUrls.length > 0 && (
@@ -354,6 +411,45 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
+          {/* Features & Amenities */}
+          {venueData.features && venueData.features.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Features</Text>
+              <View style={styles.featuresGrid}>
+                {venueData.features.map((feature, index) => {
+                  // Map features to icons
+                  let iconName = 'checkmark-circle';
+                  switch(feature) {
+                    case 'Indoor Seating':
+                      iconName = 'home';
+                      break;
+                    case 'Outdoor Seating':
+                      iconName = 'sunny';
+                      break;
+                    case 'Accept Credit Cards':
+                      iconName = 'card';
+                      break;
+                    case 'Sea view':
+                      iconName = 'water';
+                      break;
+                    case 'Smoking Area':
+                      iconName = 'cloud';
+                      break;
+                    case 'Wheelchair accessible':
+                      iconName = 'accessibility';
+                      break;
+                  }
+                  
+                  return (
+                    <View key={index} style={styles.featureTag}>
+                      <Text style={styles.featureText}>{feature}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
           {/* Contact Details */}
           {(venueData.phone || venueData.email || venueData.website || venueData.whatsapp || venueData.line) && (
             <View style={styles.section}>
@@ -407,8 +503,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
               {/* Social Media */}
               {(venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
-                <>
-                  <Text style={styles.socialTitle}>Social Media</Text>
+                <View style={styles.socialMediaSection}>
+                  <Text style={styles.sectionTitle}>Social Media</Text>
                   <View style={styles.socialButtons}>
                     {venueData.facebook && (
                       <TouchableOpacity 
@@ -446,37 +542,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                       </TouchableOpacity>
                     )}
                   </View>
-                </>
+                </View>
               )}
-            </View>
-          )}
-
-          {/* Reviews Section */}
-          {reviews.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.reviewsHeader}>
-                <View style={styles.reviewsHeaderLeft}>
-                  <Text style={styles.sectionTitle}>Reviews</Text>
-                  <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                  <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
-                </View>
-              </View>
-              
-              {reviews.map((review) => (
-                <View key={review.id} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewHeaderText}>
-                      <Text style={styles.reviewUserName}>{review.user_name}</Text>
-                      <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</Text>
-                    </View>
-                    <View style={styles.reviewRatingBadge}>
-                      <Ionicons name="star" size={12} color="#FFD700" />
-                      <Text style={styles.reviewRatingText}>{review.rating}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
-                </View>
-              ))}
             </View>
           )}
 
@@ -514,18 +581,55 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               textAlignVertical="top"
             />
 
-            <TouchableOpacity style={styles.addMediaButton}>
-              <Ionicons name="camera" size={32} color="#0077B6" />
-              <Text style={styles.addMediaText}>Add a photo or video</Text>
+            <TouchableOpacity style={styles.submitReviewButton} onPress={submitReview} disabled={submitting}>
+              <Text style={styles.submitReviewButtonText}>{submitting ? 'Submitting...' : 'Submit Review'}</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Reviews Section */}
+          {reviews.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.reviewsHeader}>
+                <View style={styles.reviewsHeaderLeft}>
+                  <Text style={styles.sectionTitle}>Reviews</Text>
+                  <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
+                  <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                </View>
+              </View>
+              
+              {reviews.slice(0, visibleReviews).map((review) => (
+                <View key={review.id} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewHeaderText}>
+                      <Text style={styles.reviewUserName}>{review.user_name}</Text>
+                      <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</Text>
+                    </View>
+                    <View style={styles.reviewRatingBadge}>
+                      <Ionicons name="star" size={12} color="#FFD700" />
+                      <Text style={styles.reviewRatingText}>{review.rating}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                </View>
+              ))}
+              
+              {visibleReviews < reviews.length && (
+                <TouchableOpacity 
+                  style={styles.viewAllButton}
+                  onPress={() => setVisibleReviews(prev => Math.min(prev + 10, reviews.length))}
+                >
+                  <Text style={styles.viewAllText}>View All</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
 
       {/* Bottom Button */}
       <View style={styles.bottomButton}>
-        <TouchableOpacity style={styles.bookButton} onPress={submitReview} disabled={submitting}>
-          <Text style={styles.bookButtonText}>{submitting ? 'Submitting...' : 'Submit Review'}</Text>
+        <TouchableOpacity style={styles.bookButton}>
+          <Text style={styles.bookButtonText}>Make a Booking (Chat)</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -545,36 +649,85 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 10,
+    zIndex: 10,
   },
   headerButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  headerRightButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0077B6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  shareButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  shareDropdown: {
+    position: 'absolute',
+    top: 45,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 6,
+    paddingVertical: 8,
+    minWidth: 160,
+    zIndex: 1000,
+  },
+  shareOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  shareOptionText: {
+    fontSize: 11,
+    color: '#333',
+    fontWeight: '500',
   },
   headerButtonFavorite: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: '#0077B6',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   scrollView: {
     flex: 1,
@@ -735,7 +888,7 @@ const styles = StyleSheet.create({
   },
   socialTitle: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#333',
     marginTop: 20,
     marginBottom: 12,
@@ -812,6 +965,16 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 16,
   },
+  viewAllButton: {
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  viewAllText: {
+    fontSize: 11,
+    color: '#0077B6',
+    fontWeight: '600',
+  },
   ratingSelector: {
     flexDirection: 'row',
     gap: 8,
@@ -833,19 +996,16 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     marginBottom: 16,
   },
-  addMediaButton: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#0077B6',
+  submitReviewButton: {
+    backgroundColor: '#0077B6',
     borderRadius: 8,
-    padding: 30,
+    paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#F0F8FF',
   },
-  addMediaText: {
+  submitReviewButtonText: {
     fontSize: 11,
-    color: '#0077B6',
-    marginTop: 8,
+    fontWeight: '700',
+    color: '#FFF',
   },
   bottomButton: {
     position: 'absolute',
@@ -853,20 +1013,45 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#FFF',
-    padding: 16,
+    paddingHorizontal: 38,
+    paddingVertical: 16,
     paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
   bookButton: {
     backgroundColor: '#0077B6',
-    borderRadius: 25,
-    paddingVertical: 14,
+    borderRadius: 8,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   bookButtonText: {
     fontSize: 11,
     fontWeight: '700',
     color: '#FFF',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  featureTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F0F8FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D0E8F2',
+  },
+  featureText: {
+    fontSize: 10,
+    color: '#0077B6',
+    fontWeight: '500',
+  },
+  socialMediaSection: {
+    marginTop: 25,
   },
 });

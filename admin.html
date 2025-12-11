@@ -294,6 +294,37 @@
                     </div>
                 </div>
 
+                <!-- FEATURES SECTION -->
+                <div class="form-group">
+                    <label>✨ Features</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_indoor" style="width: auto;">
+                            <span>🏠 Indoor Seating</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_outdoor" style="width: auto;">
+                            <span>☀️ Outdoor Seating</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_creditcard" style="width: auto;">
+                            <span>💳 Accept Credit Cards</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_seaview" style="width: auto;">
+                            <span>🌊 Sea View</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_smoking" style="width: auto;">
+                            <span>🚬 Smoking Area</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_wheelchair" style="width: auto;">
+                            <span>♿ Wheelchair Accessible</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- IMAGE UPLOAD SECTION -->
                 <div class="form-group">
                     <label>📸 Images (Max 6) - First image will be the main card image</label>
@@ -427,6 +458,15 @@
                 sunday: document.getElementById('sunday_hours').value
             };
             
+            // Collect features
+            const features = [];
+            if (document.getElementById('feature_indoor').checked) features.push('Indoor Seating');
+            if (document.getElementById('feature_outdoor').checked) features.push('Outdoor Seating');
+            if (document.getElementById('feature_creditcard').checked) features.push('Accept Credit Cards');
+            if (document.getElementById('feature_seaview').checked) features.push('Sea View');
+            if (document.getElementById('feature_smoking').checked) features.push('Smoking Area');
+            if (document.getElementById('feature_wheelchair').checked) features.push('Wheelchair Accessible');
+            
             const venueData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
@@ -448,6 +488,7 @@
                 tiktok: document.getElementById('tiktok').value,
                 'x/twitter': document.getElementById('xtwitter').value,
                 opening_hours: openingHours,
+                features: features,
                 registered_date: document.getElementById('registered_date').value || null,
                 images: uploadedImages
             };
@@ -540,6 +581,15 @@
                 }
                 
                 document.getElementById('registered_date').value = data.registered_date || '';
+                
+                // Load features checkboxes
+                document.getElementById('feature_indoor').checked = data.features && data.features.includes('Indoor Seating');
+                document.getElementById('feature_outdoor').checked = data.features && data.features.includes('Outdoor Seating');
+                document.getElementById('feature_creditcard').checked = data.features && data.features.includes('Accept Credit Cards');
+                document.getElementById('feature_seaview').checked = data.features && data.features.includes('Sea View');
+                document.getElementById('feature_smoking').checked = data.features && data.features.includes('Smoking Area');
+                document.getElementById('feature_wheelchair').checked = data.features && data.features.includes('Wheelchair Accessible');
+                
                 uploadedImages = data.images || [];
                 renderImagePreviews();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
