@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
@@ -9,51 +10,159 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [selectedRating, setSelectedRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [venueData, setVenueData] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const flatListRef = React.useRef(null);
+  const scrollViewRef = React.useRef(null);
+  const textInputRef = React.useRef(null);
 
-  const venueData = {
-    id: venueId || 1,
-    name: 'Sweden Restaurant',
-    location: 'Soi 18/3 poonsuk RD, Hua Hin.',
-    rating: 4.0,
-    reviewCount: 40,
-    views: 7921,
-    registeredDate: '2025-11-15',
-    description: 'Sweden restaurant is a great place that almost always are full in the highs season. They serve great Swedish, Thai and International food.',
-    hours: {
-      monday: '16:00 - 23:00',
-      tuesday: '16:00 - 23:00',
-      wednesday: '16:00 - 23:00',
-      thursday: '16:00 - 23:00',
-      friday: '16:00 - 23:00',
-      saturday: '16:00 - 23:00',
-      sunday: '16:00 - 23:00',
-    },
-    kitchenCloseNote: '(Kitchen close 1 hour before closing time)',
-    phone: '+66 81 880 7119',
-    website: 'http://www.sweden-restaurant.asia/',
-    email: 'ann@sweden-restaurant.asia',
-    facebook: 'https://facebook.com/swedenrestaurant',
-    instagram: 'https://instagram.com/swedenrestaurant',
-    line: 'swedenrestaurant',
-    whatsapp: '+66321234567',
-    images: [
-      require('../../../assets/venuephotos/Sweden1.png'),
-      require('../../../assets/venuephotos/Sweden2.png'),
-      require('../../../assets/venuephotos/Sweden3.png'),
-    ],
-    mapImage: require('../../../assets/ui/Map.png'),
-    reviews: [
-      {
-        id: 1,
-        userName: 'Sophia Martinez',
-        rating: 4.1,
-        date: 'Dec 11, 2020',
-        comment: 'Breathtaking views and incredible natural beauty. A must-see destination for every traveler!',
-        avatar: require('../../../assets/ui/Kvinna1.png'),
-      },
-    ],
+  useEffect(() => {
+    fetchVenueData();
+    fetchReviews();
+  }, [venueId]);
+
+  const fetchVenueData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId || 1}&select=*`,
+        {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data && data.length > 0) {
+        setVenueData(data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching venue:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch(
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId || 1}&select=*&order=created_at.desc`,
+        {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const data = await response.json();
+      setReviews(data || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!reviewText.trim() || selectedRating === 0) {
+      alert('Please select a rating and write a review');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      // Insert review
+      const reviewResponse = await fetch(
+        'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews',
+        {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            venue_id: venueId || 1,
+            user_name: 'Anonymous User',
+            rating: selectedRating,
+            comment: reviewText
+          })
+        }
+      );
+
+      if (!reviewResponse.ok) throw new Error('Failed to submit review');
+
+      // Calculate new average rating
+      const allReviews = await fetch(
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId || 1}&select=rating`,
+        {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+          },
+        }
+      );
+      const reviewsData = await allReviews.json();
+      const avgRating = reviewsData.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviewsData.length;
+
+      // Update venue rating and count
+      await fetch(
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId || 1}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            rating: Math.round(avgRating * 10) / 10,
+            review_count: reviewsData.length
+          })
+        }
+      );
+
+      Alert.alert(
+        'Thank You!',
+        'Your review is submitted successfully!',
+        [{ text: 'OK' }]
+      );
+      setReviewText('');
+      setSelectedRating(0);
+      fetchVenueData();
+      fetchReviews();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#0077B6" />
+      </View>
+    );
+  }
+
+  if (!venueData) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Venue not found</Text>
+      </View>
+    );
+  }
 
   const handleScrollEnd = (event) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -92,42 +201,35 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   };
 
   const handlePhonePress = () => {
-    Linking.openURL(`tel:${venueData.phone}`);
-  };
-
-  const handleChatPress = () => {
-    // Open chat functionality
-    console.log('Open chat');
+    if (venueData.phone) {
+      Linking.openURL(`tel:${venueData.phone}`);
+    }
   };
 
   const handleSocialPress = (platform) => {
     switch(platform) {
       case 'facebook':
-        Linking.openURL(venueData.facebook);
+        if (venueData.facebook) Linking.openURL(venueData.facebook);
         break;
       case 'instagram':
-        Linking.openURL(venueData.instagram);
+        if (venueData.instagram) Linking.openURL(venueData.instagram);
+        break;
+      case 'tiktok':
+        if (venueData.tiktok) Linking.openURL(venueData.tiktok);
+        break;
+      case 'twitter':
+        if (venueData['x/twitter']) Linking.openURL(venueData['x/twitter']);
         break;
       case 'line':
-        Linking.openURL(`https://line.me/R/ti/p/${venueData.line}`);
+        if (venueData.line) Linking.openURL(`https://line.me/R/ti/p/${venueData.line}`);
         break;
       case 'whatsapp':
-        Linking.openURL(`https://wa.me/${venueData.whatsapp.replace(/\s+/g, '')}`);
+        if (venueData.whatsapp) Linking.openURL(`https://wa.me/${venueData.whatsapp.replace(/\s+/g, '')}`);
         break;
     }
   };
 
-  const handleBookOrChat = () => {
-    console.log('Book or ask anything (Chat)');
-  };
-
-  const submitReview = () => {
-    if (reviewText.trim() && selectedRating > 0) {
-      console.log('Submitting review:', { rating: selectedRating, text: reviewText });
-      setReviewText('');
-      setSelectedRating(0);
-    }
-  };
+  const imageUrls = venueData.images || [];
 
   return (
     <View style={styles.container}>
@@ -147,62 +249,67 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Image Gallery with Swipe */}
-        <View style={styles.imageContainer}>
-          <FlatList
-            ref={flatListRef}
-            data={venueData.images}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            decelerationRate="fast"
-            snapToInterval={width - 32}
-            snapToAlignment="center"
-            keyExtractor={(item, index) => index.toString()}
-            onMomentumScrollEnd={handleScrollEnd}
-            renderItem={({ item }) => (
-              <Image source={item} style={styles.venueImage} resizeMode="cover" />
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 600 }}
+      >
+        {/* Image Gallery */}
+        {imageUrls.length > 0 && (
+          <View style={styles.imageContainer}>
+            <FlatList
+              ref={flatListRef}
+              data={imageUrls}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              scrollEventThrottle={16}
+              decelerationRate="fast"
+              snapToInterval={width - 32}
+              snapToAlignment="center"
+              keyExtractor={(item, index) => index.toString()}
+              onMomentumScrollEnd={handleScrollEnd}
+              renderItem={({ item }) => (
+                <Image source={{ uri: item }} style={styles.venueImage} resizeMode="cover" />
+              )}
+            />
+            
+            {currentImageIndex > 0 && (
+              <TouchableOpacity 
+                style={styles.leftArrow}
+                onPress={() => scrollToImage(currentImageIndex - 1)}
+              >
+                <Ionicons name="chevron-back" size={50} color="#FFF" />
+              </TouchableOpacity>
             )}
-          />
-          
-          {/* Navigation Arrows */}
-          {currentImageIndex > 0 && (
-            <TouchableOpacity 
-              style={styles.leftArrow}
-              onPress={() => scrollToImage(currentImageIndex - 1)}
-            >
-              <Ionicons name="chevron-back" size={50} color="#FFF" />
-            </TouchableOpacity>
-          )}
-          
-          {currentImageIndex < venueData.images.length - 1 && (
-            <TouchableOpacity 
-              style={styles.rightArrow}
-              onPress={() => scrollToImage(currentImageIndex + 1)}
-            >
-              <Ionicons name="chevron-forward" size={50} color="#FFF" />
-            </TouchableOpacity>
-          )}
-          
-          {/* Dot Indicators */}
-          <View style={styles.dotContainer}>
-            {venueData.images.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.dot,
-                  index === currentImageIndex && styles.activeDot
-                ]}
-              />
-            ))}
+            
+            {currentImageIndex < imageUrls.length - 1 && (
+              <TouchableOpacity 
+                style={styles.rightArrow}
+                onPress={() => scrollToImage(currentImageIndex + 1)}
+              >
+                <Ionicons name="chevron-forward" size={50} color="#FFF" />
+              </TouchableOpacity>
+            )}
+            
+            <View style={styles.dotContainer}>
+              {imageUrls.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    index === currentImageIndex && styles.activeDot
+                  ]}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Content Card */}
         <View style={styles.contentCard}>
-          {/* Title and Basic Info */}
           <Text style={styles.venueTitle}>{venueData.name}</Text>
           
           <View style={styles.metaRow}>
@@ -211,154 +318,171 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               <Text style={styles.metaText}>{venueData.location}</Text>
             </View>
             
-            <View style={styles.metaItem}>
-              <Ionicons name="eye" size={14} color="#0077B6" />
-              <Text style={styles.metaText}>{venueData.views} views (Registered {venueData.registeredDate})</Text>
-            </View>
+            {venueData.views > 0 && (
+              <View style={styles.metaItem}>
+                <Ionicons name="eye" size={14} color="#0077B6" />
+                <Text style={styles.metaText}>{venueData.views} views</Text>
+              </View>
+            )}
           </View>
 
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Ionicons name="thumbs-up" size={14} color="#0077B6" />
-              <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-              <Text style={styles.metaText}>{venueData.rating} ({venueData.reviewCount} Reviews)</Text>
+          {venueData.rating > 0 && (
+            <View style={styles.metaRow}>
+              <View style={styles.metaItem}>
+                <Ionicons name="thumbs-up" size={14} color="#0077B6" />
+                <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
+                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+              </View>
             </View>
-          </View>
+          )}
 
-          {/* Description */}
           <Text style={styles.description}>{venueData.description}</Text>
 
           {/* Opening Hours */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Open</Text>
-            {Object.entries(venueData.hours).map(([day, hours]) => (
-              <View key={day} style={styles.hoursRow}>
-                <Text style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
-                <Text style={styles.hoursText}>{hours}</Text>
-              </View>
-            ))}
-            <Text style={styles.kitchenNote}>{venueData.kitchenCloseNote}</Text>
-          </View>
+          {venueData.opening_hours && Object.values(venueData.opening_hours).some(hours => hours) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Open</Text>
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
+                const hours = venueData.opening_hours[day];
+                return hours ? (
+                  <View key={day} style={styles.hoursRow}>
+                    <Text style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
+                    <Text style={styles.hoursText}>{hours}</Text>
+                  </View>
+                ) : null;
+              })}
+            </View>
+          )}
 
           {/* Contact Details */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Contact Details</Text>
-            
-            <View style={styles.contactButtons}>
-              <TouchableOpacity style={styles.contactButton} onPress={handlePhonePress}>
-                <Ionicons name="call" size={20} color="#0077B6" />
-                <Text style={styles.contactButtonText}>Phone</Text>
-              </TouchableOpacity>
+          {(venueData.phone || venueData.email || venueData.website || venueData.whatsapp || venueData.line) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Contact Details</Text>
               
-              <TouchableOpacity 
-                style={styles.contactButton} 
-                onPress={() => Linking.openURL(venueData.website)}
-              >
-                <Ionicons name="globe" size={20} color="#0077B6" />
-                <Text style={styles.contactButtonText}>Web</Text>
-              </TouchableOpacity>
-            </View>
+              {venueData.phone && (
+                <TouchableOpacity onPress={handlePhonePress} style={styles.contactTextRow}>
+                  <Text style={styles.contactLabel}>Phone:</Text>
+                  <Text style={styles.contactValue}>{venueData.phone}</Text>
+                </TouchableOpacity>
+              )}
 
-            <View style={styles.contactButtons}>
-              <TouchableOpacity style={styles.contactButton} onPress={handleChatPress}>
-                <Ionicons name="chatbubbles" size={20} color="#0077B6" />
-                <Text style={styles.contactButtonText}>Chat</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.contactButton} 
-                onPress={() => Linking.openURL(`mailto:${venueData.email}`)}
-              >
-                <Ionicons name="mail" size={20} color="#0077B6" />
-                <Text style={styles.contactButtonText}>E-mail</Text>
-              </TouchableOpacity>
-            </View>
+              {venueData.email && (
+                <TouchableOpacity onPress={() => Linking.openURL(`mailto:${venueData.email}`)} style={styles.contactTextRow}>
+                  <Text style={styles.contactLabel}>Email:</Text>
+                  <Text style={styles.contactValue}>{venueData.email}</Text>
+                </TouchableOpacity>
+              )}
 
-            {/* Social Media */}
-            <Text style={styles.socialTitle}>Social Media</Text>
-            <View style={styles.socialButtons}>
-              <TouchableOpacity 
-                style={styles.socialButton} 
-                onPress={() => handleSocialPress('facebook')}
-              >
-                <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton} 
-                onPress={() => handleSocialPress('instagram')}
-              >
-                <Ionicons name="logo-instagram" size={24} color="#E4405F" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton} 
-                onPress={() => handleSocialPress('line')}
-              >
-                <Ionicons name="chatbubble-ellipses" size={24} color="#00B900" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton} 
-                onPress={() => handleSocialPress('whatsapp')}
-              >
-                <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
-              </TouchableOpacity>
-            </View>
-          </View>
+              {venueData.website && (
+                <TouchableOpacity onPress={() => Linking.openURL(venueData.website)} style={styles.contactTextRow}>
+                  <Text style={styles.contactLabel}>Web:</Text>
+                  <Text style={styles.contactValue}>{venueData.website.replace(/^https?:\/\//, '')}</Text>
+                </TouchableOpacity>
+              )}
 
-          {/* Location Map */}
-          <View style={styles.section}>
-            <View style={styles.locationHeader}>
-              <Text style={styles.sectionTitle}>Location</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewLink}>View</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.mapContainer}>
-              <Image source={venueData.mapImage} style={styles.mapImage} resizeMode="cover" />
-            </View>
-          </View>
-
-          {/* Reviews */}
-          <View style={styles.section}>
-            <View style={styles.reviewsHeader}>
-              <View style={styles.reviewsHeaderLeft}>
-                <Text style={styles.sectionTitle}>Reviews</Text>
-                <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.reviewCount} Reviews)</Text>
-              </View>
-              <TouchableOpacity>
-                <Text style={styles.viewLink}>View All</Text>
-              </TouchableOpacity>
-            </View>
-
-            {venueData.reviews.map((review) => (
-              <View key={review.id} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <Image source={review.avatar} style={styles.reviewAvatar} />
-                  <View style={styles.reviewHeaderText}>
-                    <Text style={styles.reviewUserName}>{review.userName}</Text>
-                    <Text style={styles.reviewDate}>{review.date}</Text>
-                  </View>
-                  <View style={styles.reviewRatingBadge}>
-                    <Ionicons name="star" size={12} color="#FFD700" />
-                    <Text style={styles.reviewRatingText}>{review.rating}</Text>
-                  </View>
+              {/* WhatsApp & Line Icons */}
+              {(venueData.whatsapp || venueData.line) && (
+                <View style={styles.contactIconsRow}>
+                  {venueData.whatsapp && (
+                    <TouchableOpacity 
+                      style={styles.contactIconButton} 
+                      onPress={() => handleSocialPress('whatsapp')}
+                    >
+                      <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
+                      <Text style={styles.contactIconText}>WhatsApp</Text>
+                    </TouchableOpacity>
+                  )}
+                  
+                  {venueData.line && (
+                    <TouchableOpacity 
+                      style={styles.contactIconButton} 
+                      onPress={() => handleSocialPress('line')}
+                    >
+                      <Ionicons name="chatbubble-ellipses" size={24} color="#00B900" />
+                      <Text style={styles.contactIconText}>Line</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <Text style={styles.reviewComment}>{review.comment}</Text>
+              )}
+
+              {/* Social Media */}
+              {(venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
+                <>
+                  <Text style={styles.socialTitle}>Social Media</Text>
+                  <View style={styles.socialButtons}>
+                    {venueData.facebook && (
+                      <TouchableOpacity 
+                        style={styles.socialButton} 
+                        onPress={() => handleSocialPress('facebook')}
+                      >
+                        <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+                      </TouchableOpacity>
+                    )}
+                    
+                    {venueData.instagram && (
+                      <TouchableOpacity 
+                        style={styles.socialButton} 
+                        onPress={() => handleSocialPress('instagram')}
+                      >
+                        <Ionicons name="logo-instagram" size={24} color="#E4405F" />
+                      </TouchableOpacity>
+                    )}
+                    
+                    {venueData.tiktok && (
+                      <TouchableOpacity 
+                        style={styles.socialButton} 
+                        onPress={() => handleSocialPress('tiktok')}
+                      >
+                        <Ionicons name="logo-tiktok" size={24} color="#000" />
+                      </TouchableOpacity>
+                    )}
+                    
+                    {venueData['x/twitter'] && (
+                      <TouchableOpacity 
+                        style={styles.socialButton} 
+                        onPress={() => handleSocialPress('twitter')}
+                      >
+                        <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+
+          {/* Reviews Section */}
+          {reviews.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.reviewsHeader}>
+                <View style={styles.reviewsHeaderLeft}>
+                  <Text style={styles.sectionTitle}>Reviews</Text>
+                  <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
+                  <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                </View>
               </View>
-            ))}
-          </View>
+              
+              {reviews.map((review) => (
+                <View key={review.id} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewHeaderText}>
+                      <Text style={styles.reviewUserName}>{review.user_name}</Text>
+                      <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</Text>
+                    </View>
+                    <View style={styles.reviewRatingBadge}>
+                      <Ionicons name="star" size={12} color="#FFD700" />
+                      <Text style={styles.reviewRatingText}>{review.rating}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                </View>
+              ))}
+            </View>
+          )}
 
           {/* Give a Review */}
           <View style={styles.section}>
-            <View style={styles.giveReviewHeader}>
-              <Text style={styles.sectionTitle}>Give a Review</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewLink}>View All</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.sectionTitle}>Give a Review</Text>
             
             <View style={styles.ratingSelector}>
               {[1, 2, 3, 4, 5].map((star) => (
@@ -379,16 +503,17 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             <Text style={styles.maxWords}>Max 250 words</Text>
             
             <TextInput
+              ref={textInputRef}
               style={styles.reviewInput}
               placeholder="Write here..."
               placeholderTextColor="#999"
               value={reviewText}
               onChangeText={setReviewText}
               multiline
-              numberOfLines={4}
+              numberOfLines={6}
+              textAlignVertical="top"
             />
 
-            {/* Add Photo/Video */}
             <TouchableOpacity style={styles.addMediaButton}>
               <Ionicons name="camera" size={32} color="#0077B6" />
               <Text style={styles.addMediaText}>Add a photo or video</Text>
@@ -399,8 +524,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
       {/* Bottom Button */}
       <View style={styles.bottomButton}>
-        <TouchableOpacity style={styles.bookButton} onPress={handleBookOrChat}>
-          <Text style={styles.bookButtonText}>Book or ask anything (Chat)</Text>
+        <TouchableOpacity style={styles.bookButton} onPress={submitReview} disabled={submitting}>
+          <Text style={styles.bookButtonText}>{submitting ? 'Submitting...' : 'Submit Review'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -570,38 +695,49 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
   },
-  kitchenNote: {
-    fontSize: 11,
-    color: '#999',
-    fontStyle: 'italic',
-    marginTop: 8,
-  },
-  contactButtons: {
+  contactTextRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+    paddingVertical: 8,
   },
-  contactButton: {
+  contactLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#333',
+    width: 80,
+  },
+  contactValue: {
+    fontSize: 11,
+    color: '#0077B6',
+    flex: 1,
+  },
+  contactIconsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 12,
+  },
+  contactIconButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#F0F8FF',
-    paddingVertical: 12,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#0077B6',
+    borderColor: '#E0E0E0',
   },
-  contactButtonText: {
+  contactIconText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#0077B6',
+    color: '#333',
   },
   socialTitle: {
     fontSize: 11,
     fontWeight: '600',
     color: '#333',
+    marginTop: 20,
     marginBottom: 12,
   },
   socialButtons: {
@@ -617,28 +753,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-  },
-  locationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  viewLink: {
-    fontSize: 12,
-    color: '#0077B6',
-    fontWeight: '600',
-  },
-  mapContainer: {
-    width: '100%',
-    height: 180,
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: '#E0E0E0',
-  },
-  mapImage: {
-    width: '100%',
-    height: '100%',
   },
   reviewsHeader: {
     flexDirection: 'row',
@@ -664,13 +778,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
-  },
-  reviewAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
-    backgroundColor: '#E0E0E0',
+    justifyContent: 'space-between',
   },
   reviewHeaderText: {
     flex: 1,
@@ -704,12 +812,6 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 16,
   },
-  giveReviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
   ratingSelector: {
     flexDirection: 'row',
     gap: 8,
@@ -725,7 +827,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 11,
     color: '#000',
-    minHeight: 100,
+    minHeight: 150,
     textAlignVertical: 'top',
     borderWidth: 1,
     borderColor: '#E0E0E0',

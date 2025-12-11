@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FilterScreen from './FilterScreen';
+import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,14 @@ export default function VenuesPage({ onNavigate }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filterFadeAnim] = useState(new Animated.Value(0));
+  const [venues, setVenues] = useState([]);
+  const [filteredVenues, setFilteredVenues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({
+    category: null,
+    ratings: [],
+    priceRange: null
+  });
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -47,68 +56,105 @@ export default function VenuesPage({ onNavigate }) {
     }).start(() => setShowFilter(false));
   };
 
-  const venues = [
-    {
-      id: 1,
-      rating: 4.5,
-      title: 'Sweden Restaurant',
-      category: 'Restaurant & Bar',
-      location: 'Soi 107',
-      cuisine: 'Swedish & Thai',
-      priceRange: '€€',
-      image: require('../../assets/venuephotos/Sweden1.png'),
-    },
-    {
-      id: 2,
-      rating: 4.7,
-      title: 'Sunset Lounge',
-      category: 'Bar',
-      location: 'Khao Takiab',
-      cuisine: 'Cocktails & Tapas',
-      priceRange: '€€',
-      image: require('../../assets/events/market-photo.png'),
-    },
-    {
-      id: 3,
-      rating: 4.8,
-      title: 'Thai Garden',
-      category: 'Restaurant',
-      location: 'City Center',
-      cuisine: 'Thai Cuisine',
-      priceRange: '€€',
-      image: require('../../assets/events/fotball-photo.png'),
-    },
-    {
-      id: 4,
-      rating: 4.3,
-      title: 'Marina Bay',
-      category: 'Restaurant',
-      location: 'Hua Hin Port',
-      cuisine: 'Seafood',
-      priceRange: '€€€',
-      image: require('../../assets/events/Boat.png'),
-    },
-    {
-      id: 5,
-      rating: 4.6,
-      title: 'Night Market Café',
-      category: 'Café & Bar',
-      location: 'Night Market Area',
-      cuisine: 'Fusion',
-      priceRange: '€',
-      image: require('../../assets/events/candy-photo.png'),
-    },
-    {
-      id: 6,
-      rating: 4.4,
-      title: 'Rooftop 360',
-      category: 'Bar & Lounge',
-      location: 'Downtown',
-      cuisine: 'International',
-      priceRange: '€€€',
-      image: require('../../assets/events/happy-hour-photo.png'),
-    },
-  ];
+  // Fetch venues from Supabase
+  useEffect(() => {
+    fetchVenues();
+  }, []);
+
+  // Apply filters whenever venues or activeFilters change
+  useEffect(() => {
+    applyFilters();
+  }, [venues, activeFilters]);
+
+  const fetchVenues = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching venues from Supabase...');
+      console.log('URL:', 'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&order=created_at.desc');
+      
+      // Use direct fetch instead of Supabase client
+      const response = await fetch(
+        'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&order=created_at.desc',
+        {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Fetched venues:', data);
+      console.log('Number of venues:', data.length);
+
+      // Map data to match existing structure
+      const mappedVenues = data.map(venue => ({
+        id: venue.id,
+        rating: venue.rating || 0,
+        title: venue.name,
+        category: venue.category || 'Restaurant',
+        location: venue.location_short || venue.location,
+        cuisine: venue.cuisine,
+        priceRange: venue.price_range,
+        // Use placeholder image for now (we'll add image URLs later)
+        image: require('../../assets/venuephotos/Sweden1.png'),
+      }));
+
+      console.log('Mapped venues:', mappedVenues);
+      setVenues(mappedVenues);
+    } catch (error) {
+      console.error('Error fetching venues:', error.message);
+      console.error('Error name:', error.name);
+      console.error('Full error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...venues];
+
+    // Filter by category (skip if 'All')
+    if (activeFilters.category && activeFilters.category !== 'All') {
+      filtered = filtered.filter(venue => venue.category === activeFilters.category);
+    }
+
+    // Filter by rating
+    if (activeFilters.ratings && activeFilters.ratings.length > 0) {
+      filtered = filtered.filter(venue => {
+        const venueRating = Math.floor(venue.rating);
+        return activeFilters.ratings.includes(venueRating);
+      });
+    }
+
+    // Filter by price range
+    if (activeFilters.priceRange && activeFilters.priceRange !== 'all') {
+      filtered = filtered.filter(venue => {
+        if (!venue.priceRange) return false;
+        const priceValue = venue.priceRange.length; // $ = 1, $ = 2, $$ = 3, $$ = 4
+        
+        if (activeFilters.priceRange === '1-50') {
+          return priceValue <= 2; // $ or $
+        } else if (activeFilters.priceRange === '51-100') {
+          return priceValue >= 3; // $$ or $$
+        }
+        return true;
+      });
+    }
+
+    setFilteredVenues(filtered);
+  };
 
   return (
     <View style={styles.container}>
@@ -151,8 +197,15 @@ export default function VenuesPage({ onNavigate }) {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.grid}>
-          {venues.map((venue, index) => (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0077B6" />
+            <Text style={styles.loadingText}>Loading venues...</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.grid}>
+              {filteredVenues.map((venue, index) => (
             <TouchableOpacity
               key={venue.id}
               style={[
@@ -175,28 +228,24 @@ export default function VenuesPage({ onNavigate }) {
               <View style={styles.venueInfo}>
                 <Text style={styles.venueTitle}>{venue.title}</Text>
                 
-                <View style={styles.categoryRow}>
-                  <Ionicons name="restaurant" size={12} color="#00A8E1" />
-                  <Text style={styles.categoryText}>{venue.category}</Text>
-                </View>
-                
                 <View style={styles.locationRow}>
                   <Ionicons name="location" size={12} color="#00A8E1" />
                   <Text style={styles.locationText}>{venue.location}</Text>
                 </View>
                 
                 <View style={styles.bottomRow}>
-                  <Text style={styles.cuisineText}>{venue.cuisine}</Text>
                   <Text style={styles.priceText}>{venue.priceRange}</Text>
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
-        </View>
-        
-        <TouchableOpacity style={styles.showMoreButton}>
-          <Text style={styles.showMoreButtonText}>Show more</Text>
-        </TouchableOpacity>
+              ))}
+            </View>
+            
+            <TouchableOpacity style={styles.showMoreButton}>
+              <Text style={styles.showMoreButtonText}>Show more</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </ScrollView>
 
       <Modal
@@ -344,6 +393,11 @@ export default function VenuesPage({ onNavigate }) {
               onClose={closeFilter}
               onApply={(filters) => {
                 console.log('Applied filters:', filters);
+                setActiveFilters({
+                  category: filters.category,
+                  ratings: filters.ratings,
+                  priceRange: filters.priceRange
+                });
                 closeFilter();
               }}
             />
@@ -558,6 +612,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#666',
+  },
   menuModalOverlay: {
     flex: 1,
     flexDirection: 'row',
@@ -652,7 +717,7 @@ const styles = StyleSheet.create({
   },
   filterOverlay: {
     height: '30%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'transparent',
   },
   filterContent: {
     height: '70%',

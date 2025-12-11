@@ -3,18 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 
 export default function FilterScreen({ onClose, onApply }) {
-  const [selectedCategory, setSelectedCategory] = useState('Markets');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRatings, setSelectedRatings] = useState([]);
-  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
-    'Markets',
-    'Sport Events',
-    'Trips & Tours',
-    'Party Event',
-    'Concerts',
-    'Happy Hour',
+    'All',
+    'Restaurants',
+    'Sports Bars & Pubs',
+    'Massage & Spa',
+    'Sports Activities',
+    'Markets & Attractions',
   ];
 
   const ratings = [1, 2, 3, 4, 5];
@@ -39,7 +38,6 @@ export default function FilterScreen({ onClose, onApply }) {
     onApply && onApply({
       category: selectedCategory,
       ratings: selectedRatings,
-      priceRange: selectedPriceRange,
     });
     onClose && onClose();
   };
@@ -123,57 +121,6 @@ export default function FilterScreen({ onClose, onApply }) {
             ]}>
               All
             </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Price Range */}
-        <Text style={styles.sectionTitle}>Price Range</Text>
-        <View style={styles.priceRangeContainer}>
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('1-50')}
-          >
-            <Text style={[
-  styles.priceRangeButtonText,
-  selectedPriceRange === '1-50' && styles.priceRangeButtonTextActive
-]}>
-  €1-€50
-</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('51-100')}
-          >
-            <Text style={[
-            styles.priceRangeButtonText,
-            selectedPriceRange === '51-100' && styles.priceRangeButtonTextActive
-            ]}>
-            €51-€100
-          </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === 'all' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('all')}
-          >
-            <View style={styles.allPricesContainer}>
-              <Text style={[
-                styles.priceRangeButtonText,
-                selectedPriceRange === 'all' && styles.priceRangeButtonTextActive
-              ]}>
-                All Prices
-              </Text>
-            </View>
           </TouchableOpacity>
         </View>
 
@@ -305,44 +252,6 @@ const styles = StyleSheet.create({
   },
   allTextActive: {
     color: '#FFFFFF',
-  },
-  priceRangeContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  priceRangeButton: {
-    minWidth: 100,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#0077B6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  priceRangeButtonActive: {
-    backgroundColor: '#0077B6',
-  },
-  priceRangeButtonText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-  },
-  priceRangeButtonSubText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  priceRangeButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  allPricesContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',
