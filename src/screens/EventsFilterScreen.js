@@ -1,21 +1,18 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, PanResponder } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function DealsFilterScreen({ onClose, onApply }) {
-  const [selectedCategory, setSelectedCategory] = useState('Happy Hour');
+export default function EventsFilterScreen({ onClose, onApply }) {
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRatings, setSelectedRatings] = useState([]);
-  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
-    'Happy Hour',
-    'Watersport Deals',
-    'Restaurant Deals',
-    'Sport Deals',
-    'Tour Deals',
-    'Pub & Bar Deals',
-    'Take Away Deal',
+    'All',
+    'Concerts',
+    'Festivals',
+    'Markets',
+    'Tours',
   ];
 
   const ratings = [1, 2, 3, 4, 5];
@@ -40,7 +37,6 @@ export default function DealsFilterScreen({ onClose, onApply }) {
     onApply && onApply({
       category: selectedCategory,
       ratings: selectedRatings,
-      priceRange: selectedPriceRange,
     });
     onClose && onClose();
   };
@@ -119,69 +115,6 @@ export default function DealsFilterScreen({ onClose, onApply }) {
             ]}>
               All
             </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Price Range */}
-        <Text style={styles.sectionTitle}>Price Range</Text>
-        <View style={styles.priceRangeContainer}>
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('1-50')}
-          >
-            <Text style={[
-              styles.priceRangeButtonText,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonTextActive
-            ]}>
-              1 - 50
-            </Text>
-            <Text style={[
-              styles.priceRangeButtonSubText,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonTextActive
-            ]}>
-              Euro
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('51-100')}
-          >
-            <Text style={[
-              styles.priceRangeButtonText,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonTextActive
-            ]}>
-              51 - 100
-            </Text>
-            <Text style={[
-              styles.priceRangeButtonSubText,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonTextActive
-            ]}>
-              Euro
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === 'all' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('all')}
-          >
-            <View style={styles.allPricesContainer}>
-              <Text style={[
-                styles.priceRangeButtonText,
-                selectedPriceRange === 'all' && styles.priceRangeButtonTextActive
-              ]}>
-                All Prices
-              </Text>
-            </View>
           </TouchableOpacity>
         </View>
 
@@ -268,15 +201,15 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 6,
     flexWrap: 'wrap',
   },
   ratingButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
@@ -302,44 +235,6 @@ const styles = StyleSheet.create({
   },
   allTextActive: {
     color: '#FFFFFF',
-  },
-  priceRangeContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  priceRangeButton: {
-    minWidth: 100,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#0077B6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  priceRangeButtonActive: {
-    backgroundColor: '#0077B6',
-  },
-  priceRangeButtonText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-  },
-  priceRangeButtonSubText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  priceRangeButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  allPricesContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',

@@ -17,6 +17,11 @@ export default function VenuesPage({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState({
     category: null,
+    cuisine: null,
+    pubType: null,
+    spaType: null,
+    sportType: null,
+    attractionType: null,
     ratings: [],
     priceRange: null
   });
@@ -106,6 +111,10 @@ export default function VenuesPage({ onNavigate }) {
         category: venue.category || 'Restaurant',
         location: venue.location_short || venue.location,
         cuisine: venue.cuisine,
+        pubType: venue.pub_type,
+        spaType: venue.spa_type,
+        sportType: venue.sport_type,
+        attractionType: venue.attraction_type,
         priceRange: venue.price_range,
         // Use placeholder image for now (we'll add image URLs later)
         image: require('../../assets/venuephotos/Sweden1.png'),
@@ -128,6 +137,31 @@ export default function VenuesPage({ onNavigate }) {
     // Filter by category (skip if 'All')
     if (activeFilters.category && activeFilters.category !== 'All') {
       filtered = filtered.filter(venue => venue.category === activeFilters.category);
+    }
+
+    // Filter by cuisine (only for Restaurants)
+    if (activeFilters.cuisine && activeFilters.cuisine !== 'All') {
+      filtered = filtered.filter(venue => venue.cuisine === activeFilters.cuisine);
+    }
+
+    // Filter by pub type (only for Sports Bars & Pubs)
+    if (activeFilters.pubType && activeFilters.pubType !== 'All') {
+      filtered = filtered.filter(venue => venue.pubType === activeFilters.pubType);
+    }
+
+    // Filter by spa type (only for Massage & Spa)
+    if (activeFilters.spaType && activeFilters.spaType !== 'All') {
+      filtered = filtered.filter(venue => venue.spaType === activeFilters.spaType);
+    }
+
+    // Filter by sport type (only for Sports Activities)
+    if (activeFilters.sportType && activeFilters.sportType !== 'All') {
+      filtered = filtered.filter(venue => venue.sportType === activeFilters.sportType);
+    }
+
+    // Filter by attraction type (only for Markets & Attractions)
+    if (activeFilters.attractionType && activeFilters.attractionType !== 'All') {
+      filtered = filtered.filter(venue => venue.attractionType === activeFilters.attractionType);
     }
 
     // Filter by rating

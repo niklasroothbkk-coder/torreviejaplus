@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
 
@@ -19,6 +19,12 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const flatListRef = React.useRef(null);
   const scrollViewRef = React.useRef(null);
   const textInputRef = React.useRef(null);
+  
+  // Chat states
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // TODO: Connect to real auth
 
   useEffect(() => {
     fetchVenueData();
@@ -252,6 +258,38 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     setShowShareMenu(false);
   };
 
+  const handleOpenBookingChat = () => {
+    if (!isLoggedIn) {
+      Alert.alert(
+        'Login Required',
+        'Please login to make a booking.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => onNavigate('login') }
+        ]
+      );
+      return;
+    }
+    setChatModalOpen(true);
+  };
+
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    
+    const newMessage = {
+      id: chatMessages.length + 1,
+      text: chatMessage,
+      sender: 'You',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    };
+    
+    setChatMessages([...chatMessages, newMessage]);
+    setChatMessage('');
+    
+    // TODO: Send notification to venue owner
+    // TODO: Save message to database
+  };
+
   const imageUrls = venueData.images || [];
 
   return (
@@ -411,6 +449,32 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
+          {/* Cuisine */}
+          {venueData.cuisine && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Cuisine</Text>
+              <View style={styles.featuresGrid}>
+                {(() => {
+                  let cuisineArray = [];
+                  if (Array.isArray(venueData.cuisine)) {
+                    cuisineArray = venueData.cuisine;
+                  } else if (typeof venueData.cuisine === 'string') {
+                    try {
+                      cuisineArray = JSON.parse(venueData.cuisine);
+                    } catch (e) {
+                      cuisineArray = [venueData.cuisine];
+                    }
+                  }
+                  return cuisineArray.map((cuisineType, index) => (
+                    <View key={index} style={styles.featureTag}>
+                      <Text style={styles.featureText}>{cuisineType}</Text>
+                    </View>
+                  ));
+                })()}
+              </View>
+            </View>
+          )}
+
           {/* Features & Amenities */}
           {venueData.features && venueData.features.length > 0 && (
             <View style={styles.section}>
@@ -469,13 +533,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 </TouchableOpacity>
               )}
 
-              {venueData.website && (
-                <TouchableOpacity onPress={() => Linking.openURL(venueData.website)} style={styles.contactTextRow}>
-                  <Text style={styles.contactLabel}>Web:</Text>
-                  <Text style={styles.contactValue}>{venueData.website.replace(/^https?:\/\//, '')}</Text>
-                </TouchableOpacity>
-              )}
-
               {/* WhatsApp & Line Icons */}
               {(venueData.whatsapp || venueData.line) && (
                 <View style={styles.contactIconsRow}>
@@ -502,10 +559,19 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               )}
 
               {/* Social Media */}
-              {(venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
+              {(venueData.website || venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
                 <View style={styles.socialMediaSection}>
                   <Text style={styles.sectionTitle}>Social Media</Text>
                   <View style={styles.socialButtons}>
+                    {venueData.website && (
+                      <TouchableOpacity 
+                        style={styles.socialButton} 
+                        onPress={() => Linking.openURL(venueData.website)}
+                      >
+                        <Ionicons name="globe-outline" size={24} color="#0077B6" />
+                      </TouchableOpacity>
+                    )}
+                    
                     {venueData.facebook && (
                       <TouchableOpacity 
                         style={styles.socialButton} 
@@ -628,10 +694,70 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
       {/* Bottom Button */}
       <View style={styles.bottomButton}>
-        <TouchableOpacity style={styles.bookButton}>
+        <TouchableOpacity style={styles.bookButton} onPress={handleOpenBookingChat}>
           <Text style={styles.bookButtonText}>Make a Booking (Chat)</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Chat Modal */}
+      <Modal
+        visible={chatModalOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setChatModalOpen(false)}
+      >
+        <KeyboardAvoidingView 
+          style={styles.modalOverlayCenter}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.chatModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Chat with {venueData?.name}</Text>
+              <TouchableOpacity 
+                onPress={() => setChatModalOpen(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#414141" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.chatMessagesContainer}>
+              {chatMessages.length === 0 ? (
+                <View style={styles.emptyChatContainer}>
+                  <Ionicons name="chatbubbles-outline" size={48} color="#999" />
+                  <Text style={styles.emptyChatText}>No messages yet.</Text>
+                  <Text style={styles.emptyChatSubText}>Start the conversation by making your booking request!</Text>
+                </View>
+              ) : (
+                chatMessages.map((msg) => (
+                  <View key={msg.id} style={styles.chatMessage}>
+                    <Text style={styles.chatMessageSender}>{msg.sender}</Text>
+                    <Text style={styles.chatMessageText}>{msg.text}</Text>
+                    <Text style={styles.chatMessageTime}>{msg.timestamp}</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+
+            <View style={styles.chatInputContainer}>
+              <TextInput
+                style={styles.chatInput}
+                placeholder="Type your booking request..."
+                placeholderTextColor="#999"
+                value={chatMessage}
+                onChangeText={setChatMessage}
+                multiline
+              />
+              <TouchableOpacity 
+                style={styles.sendButton}
+                onPress={handleSendMessage}
+              >
+                <Ionicons name="send" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -1039,19 +1165,127 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F0F8FF',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D0E8F2',
+    borderColor: '#000000',
   },
   featureText: {
     fontSize: 10,
-    color: '#0077B6',
+    color: '#000000',
     fontWeight: '500',
   },
   socialMediaSection: {
     marginTop: 25,
+  },
+  modalOverlayCenter: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatModal: {
+    width: '90%',
+    height: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E0E0E0',
+    paddingRight: 0,
+  },
+  modalTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#333',
+    marginRight: 10,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  chatMessagesContainer: {
+    flex: 1,
+    marginBottom: 15,
+  },
+  emptyChatContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyChatText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 15,
+  },
+  emptyChatSubText: {
+    fontSize: 13,
+    color: '#999',
+    marginTop: 5,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  chatMessage: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  chatMessageSender: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#0077B6',
+    marginBottom: 5,
+  },
+  chatMessageText: {
+    fontSize: 11,
+    color: '#333',
+    marginBottom: 5,
+  },
+  chatMessageTime: {
+    fontSize: 9,
+    color: '#999',
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-end',
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 12,
+    color: '#000',
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  sendButton: {
+    backgroundColor: '#0077B6',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

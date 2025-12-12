@@ -4,8 +4,18 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function FilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [selectedPubType, setSelectedPubType] = useState('All');
+  const [selectedSpaType, setSelectedSpaType] = useState('All');
+  const [selectedSportType, setSelectedSportType] = useState('All');
+  const [selectedAttractionType, setSelectedAttractionType] = useState('All');
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
+  const [showPubTypeDropdown, setShowPubTypeDropdown] = useState(false);
+  const [showSpaTypeDropdown, setShowSpaTypeDropdown] = useState(false);
+  const [showSportTypeDropdown, setShowSportTypeDropdown] = useState(false);
+  const [showAttractionTypeDropdown, setShowAttractionTypeDropdown] = useState(false);
 
   const categories = [
     'All',
@@ -14,6 +24,52 @@ export default function FilterScreen({ onClose, onApply }) {
     'Massage & Spa',
     'Sports Activities',
     'Markets & Attractions',
+  ];
+
+  const cuisines = [
+    'All',
+    'Thai',
+    'Burger',
+    'Chinese',
+    'French',
+    'Indian',
+    'International',
+    'Mediterranean',
+    'Mexican',
+    'Pizza & Pasta',
+    'Spanish',
+    'Steak',
+    'Swedish',
+  ];
+
+  const pubTypes = [
+    'All',
+    'English Pub',
+    'Irish Pub',
+    'Sportbar',
+  ];
+
+  const spaTypes = [
+    'All',
+    'Massage',
+    'Spa',
+  ];
+
+  const sportTypes = [
+    'All',
+    'Golf',
+    'Padel',
+    'Tennis',
+    'Watersports',
+  ];
+
+  const attractionTypes = [
+    'All',
+    'Beaches',
+    'Culture',
+    'Markets',
+    'Shopping',
+    'Tours',
   ];
 
   const ratings = [1, 2, 3, 4, 5];
@@ -37,19 +93,40 @@ export default function FilterScreen({ onClose, onApply }) {
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
+      cuisine: selectedCategory === 'Restaurants' ? selectedCuisine : null,
+      pubType: selectedCategory === 'Sports Bars & Pubs' ? selectedPubType : null,
+      spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
+      sportType: selectedCategory === 'Sports Activities' ? selectedSportType : null,
+      attractionType: selectedCategory === 'Markets & Attractions' ? selectedAttractionType : null,
       ratings: selectedRatings,
     });
     onClose && onClose();
   };
 
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setShowDropdown(false);
+    // Reset sub-categories when changing category
+    if (category !== 'Restaurants') {
+      setSelectedCuisine('All');
+    }
+    if (category !== 'Sports Bars & Pubs') {
+      setSelectedPubType('All');
+    }
+    if (category !== 'Massage & Spa') {
+      setSelectedSpaType('All');
+    }
+    if (category !== 'Sports Activities') {
+      setSelectedSportType('All');
+    }
+    if (category !== 'Markets & Attractions') {
+      setSelectedAttractionType('All');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Filter</Text>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContentContainer}>
         {/* Sort by */}
         <Text style={styles.sectionTitle}>Sort by</Text>
         <TouchableOpacity 
@@ -67,10 +144,7 @@ export default function FilterScreen({ onClose, onApply }) {
               <TouchableOpacity
                 key={index}
                 style={styles.dropdownItem}
-                onPress={() => {
-                  setSelectedCategory(category);
-                  setShowDropdown(false);
-                }}
+                onPress={() => handleCategoryChange(category)}
               >
                 <Text style={[
                   styles.dropdownItemText,
@@ -81,6 +155,191 @@ export default function FilterScreen({ onClose, onApply }) {
               </TouchableOpacity>
             ))}
           </View>
+        )}
+
+        {/* Cuisine Filter - Only show when Restaurants is selected */}
+        {selectedCategory === 'Restaurants' && (
+          <>
+            <Text style={styles.sectionTitle}>Cuisine</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowCuisineDropdown(!showCuisineDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedCuisine}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Cuisine Dropdown Menu */}
+            {showCuisineDropdown && (
+              <View style={styles.dropdownMenu}>
+                {cuisines.map((cuisine, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedCuisine(cuisine);
+                      setShowCuisineDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedCuisine === cuisine && styles.dropdownItemTextActive
+                    ]}>
+                      {cuisine}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Pub Type Filter - Only show when Sports Bars & Pubs is selected */}
+        {selectedCategory === 'Sports Bars & Pubs' && (
+          <>
+            <Text style={styles.sectionTitle}>Pub Type</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowPubTypeDropdown(!showPubTypeDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedPubType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Pub Type Dropdown Menu */}
+            {showPubTypeDropdown && (
+              <View style={styles.dropdownMenu}>
+                {pubTypes.map((pubType, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedPubType(pubType);
+                      setShowPubTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedPubType === pubType && styles.dropdownItemTextActive
+                    ]}>
+                      {pubType}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Spa Type Filter - Only show when Massage & Spa is selected */}
+        {selectedCategory === 'Massage & Spa' && (
+          <>
+            <Text style={styles.sectionTitle}>Type</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowSpaTypeDropdown(!showSpaTypeDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedSpaType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Spa Type Dropdown Menu */}
+            {showSpaTypeDropdown && (
+              <View style={styles.dropdownMenu}>
+                {spaTypes.map((spaType, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedSpaType(spaType);
+                      setShowSpaTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedSpaType === spaType && styles.dropdownItemTextActive
+                    ]}>
+                      {spaType}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Sport Type Filter - Only show when Sports Activities is selected */}
+        {selectedCategory === 'Sports Activities' && (
+          <>
+            <Text style={styles.sectionTitle}>Sport Type</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowSportTypeDropdown(!showSportTypeDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedSportType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Sport Type Dropdown Menu */}
+            {showSportTypeDropdown && (
+              <View style={styles.dropdownMenu}>
+                {sportTypes.map((sportType, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedSportType(sportType);
+                      setShowSportTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedSportType === sportType && styles.dropdownItemTextActive
+                    ]}>
+                      {sportType}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Attraction Type Filter - Only show when Markets & Attractions is selected */}
+        {selectedCategory === 'Markets & Attractions' && (
+          <>
+            <Text style={styles.sectionTitle}>Attraction Type</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowAttractionTypeDropdown(!showAttractionTypeDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedAttractionType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Attraction Type Dropdown Menu */}
+            {showAttractionTypeDropdown && (
+              <View style={styles.dropdownMenu}>
+                {attractionTypes.map((attractionType, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedAttractionType(attractionType);
+                      setShowAttractionTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedAttractionType === attractionType && styles.dropdownItemTextActive
+                    ]}>
+                      {attractionType}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
         )}
 
         {/* Rating */}
@@ -149,19 +408,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+  scrollContentContainer: {
+    paddingTop: 70,
   },
   content: {
     flex: 1,

@@ -29,7 +29,6 @@
             padding-bottom: 10px;
         }
         .form-group { margin-bottom: 20px; }
-        .form-group.hidden { display: none; }
         label { display: block; margin-bottom: 5px; color: #555; font-weight: 600; }
         input, textarea, select {
             width: 100%;
@@ -87,29 +86,7 @@
         }
         .loading { text-align: center; padding: 20px; color: #666; }
         
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 5px;
-            transition: background 0.2s;
-        }
-        .checkbox-label:hover {
-            background: #f8f9fa;
-        }
-        .checkbox-label input[type="checkbox"] {
-            width: auto;
-            cursor: pointer;
-        }
-        
+        /* IMAGE UPLOAD STYLES */
         .image-upload-section {
             background: #f8f9fa;
             border: 2px dashed #667eea;
@@ -141,7 +118,9 @@
             overflow: hidden;
             border: 3px solid transparent;
         }
-        .image-preview-item.main-image { border-color: #27ae60; }
+        .image-preview-item.main-image {
+            border-color: #27ae60;
+        }
         .image-preview-item img {
             width: 100%;
             height: 150px;
@@ -207,122 +186,23 @@
                     <input type="text" id="name" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="category">Category *</label>
-                    <select id="category" required onchange="updateSubCategories()">
-                        <option value="">Select category...</option>
-                        <option value="Restaurants">Restaurants</option>
-                        <option value="Sports Bars & Pubs">Sports Bars & Pubs</option>
-                        <option value="Massage & Spa">Massage & Spa</option>
-                        <option value="Sports Activities">Sports Activities</option>
-                        <option value="Markets & Attractions">Markets & Attractions</option>
-                    </select>
-                </div>
-
-                <!-- CUISINE CHECKBOXES -->
-                <div class="form-group hidden" id="cuisineGroup">
-                    <label>Cuisine (Select all that apply)</label>
-                    <div class="checkbox-grid">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Thai">
-                            <span>Thai</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Burger">
-                            <span>Burger</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Chinese">
-                            <span>Chinese</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="French">
-                            <span>French</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Indian">
-                            <span>Indian</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="International">
-                            <span>International</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Mediterranean">
-                            <span>Mediterranean</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Mexican">
-                            <span>Mexican</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Pizza & Pasta">
-                            <span>Pizza & Pasta</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Spanish">
-                            <span>Spanish</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Steak">
-                            <span>Steak</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="cuisine" value="Swedish">
-                            <span>Swedish</span>
-                        </label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required onchange="updateSubCategories()">
+                            <option value="">Select category...</option>
+                            <option value="All">All</option>
+                            <option value="Restaurants">Restaurants</option>
+                            <option value="Sports Bars & Pubs">Sports Bars & Pubs</option>
+                            <option value="Massage & Spa">Massage & Spa</option>
+                            <option value="Sports Activities">Sports Activities</option>
+                            <option value="Markets & Attractions">Markets & Attractions</option>
+                        </select>
                     </div>
-                </div>
-
-                <!-- PUB TYPE SELECT -->
-                <div class="form-group hidden" id="pubTypeGroup">
-                    <label for="pub_type">Pub Type</label>
-                    <select id="pub_type">
-                        <option value="">Select pub type...</option>
-                        <option value="English Pub">English Pub</option>
-                        <option value="Irish Pub">Irish Pub</option>
-                        <option value="Sportbar">Sportbar</option>
-                    </select>
-                </div>
-
-                <!-- SPA TYPE CHECKBOXES -->
-                <div class="form-group hidden" id="spaTypeGroup">
-                    <label>Spa Type (Select all that apply)</label>
-                    <div class="checkbox-grid">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="spa_type" value="Massage">
-                            <span>Massage</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="spa_type" value="Spa">
-                            <span>Spa</span>
-                        </label>
+                    <div class="form-group">
+                        <label for="cuisine">Cuisine</label>
+                        <input type="text" id="cuisine" placeholder="e.g. Swedish & Thai">
                     </div>
-                </div>
-
-                <!-- SPORT TYPE SELECT -->
-                <div class="form-group hidden" id="sportTypeGroup">
-                    <label for="sport_type">Sport Type</label>
-                    <select id="sport_type">
-                        <option value="">Select sport type...</option>
-                        <option value="Golf">Golf</option>
-                        <option value="Padel">Padel</option>
-                        <option value="Tennis">Tennis</option>
-                        <option value="Watersports">Watersports</option>
-                    </select>
-                </div>
-
-                <!-- ATTRACTION TYPE SELECT -->
-                <div class="form-group hidden" id="attractionTypeGroup">
-                    <label for="attraction_type">Attraction Type</label>
-                    <select id="attraction_type">
-                        <option value="">Select attraction type...</option>
-                        <option value="Beaches">Beaches</option>
-                        <option value="Culture">Culture</option>
-                        <option value="Markets">Markets</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Tours">Tours</option>
-                    </select>
                 </div>
 
                 <div class="form-group">
@@ -368,6 +248,7 @@
                     <input type="url" id="website" placeholder="https://venue.com">
                 </div>
 
+                <!-- SOCIAL MEDIA SECTION -->
                 <div class="form-group">
                     <label>📱 Social Media</label>
                     <div class="form-row">
@@ -380,6 +261,7 @@
                     </div>
                 </div>
 
+                <!-- OPENING HOURS SECTION -->
                 <div class="form-group">
                     <label>⏰ Opening Hours</label>
                     <div class="hours-row">
@@ -412,36 +294,38 @@
                     </div>
                 </div>
 
+                <!-- FEATURES SECTION -->
                 <div class="form-group">
                     <label>✨ Features</label>
-                    <div class="checkbox-grid">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_indoor">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_indoor" style="width: auto;">
                             <span>🏠 Indoor Seating</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_outdoor">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_outdoor" style="width: auto;">
                             <span>☀️ Outdoor Seating</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_creditcard">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_creditcard" style="width: auto;">
                             <span>💳 Accept Credit Cards</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_seaview">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_seaview" style="width: auto;">
                             <span>🌊 Sea View</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_smoking">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_smoking" style="width: auto;">
                             <span>🚬 Smoking Area</span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_wheelchair">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="feature_wheelchair" style="width: auto;">
                             <span>♿ Wheelchair Accessible</span>
                         </label>
                     </div>
                 </div>
 
+                <!-- IMAGE UPLOAD SECTION -->
                 <div class="form-group">
                     <label>📸 Images (Max 6) - First image will be the main card image</label>
                     <div class="image-upload-section">
@@ -471,10 +355,8 @@
                         <select id="price_range" required>
                             <option value="">Select price...</option>
                             <option value="€">€ (Budget)</option>
-                            <option value="€€">€€ (Affordable)</option>
-                            <option value="€€€">€€€ (Moderate)</option>
-                            <option value="€€€€">€€€€ (Upscale)</option>
-                            <option value="€€€€€">€€€€€ (Luxury)</option>
+                            <option value="€€">€€ (Moderate)</option>
+                            <option value="€€€">€€€ (Expensive)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -507,28 +389,6 @@
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let editingVenue = null;
         let uploadedImages = [];
-
-        function updateSubCategories() {
-            const category = document.getElementById('category').value;
-            
-            document.getElementById('cuisineGroup').classList.add('hidden');
-            document.getElementById('pubTypeGroup').classList.add('hidden');
-            document.getElementById('spaTypeGroup').classList.add('hidden');
-            document.getElementById('sportTypeGroup').classList.add('hidden');
-            document.getElementById('attractionTypeGroup').classList.add('hidden');
-            
-            if (category === 'Restaurants') {
-                document.getElementById('cuisineGroup').classList.remove('hidden');
-            } else if (category === 'Sports Bars & Pubs') {
-                document.getElementById('pubTypeGroup').classList.remove('hidden');
-            } else if (category === 'Massage & Spa') {
-                document.getElementById('spaTypeGroup').classList.remove('hidden');
-            } else if (category === 'Sports Activities') {
-                document.getElementById('sportTypeGroup').classList.remove('hidden');
-            } else if (category === 'Markets & Attractions') {
-                document.getElementById('attractionTypeGroup').classList.remove('hidden');
-            }
-        }
 
         document.addEventListener('DOMContentLoaded', () => { loadVenues(); });
 
@@ -598,6 +458,7 @@
                 sunday: document.getElementById('sunday_hours').value
             };
             
+            // Collect features
             const features = [];
             if (document.getElementById('feature_indoor').checked) features.push('Indoor Seating');
             if (document.getElementById('feature_outdoor').checked) features.push('Outdoor Seating');
@@ -606,20 +467,10 @@
             if (document.getElementById('feature_smoking').checked) features.push('Smoking Area');
             if (document.getElementById('feature_wheelchair').checked) features.push('Wheelchair Accessible');
             
-            const cuisineCheckboxes = document.querySelectorAll('input[name="cuisine"]:checked');
-            const selectedCuisines = Array.from(cuisineCheckboxes).map(cb => cb.value);
-            
-            const spaTypeCheckboxes = document.querySelectorAll('input[name="spa_type"]:checked');
-            const selectedSpaTypes = Array.from(spaTypeCheckboxes).map(cb => cb.value);
-            
             const venueData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
-                cuisine: selectedCuisines.length > 0 ? selectedCuisines : null,
-                pub_type: document.getElementById('pub_type').value || null,
-                spa_type: selectedSpaTypes.length > 0 ? selectedSpaTypes : null,
-                sport_type: document.getElementById('sport_type').value || null,
-                attraction_type: document.getElementById('attraction_type').value || null,
+                cuisine: document.getElementById('cuisine').value,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
                 location_short: document.getElementById('location_short').value,
@@ -677,18 +528,13 @@
                         <div class="venue-info">
                             <h3>${v.name}</h3>
                             <p><strong>Category:</strong> ${v.category || 'N/A'}</p>
-                            ${v.cuisine && v.cuisine.length > 0 ? `<p><strong>Cuisine:</strong> ${Array.isArray(v.cuisine) ? v.cuisine.join(', ') : v.cuisine}</p>` : ''}
-                            ${v.pub_type ? `<p><strong>Pub Type:</strong> ${v.pub_type}</p>` : ''}
-                            ${v.spa_type && v.spa_type.length > 0 ? `<p><strong>Spa Type:</strong> ${Array.isArray(v.spa_type) ? v.spa_type.join(', ') : v.spa_type}</p>` : ''}
-                            ${v.sport_type ? `<p><strong>Sport Type:</strong> ${v.sport_type}</p>` : ''}
-                            ${v.attraction_type ? `<p><strong>Attraction Type:</strong> ${v.attraction_type}</p>` : ''}
                             <p><strong>Location:</strong> ${v.location_short || v.location}</p>
                             <p><strong>Price:</strong> ${v.price_range} | <strong>Rating:</strong> ${v.rating || 0} ⭐</p>
                             ${v.images && v.images.length > 0 ? `<p><strong>Images:</strong> ${v.images.length} 📸</p>` : ''}
                         </div>
                         <div class="venue-actions">
                             <button class="edit" onclick="editVenue(${v.id})">Edit</button>
-                            <button class="delete" onclick="deleteVenue(${v.id}, '${v.name.replace(/'/g, "\\'")}')">Delete</button>
+                            <button class="delete" onclick="deleteVenue(${v.id}, '${v.name}')">Delete</button>
                         </div>
                     </div>
                 `).join('');
@@ -701,59 +547,13 @@
             try {
                 const { data, error } = await supabaseClient.from('venues').select('*').eq('id', id).single();
                 if (error) throw error;
-                
                 editingVenue = id;
                 document.getElementById('formTitle').textContent = '✏️ Edit Venue';
                 document.getElementById('submitBtn').textContent = 'Update Venue';
                 document.getElementById('cancelBtn').style.display = 'inline-block';
-                
                 document.getElementById('name').value = data.name || '';
                 document.getElementById('category').value = data.category || '';
-                updateSubCategories();
-                
-                // Handle cuisine - parse if it's a JSON string
-                let cuisineArray = [];
-                if (data.cuisine) {
-                    if (Array.isArray(data.cuisine)) {
-                        cuisineArray = data.cuisine;
-                    } else if (typeof data.cuisine === 'string') {
-                        try {
-                            cuisineArray = JSON.parse(data.cuisine);
-                        } catch (e) {
-                            cuisineArray = [data.cuisine];
-                        }
-                    }
-                }
-                console.log('Cuisine from DB:', data.cuisine);
-                console.log('Cuisine array:', cuisineArray);
-                document.querySelectorAll('input[name="cuisine"]').forEach(checkbox => {
-                    const shouldBeChecked = cuisineArray.includes(checkbox.value);
-                    console.log('Checkbox:', checkbox.value, 'Should be checked:', shouldBeChecked);
-                    checkbox.checked = shouldBeChecked;
-                });
-                
-                document.getElementById('pub_type').value = data.pub_type || '';
-                
-                // Handle spa_type - parse if it's a JSON string
-                let spaTypeArray = [];
-                if (data.spa_type) {
-                    if (Array.isArray(data.spa_type)) {
-                        spaTypeArray = data.spa_type;
-                    } else if (typeof data.spa_type === 'string') {
-                        try {
-                            spaTypeArray = JSON.parse(data.spa_type);
-                        } catch (e) {
-                            spaTypeArray = [data.spa_type];
-                        }
-                    }
-                }
-                document.querySelectorAll('input[name="spa_type"]').forEach(checkbox => {
-                    checkbox.checked = spaTypeArray.includes(checkbox.value);
-                });
-                
-                document.getElementById('sport_type').value = data.sport_type || '';
-                document.getElementById('attraction_type').value = data.attraction_type || '';
-                
+                document.getElementById('cuisine').value = data.cuisine || '';
                 document.getElementById('description').value = data.description || '';
                 document.getElementById('location').value = data.location || '';
                 document.getElementById('location_short').value = data.location_short || '';
@@ -782,6 +582,7 @@
                 
                 document.getElementById('registered_date').value = data.registered_date || '';
                 
+                // Load features checkboxes
                 document.getElementById('feature_indoor').checked = data.features && data.features.includes('Indoor Seating');
                 document.getElementById('feature_outdoor').checked = data.features && data.features.includes('Outdoor Seating');
                 document.getElementById('feature_creditcard').checked = data.features && data.features.includes('Accept Credit Cards');
@@ -803,13 +604,8 @@
             document.getElementById('submitBtn').textContent = 'Add Venue';
             document.getElementById('cancelBtn').style.display = 'none';
             document.getElementById('venueForm').reset();
-            
-            document.querySelectorAll('input[name="cuisine"]').forEach(cb => cb.checked = false);
-            document.querySelectorAll('input[name="spa_type"]').forEach(cb => cb.checked = false);
-            
             uploadedImages = [];
             renderImagePreviews();
-            updateSubCategories();
         }
 
         async function deleteVenue(id, name) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import FilterScreen from './FilterScreen';
+import EventsFilterScreen from './EventsFilterScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -351,7 +351,7 @@ export default function EventsPage({ onNavigate }) {
         >
           {/* Filter content (65% from top) */}
           <View style={styles.filterContent}>
-            <FilterScreen 
+            <EventsFilterScreen 
               onClose={closeFilter}
               onApply={(filters) => {
                 console.log('Applied filters:', filters);
