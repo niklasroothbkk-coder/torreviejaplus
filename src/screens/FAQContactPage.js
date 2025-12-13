@@ -347,8 +347,8 @@ export default function FAQContactPage({ onNavigate }) {
               <TouchableOpacity 
                 style={styles.logoutButton}
                 onPress={() => {
-                  setIsLoggedIn(true);
                   closeMenu();
+                  setTimeout(() => onNavigate && onNavigate('signin'), 300);
                 }}
               >
                 <Text style={styles.logoutText}>Sign In / Sign Up</Text>
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 12,
-    color: '#C0C0C0',
+    color: '#000000',
     fontWeight: '500',
   },
   bottomLogoSection: {

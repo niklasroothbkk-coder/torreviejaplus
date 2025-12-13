@@ -23,6 +23,7 @@ import HappyHourEventDetailsScreen from './src/screens/Events/HappyHourEventDeta
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
 import VenuesPage from './src/screens/VenuesPage';
 import VenueDetailsScreen from './src/screens/Venues/VenueDetailsScreen';
+import SignInScreen from './src/screens/SignInScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -215,7 +216,7 @@ export default function App() {
               {/* Sign In / Sign Up */}
               <TouchableOpacity 
                 style={styles.logoutButton}
-                onPress={closeMenu}
+                onPress={() => handleMenuItemPress('signin')}
               >
                 <Text style={styles.logoutText}>Sign In / Sign Up</Text>
               </TouchableOpacity>
@@ -300,6 +301,8 @@ export default function App() {
         return <VenuesPage onNavigate={handleMenuItemPress} />;
       case 'venuedetails':
         return <VenueDetailsScreen onNavigate={handleMenuItemPress} />;
+      case 'signin':
+        return <SignInScreen onNavigate={handleMenuItemPress} />;
       default:
         return <EventsPage onNavigate={handleMenuItemPress} />;
     }
@@ -442,7 +445,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 12,
-    color: '#C0C0C0',
+    color: '#000000',
     fontWeight: '500',
   },
   bottomLogoSection: {
