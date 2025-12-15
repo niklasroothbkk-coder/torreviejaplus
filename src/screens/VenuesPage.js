@@ -193,7 +193,7 @@ export default function VenuesPage({ onNavigate }) {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../../assets/backgrounds/BG1.png')} 
+        source={require('../../assets/backgrounds/BG2.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />

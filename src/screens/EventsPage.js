@@ -108,7 +108,7 @@ export default function EventsPage({ onNavigate }) {
     <View style={styles.container}>
       {/* Background Image */}
       <Image 
-        source={require('../../assets/backgrounds/BG1.png')} 
+        source={require('../../assets/backgrounds/BG2.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />

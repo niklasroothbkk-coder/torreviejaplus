@@ -24,6 +24,11 @@ import WalkthroughScreen from './src/screens/WalkthroughScreen';
 import VenuesPage from './src/screens/VenuesPage';
 import VenueDetailsScreen from './src/screens/Venues/VenueDetailsScreen';
 import SignInScreen from './src/screens/SignInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPW';
+import VerifyOTPScreen from './src/screens/VerifyOTP';
+import NewPasswordScreen from './src/screens/NewPW';
+import AllDoneScreen from './src/screens/AllDone';
 
 const { width } = Dimensions.get('window');
 
@@ -303,6 +308,16 @@ export default function App() {
         return <VenueDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'signin':
         return <SignInScreen onNavigate={handleMenuItemPress} />;
+      case 'signup':
+        return <SignUpScreen onNavigate={handleMenuItemPress} />;
+      case 'forgotpassword':
+        return <ForgotPasswordScreen onNavigate={handleMenuItemPress} />;
+      case 'verifyotp':
+        return <VerifyOTPScreen onNavigate={handleMenuItemPress} />;
+      case 'newpassword':
+        return <NewPasswordScreen onNavigate={handleMenuItemPress} />;
+      case 'alldone':
+        return <AllDoneScreen onNavigate={handleMenuItemPress} />;
       default:
         return <EventsPage onNavigate={handleMenuItemPress} />;
     }

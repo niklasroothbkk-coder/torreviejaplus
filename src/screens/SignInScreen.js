@@ -5,9 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 export default function SignInScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [name, setName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
 
   const handleEmailSignIn = async () => {
@@ -20,21 +17,6 @@ export default function SignInScreen({ onNavigate }) {
     Alert.alert('Coming Soon', 'Email sign in will be available soon!');
   };
 
-  const handleEmailSignUp = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
-
-    // TODO: Implement Supabase auth signup
-    Alert.alert('Coming Soon', 'Email sign up will be available soon!');
-  };
-
   const handleFacebookLogin = () => {
     // TODO: Implement Facebook OAuth
     Alert.alert('Coming Soon', 'Facebook login will be available soon!');
@@ -45,13 +27,23 @@ export default function SignInScreen({ onNavigate }) {
     Alert.alert('Coming Soon', 'Google login will be available soon!');
   };
 
+  const handleAppleLogin = () => {
+    // TODO: Implement Apple OAuth
+    Alert.alert('Coming Soon', 'Apple login will be available soon!');
+  };
+
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/backgrounds/SplashBG.png')} style={styles.backgroundImage} />
+      {/* Background Image */}
+      <Image 
+        source={require('../../assets/backgrounds/BG2.png')} 
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
       
-      {/* Header */}
+      {/* Header with Back Button */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('home')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('splash')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
       </View>
@@ -61,57 +53,17 @@ export default function SignInScreen({ onNavigate }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo/Title Section */}
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>{isSignUp ? 'Create Account' : 'Welcome Back'}</Text>
-          <Text style={styles.subtitle}>
-            {isSignUp 
-              ? 'Sign up to save favorites and write reviews' 
-              : 'Sign in to access everything!'}
-          </Text>
-        </View>
+        {/* Title */}
+        <Text style={styles.title}>Sign In</Text>
 
-        {/* Social Login Buttons */}
-        <View style={styles.socialSection}>
-          <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLogin}>
-            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-            <Text style={styles.socialButtonText}>Continue with Facebook</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
-            <Ionicons name="logo-google" size={24} color="#DB4437" />
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* Email/Password Form */}
-        <View style={styles.formSection}>
-          {isSignUp && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your name"
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-              />
-            </View>
-          )}
-
+        {/* White Card Container */}
+        <View style={styles.card}>
+          {/* Email Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Email (Username)</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Enter email"
               placeholderTextColor="#999"
               value={email}
               onChangeText={setEmail}
@@ -120,92 +72,63 @@ export default function SignInScreen({ onNavigate }) {
             />
           </View>
 
+          {/* Password Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Enter your password"
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity 
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={20} 
-                  color="#666" 
-                />
-              </TouchableOpacity>
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Password"
+              placeholderTextColor="#999"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
           </View>
 
-          {!isSignUp && (
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
-          )}
+          {/* Forgot Password */}
+          <TouchableOpacity style={styles.forgotPassword} onPress={() => onNavigate('forgotpassword')}>
+            <Text style={styles.forgotPasswordText}>Forgot password</Text>
+          </TouchableOpacity>
 
-          {/* Keep me signed in checkbox */}
-          {!isSignUp && (
-            <TouchableOpacity 
-              style={styles.checkboxContainer}
-              onPress={() => setKeepSignedIn(!keepSignedIn)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, keepSignedIn && styles.checkboxChecked]}>
-                {keepSignedIn && (
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                )}
-              </View>
-              <Text style={styles.checkboxLabel}>Keep me signed in</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Submit Button */}
+          {/* Sign In Button */}
           <TouchableOpacity 
-            style={styles.submitButton} 
-            onPress={isSignUp ? handleEmailSignUp : handleEmailSignIn}
+            style={styles.signInButton} 
+            onPress={handleEmailSignIn}
           >
-            <Text style={styles.submitButtonText}>
-              {isSignUp ? 'Sign Up' : 'Sign In'}
-            </Text>
+            <Text style={styles.signInButtonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Toggle Sign In / Sign Up */}
-        <View style={styles.toggleSection}>
-          <Text style={styles.toggleText}>
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-          </Text>
-          <TouchableOpacity onPress={() => {
-            setIsSignUp(!isSignUp);
-            setName('');
-            setEmail('');
-            setPassword('');
-          }}>
-            <Text style={styles.toggleLink}>
-              {isSignUp ? 'Sign In' : 'Sign Up'}
-            </Text>
+        {/* Don't have an account */}
+        <View style={styles.signUpSection}>
+          <Text style={styles.signUpText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => onNavigate('signup')}>
+            <Text style={styles.signUpLink}>Sign up</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Terms & Privacy */}
-        {isSignUp && (
-          <View style={styles.termsSection}>
-            <Text style={styles.termsText}>
-              By signing up, you agree to our{' '}
-              <Text style={styles.termsLink}>Terms of Service</Text>
-              {' '}and{' '}
-              <Text style={styles.termsLink}>Privacy Policy</Text>
-            </Text>
-          </View>
-        )}
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>Or Continue With</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Social Login Buttons */}
+        <View style={styles.socialButtons}>
+          <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
+            <Ionicons name="logo-google" size={28} color="#DB4437" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLogin}>
+            <Ionicons name="logo-facebook" size={28} color="#1877F2" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.socialButton} onPress={handleAppleLogin}>
+            <Ionicons name="logo-apple" size={28} color="#000000" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -233,8 +156,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -243,172 +164,114 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
-  titleSection: {
-    marginTop: 20,
-    marginBottom: 32,
-    alignItems: 'center',
-  },
   title: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 11,
-    color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 16,
+    marginTop: 20,
+    marginBottom: 30,
   },
-  socialSection: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  card: {
     backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    gap: 12,
-  },
-  socialButtonText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#333',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    fontSize: 11,
-    color: '#FFFFFF',
-    marginHorizontal: 16,
-  },
-  formSection: {
-    gap: 16,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   inputGroup: {
-    gap: 8,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#333',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 11,
+    paddingVertical: 14,
+    fontSize: 12,
     color: '#000',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  passwordContainer: {
-    position: 'relative',
-  },
-  passwordInput: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingRight: 50,
-    fontSize: 11,
-    color: '#000',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 16,
-    top: 12,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginTop: -8,
+    marginBottom: 24,
   },
   forgotPasswordText: {
     fontSize: 11,
     color: '#0077B6',
     fontWeight: '600',
   },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: -4,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxChecked: {
+  signInButton: {
     backgroundColor: '#0077B6',
-    borderColor: '#0077B6',
-  },
-  checkboxLabel: {
-    fontSize: 11,
-    color: '#FFFFFF',
-    fontWeight: '500',
-  },
-  submitButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    borderRadius: 25,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
+    shadowColor: '#0077B6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  submitButtonText: {
+  signInButtonText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0077B6',
+    color: '#FFFFFF',
   },
-  toggleSection: {
+  signUpSection: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
-    gap: 6,
+    marginTop: 20,
   },
-  toggleText: {
+  signUpText: {
     fontSize: 11,
-    color: '#FFFFFF',
+    color: '#333',
   },
-  toggleLink: {
+  signUpLink: {
     fontSize: 11,
     color: '#0077B6',
     fontWeight: '700',
   },
-  termsSection: {
-    marginTop: 24,
-    paddingHorizontal: 16,
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 30,
   },
-  termsText: {
-    fontSize: 10,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 14,
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#999',
   },
-  termsLink: {
-    color: '#0077B6',
-    fontWeight: '600',
+  dividerText: {
+    fontSize: 11,
+    color: '#666',
+    marginHorizontal: 16,
+    fontWeight: '500',
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginBottom: 30,
+  },
+  socialButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
