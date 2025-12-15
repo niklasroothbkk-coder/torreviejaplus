@@ -15,11 +15,11 @@ export default function SignInScreen({ onNavigate }) {
     }
 
     // Call Supabase Sign In
-    const result = await signInWithEmail(email, password);
+    const result = await signInWithEmail(email, password, keepSignedIn);
     
     if (result.success) {
       Alert.alert('Success', 'Logged in successfully!', [
-        { text: 'OK', onPress: () => onNavigate('events') }
+        { text: 'OK', onPress: () => onNavigate('userprofile') }
       ]);
     } else {
       Alert.alert('Error', result.error);
@@ -98,6 +98,20 @@ export default function SignInScreen({ onNavigate }) {
           {/* Forgot Password */}
           <TouchableOpacity style={styles.forgotPassword} onPress={() => onNavigate('forgotpassword')}>
             <Text style={styles.forgotPasswordText}>Forgot password</Text>
+          </TouchableOpacity>
+
+          {/* Keep me signed in checkbox */}
+          <TouchableOpacity 
+            style={styles.checkboxContainer}
+            onPress={() => setKeepSignedIn(!keepSignedIn)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, keepSignedIn && styles.checkboxChecked]}>
+              {keepSignedIn && (
+                <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+              )}
+            </View>
+            <Text style={styles.checkboxLabel}>Keep me signed in</Text>
           </TouchableOpacity>
 
           {/* Sign In Button */}
@@ -210,12 +224,36 @@ const styles = StyleSheet.create({
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   forgotPasswordText: {
     fontSize: 11,
     color: '#0077B6',
     fontWeight: '600',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 24,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#0077B6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#0077B6',
+    borderColor: '#0077B6',
+  },
+  checkboxLabel: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
   },
   signInButton: {
     backgroundColor: '#0077B6',

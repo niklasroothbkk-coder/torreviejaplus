@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Animated, Dimen
 import { Ionicons } from '@expo/vector-icons';
 import EventsPage from './src/screens/EventsPage';
 import ProfileScreen from './src/screens/ProfilScreenLogin';
+import UserProfileScreen from './src/screens/UserProfileScreen';
 import CreateEventScreen from './src/screens/CreateEventScreen';
 import FAQContactPage from './src/screens/FAQContactPage';
 import ShareAirportTaxiPage from './src/screens/ShareAirportTaxiPage';
@@ -271,6 +272,8 @@ export default function App() {
         return <CreateEventScreen onNavigate={handleMenuItemPress} />;
       case 'profile':
         return <ProfileScreen onNavigate={handleMenuItemPress} />;
+      case 'userprofile':
+        return <UserProfileScreen onNavigate={handleMenuItemPress} />;
       case 'faq':
         return <FAQContactPage onNavigate={handleMenuItemPress} />;
       case 'taxi':

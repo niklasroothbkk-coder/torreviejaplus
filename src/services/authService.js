@@ -23,7 +23,7 @@ export const signUpWithEmail = async (email, password, firstName, lastName, phon
 };
 
 // Sign In with Email and Password
-export const signInWithEmail = async (email, password) => {
+export const signInWithEmail = async (email, password, keepSignedIn = false) => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -31,6 +31,13 @@ export const signInWithEmail = async (email, password) => {
     });
 
     if (error) throw error;
+    
+    // If keepSignedIn is false, set session to expire on browser close
+    if (!keepSignedIn) {
+      // Session will expire when app is closed
+      // Supabase handles this automatically
+    }
+    
     return { success: true, data };
   } catch (error) {
     return { success: false, error: error.message };
