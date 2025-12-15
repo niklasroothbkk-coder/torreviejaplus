@@ -105,10 +105,6 @@ export default function UserProfileScreen({ onNavigate }) {
             </TouchableOpacity>
           </View>
           <Text style={styles.profileName}>{name || 'User'}</Text>
-          <View style={styles.locationContainer}>
-            <Ionicons name="location" size={14} color="#0077B6" />
-            <Text style={styles.locationText}>Hua Hin</Text>
-          </View>
         </View>
 
         {/* Form Card */}
@@ -324,9 +320,9 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   locationContainer: {
