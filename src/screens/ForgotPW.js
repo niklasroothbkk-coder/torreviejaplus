@@ -23,8 +23,8 @@ export default function ForgotPasswordScreen({ onNavigate }) {
     const result = await sendPasswordResetOTP(email);
     
     if (result.success) {
-      Alert.alert('Success', 'Password reset code sent to your email!', [
-        { text: 'OK', onPress: () => onNavigate('verifyotp') }
+      Alert.alert('Success', 'A 6-digit code has been sent to your email!', [
+        { text: 'OK', onPress: () => onNavigate('verifyotp', { email }) }
       ]);
     } else {
       Alert.alert('Error', result.error);

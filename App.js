@@ -41,6 +41,7 @@ export default function App() {
   const [shouldOpenMenu, setShouldOpenMenu] = useState(false);
   const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState(false);
   const [rides, setRides] = useState([]);
+  const [authParams, setAuthParams] = useState({});
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -59,7 +60,7 @@ export default function App() {
     }).start(() => setMenuOpen(false));
   };
 
-  const handleMenuItemPress = (screen) => {
+  const handleMenuItemPress = (screen, params = {}) => {
     closeMenu();
     setTimeout(() => {
       if (screen === 'splash') {
@@ -72,6 +73,7 @@ export default function App() {
         setShowSplash(false);
         setShowWalkthrough(false);
         setCurrentScreen(screen);
+        setAuthParams(params);
       }
     }, 300);
   };
@@ -313,9 +315,9 @@ export default function App() {
       case 'forgotpassword':
         return <ForgotPasswordScreen onNavigate={handleMenuItemPress} />;
       case 'verifyotp':
-        return <VerifyOTPScreen onNavigate={handleMenuItemPress} />;
+        return <VerifyOTPScreen onNavigate={handleMenuItemPress} email={authParams.email} />;
       case 'newpassword':
-        return <NewPasswordScreen onNavigate={handleMenuItemPress} />;
+        return <NewPasswordScreen onNavigate={handleMenuItemPress} email={authParams.email} otpCode={authParams.otpCode} />;
       case 'alldone':
         return <AllDoneScreen onNavigate={handleMenuItemPress} />;
       default:

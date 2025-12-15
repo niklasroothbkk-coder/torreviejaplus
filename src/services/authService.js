@@ -48,11 +48,14 @@ export const signOut = async () => {
   }
 };
 
-// Send Password Reset Email with OTP
+// Send Password Reset OTP (6-digit code)
 export const sendPasswordResetOTP = async (email) => {
   try {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'huahin://reset-password',
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email: email,
+      options: {
+        shouldCreateUser: false, // Don't create user if they don't exist
+      }
     });
 
     if (error) throw error;
@@ -62,31 +65,25 @@ export const sendPasswordResetOTP = async (email) => {
   }
 };
 
-// Verify OTP
-export const verifyOTP = async (email, token) => {
+// Verify OTP and Update Password
+export const verifyOTPAndUpdatePassword = async (email, token, newPassword) => {
   try {
-    const { data, error } = await supabase.auth.verifyOtp({
+    // First verify the OTP
+    const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
       email: email,
       token: token,
-      type: 'recovery',
+      type: 'email',
     });
 
-    if (error) throw error;
-    return { success: true, data };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-};
+    if (verifyError) throw verifyError;
 
-// Update Password
-export const updatePassword = async (newPassword) => {
-  try {
-    const { data, error } = await supabase.auth.updateUser({
+    // Then update the password
+    const { data: updateData, error: updateError } = await supabase.auth.updateUser({
       password: newPassword,
     });
 
-    if (error) throw error;
-    return { success: true, data };
+    if (updateError) throw updateError;
+    return { success: true, data: updateData };
   } catch (error) {
     return { success: false, error: error.message };
   }

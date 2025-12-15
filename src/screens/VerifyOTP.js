@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { verifyOTP, sendPasswordResetOTP } from '../services/authService';
+import { sendPasswordResetOTP } from '../services/authService';
 
-export default function VerifyOTPScreen({ onNavigate, route }) {
+export default function VerifyOTPScreen({ onNavigate, email }) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef([]);
 
@@ -36,17 +36,24 @@ export default function VerifyOTPScreen({ onNavigate, route }) {
       return;
     }
 
-    // Navigate to create new password screen
-    // Note: The actual OTP verification happens when updating password
-    onNavigate('newpassword', { otpCode });
+    // Navigate to create new password screen with email and OTP
+    onNavigate('newpassword', { email, otpCode });
   };
 
   const handleResend = async () => {
-    // Get email from previous screen - for now we'll show a simple alert
-    // In production, you'd pass the email through navigation params
-    Alert.alert('Success', 'A new code has been sent to your email!');
-    setOtp(['', '', '', '', '', '']);
-    inputRefs.current[0]?.focus();
+    if (!email) {
+      Alert.alert('Error', 'Email not found. Please go back and try again.');
+      return;
+    }
+    
+    const result = await sendPasswordResetOTP(email);
+    if (result.success) {
+      Alert.alert('Success', 'A new 6-digit code has been sent to your email!');
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    } else {
+      Alert.alert('Error', result.error);
+    }
   };
 
   return (

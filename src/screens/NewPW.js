@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { updatePassword } from '../services/authService';
+import { verifyOTPAndUpdatePassword } from '../services/authService';
 
-export default function NewPasswordScreen({ onNavigate }) {
+export default function NewPasswordScreen({ onNavigate, email, otpCode }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -25,8 +25,13 @@ export default function NewPasswordScreen({ onNavigate }) {
       return;
     }
 
-    // Update password in Supabase
-    const result = await updatePassword(newPassword);
+    if (!email || !otpCode) {
+      Alert.alert('Error', 'Missing email or verification code. Please try again.');
+      return;
+    }
+
+    // Verify OTP and update password
+    const result = await verifyOTPAndUpdatePassword(email, otpCode, newPassword);
     
     if (result.success) {
       onNavigate('alldone');
