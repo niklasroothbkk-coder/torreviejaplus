@@ -5,6 +5,7 @@ import { sendPasswordResetLink } from '../services/authService';
 
 export default function ForgotPasswordScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleContinue = async () => {
     if (!email) {
@@ -23,13 +24,7 @@ export default function ForgotPasswordScreen({ onNavigate }) {
     const result = await sendPasswordResetLink(email);
     
     if (result.success) {
-      Alert.alert(
-        'Check Your Email', 
-        'We\'ve sent you a password reset link. Click the link in the email to reset your password.',
-        [
-          { text: 'OK', onPress: () => onNavigate('signin') }
-        ]
-      );
+      setEmailSent(true);
     } else {
       Alert.alert('Error', result.error);
     }
@@ -55,27 +50,56 @@ export default function ForgotPasswordScreen({ onNavigate }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter email"
-              placeholderTextColor="#999"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+        {!emailSent ? (
+          <View style={styles.card}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter email"
+                placeholderTextColor="#999"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-          <TouchableOpacity 
-            style={styles.continueButton} 
-            onPress={handleContinue}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity 
+              style={styles.continueButton} 
+              onPress={handleContinue}
+            >
+              <Text style={styles.continueButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <View style={styles.successIconContainer}>
+              <Ionicons name="mail-outline" size={64} color="#0077B6" />
+            </View>
+            
+            <Text style={styles.successTitle}>Check Your Email</Text>
+            <Text style={styles.successMessage}>
+              We've sent a password reset link to{' '}
+              <Text style={styles.emailText}>{email}</Text>
+              .{' '}Click the link in the email, then come back here to continue.
+            </Text>
+
+            <TouchableOpacity 
+              style={styles.continueButton} 
+              onPress={() => onNavigate('newpassword')}
+            >
+              <Text style={styles.continueButtonText}>I've Clicked the Link</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.backToSignInButton} 
+              onPress={() => onNavigate('signin')}
+            >
+              <Text style={styles.backToSignInText}>Back to Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -161,5 +185,36 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  successIconContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  successMessage: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 32,
+  },
+  emailText: {
+    fontWeight: '700',
+    color: '#0077B6',
+  },
+  backToSignInButton: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  backToSignInText: {
+    fontSize: 12,
+    color: '#0077B6',
+    fontWeight: '600',
   },
 });
