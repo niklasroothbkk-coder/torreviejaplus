@@ -54,7 +54,7 @@ export const sendPasswordResetOTP = async (email) => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        shouldCreateUser: false, // Don't create user if they don't exist
+        shouldCreateUser: false,
       }
     });
 
