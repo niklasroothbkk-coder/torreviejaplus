@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { updatePassword } from '../services/authService';
 
 export default function NewPasswordScreen({ onNavigate }) {
   const [newPassword, setNewPassword] = useState('');
@@ -24,9 +25,14 @@ export default function NewPasswordScreen({ onNavigate }) {
       return;
     }
 
-    // TODO: Implement Supabase password update
-    // Navigate to success screen
-    onNavigate('alldone');
+    // Update password in Supabase
+    const result = await updatePassword(newPassword);
+    
+    if (result.success) {
+      onNavigate('alldone');
+    } else {
+      Alert.alert('Error', result.error);
+    }
   };
 
   return (

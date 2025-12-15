@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { sendPasswordResetOTP } from '../services/authService';
 
 export default function ForgotPasswordScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
@@ -18,9 +19,16 @@ export default function ForgotPasswordScreen({ onNavigate }) {
       return;
     }
 
-    // TODO: Implement Supabase password reset with Email OTP
-    // Navigate to OTP verification screen
-    onNavigate('verifyotp');
+    // Send password reset OTP
+    const result = await sendPasswordResetOTP(email);
+    
+    if (result.success) {
+      Alert.alert('Success', 'Password reset code sent to your email!', [
+        { text: 'OK', onPress: () => onNavigate('verifyotp') }
+      ]);
+    } else {
+      Alert.alert('Error', result.error);
+    }
   };
 
   return (

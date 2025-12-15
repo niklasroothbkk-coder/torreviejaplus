@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { signInWithEmail } from '../services/authService';
 
 export default function SignInScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
@@ -13,8 +14,16 @@ export default function SignInScreen({ onNavigate }) {
       return;
     }
 
-    // TODO: Implement Supabase auth
-    Alert.alert('Coming Soon', 'Email sign in will be available soon!');
+    // Call Supabase Sign In
+    const result = await signInWithEmail(email, password);
+    
+    if (result.success) {
+      Alert.alert('Success', 'Logged in successfully!', [
+        { text: 'OK', onPress: () => onNavigate('events') }
+      ]);
+    } else {
+      Alert.alert('Error', result.error);
+    }
   };
 
   const handleFacebookLogin = () => {
