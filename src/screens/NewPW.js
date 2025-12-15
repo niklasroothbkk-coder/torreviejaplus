@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { verifyOTPAndUpdatePassword } from '../services/authService';
+import { updatePassword } from '../services/authService';
 
-export default function NewPasswordScreen({ onNavigate, email, otpCode }) {
+export default function NewPasswordScreen({ onNavigate }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -25,13 +25,8 @@ export default function NewPasswordScreen({ onNavigate, email, otpCode }) {
       return;
     }
 
-    if (!email || !otpCode) {
-      Alert.alert('Error', 'Missing email or verification code. Please try again.');
-      return;
-    }
-
-    // Verify OTP and update password
-    const result = await verifyOTPAndUpdatePassword(email, otpCode, newPassword);
+    // Update password
+    const result = await updatePassword(newPassword);
     
     if (result.success) {
       onNavigate('alldone');
@@ -49,7 +44,7 @@ export default function NewPasswordScreen({ onNavigate, email, otpCode }) {
       />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('verifyotp')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('signin')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create password</Text>

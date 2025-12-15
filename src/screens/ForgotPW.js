@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sendPasswordResetOTP } from '../services/authService';
+import { sendPasswordResetLink } from '../services/authService';
 
 export default function ForgotPasswordScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
@@ -19,13 +19,17 @@ export default function ForgotPasswordScreen({ onNavigate }) {
       return;
     }
 
-    // Send password reset OTP
-    const result = await sendPasswordResetOTP(email);
+    // Send password reset magic link
+    const result = await sendPasswordResetLink(email);
     
     if (result.success) {
-      Alert.alert('Success', 'A 6-digit code has been sent to your email!', [
-        { text: 'OK', onPress: () => onNavigate('verifyotp', { email }) }
-      ]);
+      Alert.alert(
+        'Check Your Email', 
+        'We\'ve sent you a password reset link. Click the link in the email to reset your password.',
+        [
+          { text: 'OK', onPress: () => onNavigate('signin') }
+        ]
+      );
     } else {
       Alert.alert('Error', result.error);
     }

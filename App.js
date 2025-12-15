@@ -26,7 +26,6 @@ import VenueDetailsScreen from './src/screens/Venues/VenueDetailsScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPW';
-import VerifyOTPScreen from './src/screens/VerifyOTP';
 import NewPasswordScreen from './src/screens/NewPW';
 import AllDoneScreen from './src/screens/AllDone';
 
@@ -314,10 +313,8 @@ export default function App() {
         return <SignUpScreen onNavigate={handleMenuItemPress} />;
       case 'forgotpassword':
         return <ForgotPasswordScreen onNavigate={handleMenuItemPress} />;
-      case 'verifyotp':
-        return <VerifyOTPScreen onNavigate={handleMenuItemPress} email={authParams.email} />;
       case 'newpassword':
-        return <NewPasswordScreen onNavigate={handleMenuItemPress} email={authParams.email} otpCode={authParams.otpCode} />;
+        return <NewPasswordScreen onNavigate={handleMenuItemPress} />;
       case 'alldone':
         return <AllDoneScreen onNavigate={handleMenuItemPress} />;
       default:

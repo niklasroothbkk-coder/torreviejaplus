@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CountryPicker from 'react-native-country-picker-modal';
 import { signUpWithEmail } from '../services/authService';
 
 export default function SignUpScreen({ onNavigate }) {
@@ -8,6 +9,8 @@ export default function SignUpScreen({ onNavigate }) {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [countryCode, setCountryCode] = useState('TH');
+  const [callingCode, setCallingCode] = useState('66');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [rememberPassword, setRememberPassword] = useState(false);
@@ -30,8 +33,11 @@ export default function SignUpScreen({ onNavigate }) {
       return;
     }
 
+    // Add +callingCode prefix to phone number
+    const fullPhoneNumber = '+' + callingCode + phoneNumber;
+
     // Call Supabase Sign Up
-    const result = await signUpWithEmail(email, password, firstName, lastName, phoneNumber);
+    const result = await signUpWithEmail(email, password, firstName, lastName, fullPhoneNumber);
     
     if (result.success) {
       Alert.alert('Success', 'Account created successfully! Please sign in.', [
@@ -115,14 +121,29 @@ export default function SignUpScreen({ onNavigate }) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Phone number</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="+88 0"
-              placeholderTextColor="#999"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-            />
+            <View style={styles.phoneInputContainer}>
+              <CountryPicker
+                countryCode={countryCode}
+                withFilter
+                withFlag
+                withCallingCode
+                withEmoji
+                onSelect={(country) => {
+                  setCountryCode(country.cca2);
+                  setCallingCode(country.callingCode[0]);
+                }}
+                containerButtonStyle={styles.countryPickerButton}
+              />
+              <Text style={styles.phonePrefix}>+{callingCode}</Text>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder=""
+                placeholderTextColor="#999"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+              />
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -301,6 +322,28 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     top: 14,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+  },
+  countryPickerButton: {
+    marginRight: 8,
+  },
+  phonePrefix: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0077B6',
+    marginRight: 8,
+  },
+  phoneInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 12,
+    color: '#000',
   },
   checkboxContainer: {
     flexDirection: 'row',
