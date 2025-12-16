@@ -274,15 +274,35 @@
                     </div>
                 </div>
 
-                <!-- PUB TYPE SELECT -->
+                <!-- PUB TYPE CHECKBOXES -->
                 <div class="form-group hidden" id="pubTypeGroup">
-                    <label for="pub_type">Pub Type</label>
-                    <select id="pub_type">
-                        <option value="">Select pub type...</option>
-                        <option value="English Pub">English Pub</option>
-                        <option value="Irish Pub">Irish Pub</option>
-                        <option value="Sportbar">Sportbar</option>
-                    </select>
+                    <label>Pub Type (Select all that apply)</label>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="English Pub">
+                            <span>English Pub</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="Irish Pub">
+                            <span>Irish Pub</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="Sportbar">
+                            <span>Sportbar</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="Live Band">
+                            <span>Live Band</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="Serve Food">
+                            <span>Serve Food</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pub_types" value="Sport on TV">
+                            <span>Sport on TV</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- SPA TYPE CHECKBOXES -->
@@ -290,11 +310,11 @@
                     <label>Spa Type (Select all that apply)</label>
                     <div class="checkbox-grid">
                         <label class="checkbox-label">
-                            <input type="checkbox" name="spa_type" value="Massage">
+                            <input type="checkbox" name="spa_types" value="Massage">
                             <span>Massage</span>
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" name="spa_type" value="Spa">
+                            <input type="checkbox" name="spa_types" value="Spa">
                             <span>Spa</span>
                         </label>
                     </div>
@@ -609,17 +629,20 @@
             const cuisineCheckboxes = document.querySelectorAll('input[name="cuisine"]:checked');
             const selectedCuisines = Array.from(cuisineCheckboxes).map(cb => cb.value);
             
-            const spaTypeCheckboxes = document.querySelectorAll('input[name="spa_type"]:checked');
+            const pubTypeCheckboxes = document.querySelectorAll('input[name="pub_types"]:checked');
+            const selectedPubTypes = Array.from(pubTypeCheckboxes).map(cb => cb.value);
+            
+            const spaTypeCheckboxes = document.querySelectorAll('input[name="spa_types"]:checked');
             const selectedSpaTypes = Array.from(spaTypeCheckboxes).map(cb => cb.value);
             
             const venueData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 cuisine: selectedCuisines.length > 0 ? selectedCuisines : null,
-                pub_type: document.getElementById('pub_type').value || null,
-                spa_type: selectedSpaTypes.length > 0 ? selectedSpaTypes : null,
-                sport_type: document.getElementById('sport_type').value || null,
-                attraction_type: document.getElementById('attraction_type').value || null,
+                pub_types: selectedPubTypes.length > 0 ? selectedPubTypes : null,
+                spa_types: selectedSpaTypes.length > 0 ? selectedSpaTypes : null,
+                sport_types: document.getElementById('sport_type').value ? [document.getElementById('sport_type').value] : null,
+                attraction_types: document.getElementById('attraction_type').value ? [document.getElementById('attraction_type').value] : null,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
                 location_short: document.getElementById('location_short').value,
@@ -678,10 +701,10 @@
                             <h3>${v.name}</h3>
                             <p><strong>Category:</strong> ${v.category || 'N/A'}</p>
                             ${v.cuisine && v.cuisine.length > 0 ? `<p><strong>Cuisine:</strong> ${Array.isArray(v.cuisine) ? v.cuisine.join(', ') : v.cuisine}</p>` : ''}
-                            ${v.pub_type ? `<p><strong>Pub Type:</strong> ${v.pub_type}</p>` : ''}
-                            ${v.spa_type && v.spa_type.length > 0 ? `<p><strong>Spa Type:</strong> ${Array.isArray(v.spa_type) ? v.spa_type.join(', ') : v.spa_type}</p>` : ''}
-                            ${v.sport_type ? `<p><strong>Sport Type:</strong> ${v.sport_type}</p>` : ''}
-                            ${v.attraction_type ? `<p><strong>Attraction Type:</strong> ${v.attraction_type}</p>` : ''}
+                            ${v.pub_types && v.pub_types.length > 0 ? `<p><strong>Pub Types:</strong> ${Array.isArray(v.pub_types) ? v.pub_types.join(', ') : v.pub_types}</p>` : ''}
+                            ${v.spa_types && v.spa_types.length > 0 ? `<p><strong>Spa Types:</strong> ${Array.isArray(v.spa_types) ? v.spa_types.join(', ') : v.spa_types}</p>` : ''}
+                            ${v.sport_types && v.sport_types.length > 0 ? `<p><strong>Sport Types:</strong> ${Array.isArray(v.sport_types) ? v.sport_types.join(', ') : v.sport_types}</p>` : ''}
+                            ${v.attraction_types && v.attraction_types.length > 0 ? `<p><strong>Attraction Types:</strong> ${Array.isArray(v.attraction_types) ? v.attraction_types.join(', ') : v.attraction_types}</p>` : ''}
                             <p><strong>Location:</strong> ${v.location_short || v.location}</p>
                             <p><strong>Price:</strong> ${v.price_range} | <strong>Rating:</strong> ${v.rating || 0} ⭐</p>
                             ${v.images && v.images.length > 0 ? `<p><strong>Images:</strong> ${v.images.length} 📸</p>` : ''}
@@ -711,7 +734,6 @@
                 document.getElementById('category').value = data.category || '';
                 updateSubCategories();
                 
-                // Handle cuisine - parse if it's a JSON string
                 let cuisineArray = [];
                 if (data.cuisine) {
                     if (Array.isArray(data.cuisine)) {
@@ -724,35 +746,44 @@
                         }
                     }
                 }
-                console.log('Cuisine from DB:', data.cuisine);
-                console.log('Cuisine array:', cuisineArray);
                 document.querySelectorAll('input[name="cuisine"]').forEach(checkbox => {
-                    const shouldBeChecked = cuisineArray.includes(checkbox.value);
-                    console.log('Checkbox:', checkbox.value, 'Should be checked:', shouldBeChecked);
-                    checkbox.checked = shouldBeChecked;
+                    checkbox.checked = cuisineArray.includes(checkbox.value);
                 });
                 
-                document.getElementById('pub_type').value = data.pub_type || '';
-                
-                // Handle spa_type - parse if it's a JSON string
-                let spaTypeArray = [];
-                if (data.spa_type) {
-                    if (Array.isArray(data.spa_type)) {
-                        spaTypeArray = data.spa_type;
-                    } else if (typeof data.spa_type === 'string') {
+                let pubTypesArray = [];
+                if (data.pub_types) {
+                    if (Array.isArray(data.pub_types)) {
+                        pubTypesArray = data.pub_types;
+                    } else if (typeof data.pub_types === 'string') {
                         try {
-                            spaTypeArray = JSON.parse(data.spa_type);
+                            pubTypesArray = JSON.parse(data.pub_types);
                         } catch (e) {
-                            spaTypeArray = [data.spa_type];
+                            pubTypesArray = [data.pub_types];
                         }
                     }
                 }
-                document.querySelectorAll('input[name="spa_type"]').forEach(checkbox => {
-                    checkbox.checked = spaTypeArray.includes(checkbox.value);
+                document.querySelectorAll('input[name="pub_types"]').forEach(checkbox => {
+                    checkbox.checked = pubTypesArray.includes(checkbox.value);
                 });
                 
-                document.getElementById('sport_type').value = data.sport_type || '';
-                document.getElementById('attraction_type').value = data.attraction_type || '';
+                let spaTypesArray = [];
+                if (data.spa_types) {
+                    if (Array.isArray(data.spa_types)) {
+                        spaTypesArray = data.spa_types;
+                    } else if (typeof data.spa_types === 'string') {
+                        try {
+                            spaTypesArray = JSON.parse(data.spa_types);
+                        } catch (e) {
+                            spaTypesArray = [data.spa_types];
+                        }
+                    }
+                }
+                document.querySelectorAll('input[name="spa_types"]').forEach(checkbox => {
+                    checkbox.checked = spaTypesArray.includes(checkbox.value);
+                });
+                
+                document.getElementById('sport_type').value = (data.sport_types && data.sport_types[0]) || '';
+                document.getElementById('attraction_type').value = (data.attraction_types && data.attraction_types[0]) || '';
                 
                 document.getElementById('description').value = data.description || '';
                 document.getElementById('location').value = data.location || '';
@@ -805,7 +836,8 @@
             document.getElementById('venueForm').reset();
             
             document.querySelectorAll('input[name="cuisine"]').forEach(cb => cb.checked = false);
-            document.querySelectorAll('input[name="spa_type"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="pub_types"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="spa_types"]').forEach(cb => cb.checked = false);
             
             uploadedImages = [];
             renderImagePreviews();

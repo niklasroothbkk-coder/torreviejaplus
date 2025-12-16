@@ -18,7 +18,7 @@ export default function VenuesPage({ onNavigate }) {
   const [activeFilters, setActiveFilters] = useState({
     category: null,
     cuisine: null,
-    pubType: null,
+    pubTypes: [], // Changed to array for multiple selection
     spaType: null,
     sportType: null,
     attractionType: null,
@@ -111,7 +111,7 @@ export default function VenuesPage({ onNavigate }) {
         category: venue.category || 'Restaurant',
         location: venue.location_short || venue.location,
         cuisine: venue.cuisine,
-        pubType: venue.pub_type,
+        pubTypes: venue.pub_types || [], // Array for multiple pub types
         spaType: venue.spa_type,
         sportType: venue.sport_type,
         attractionType: venue.attraction_type,
@@ -144,9 +144,13 @@ export default function VenuesPage({ onNavigate }) {
       filtered = filtered.filter(venue => venue.cuisine === activeFilters.cuisine);
     }
 
-    // Filter by pub type (only for Sports Bars & Pubs)
-    if (activeFilters.pubType && activeFilters.pubType !== 'All') {
-      filtered = filtered.filter(venue => venue.pubType === activeFilters.pubType);
+    // Filter by pub types (only for Sports Bars & Pubs) - MULTIPLE SELECTION
+    if (activeFilters.pubTypes && activeFilters.pubTypes.length > 0) {
+      filtered = filtered.filter(venue => {
+        if (!venue.pubTypes || venue.pubTypes.length === 0) return false;
+        // Check if venue has ANY of the selected pub types
+        return activeFilters.pubTypes.some(filterType => venue.pubTypes.includes(filterType));
+      });
     }
 
     // Filter by spa type (only for Massage & Spa)
@@ -176,12 +180,12 @@ export default function VenuesPage({ onNavigate }) {
     if (activeFilters.priceRange && activeFilters.priceRange !== 'all') {
       filtered = filtered.filter(venue => {
         if (!venue.priceRange) return false;
-        const priceValue = venue.priceRange.length; // $ = 1, $ = 2, $$ = 3, $$ = 4
+        const priceValue = venue.priceRange.length; // $ = 1, $$ = 2, $$$ = 3, $$$$ = 4
         
         if (activeFilters.priceRange === '1-50') {
-          return priceValue <= 2; // $ or $
+          return priceValue <= 2; // $ or $$
         } else if (activeFilters.priceRange === '51-100') {
-          return priceValue >= 3; // $$ or $$
+          return priceValue >= 3; // $$$ or $$$$
         }
         return true;
       });
@@ -429,6 +433,11 @@ export default function VenuesPage({ onNavigate }) {
                 console.log('Applied filters:', filters);
                 setActiveFilters({
                   category: filters.category,
+                  cuisine: filters.cuisine,
+                  pubTypes: filters.pubTypes || [], // Array for multiple pub types
+                  spaType: filters.spaType,
+                  sportType: filters.sportType,
+                  attractionType: filters.attractionType,
                   ratings: filters.ratings,
                   priceRange: filters.priceRange
                 });

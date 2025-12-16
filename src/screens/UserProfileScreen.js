@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentUser, updatePassword, signOut } from '../services/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function UserProfileScreen({ onNavigate }) {
   const [user, setUser] = useState(null);
@@ -10,6 +11,10 @@ export default function UserProfileScreen({ onNavigate }) {
   const [phone, setPhone] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
 
   useEffect(() => {
     loadUserProfile();
@@ -26,27 +31,36 @@ export default function UserProfileScreen({ onNavigate }) {
   };
 
   const handleUpdateProfile = async () => {
-    // TODO: Implement profile update
-    Alert.alert('Success', 'Profile updated successfully!');
+    setAlertTitle('Success');
+    setAlertMessage('Profile updated successfully!');
+    setShowAlert(true);
   };
 
   const handleChangePassword = async () => {
     if (!newPassword) {
-      Alert.alert('Error', 'Please enter a new password');
+      setAlertTitle('Error');
+      setAlertMessage('Please enter a new password');
+      setShowAlert(true);
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      setAlertTitle('Error');
+      setAlertMessage('Password must be at least 6 characters');
+      setShowAlert(true);
       return;
     }
 
     const result = await updatePassword(newPassword);
     if (result.success) {
-      Alert.alert('Success', 'Password changed successfully!');
+      setAlertTitle('Success');
+      setAlertMessage('Password changed successfully!');
+      setShowAlert(true);
       setNewPassword('');
     } else {
-      Alert.alert('Error', result.error);
+      setAlertTitle('Error');
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
@@ -214,14 +228,22 @@ export default function UserProfileScreen({ onNavigate }) {
 
         <TouchableOpacity 
           style={styles.navButton}
-          onPress={() => Alert.alert('Coming Soon', 'Favorites feature coming soon!')}
+          onPress={() => {
+            setAlertTitle('Coming Soon');
+            setAlertMessage('Favorites feature coming soon!');
+            setShowAlert(true);
+          }}
         >
           <Ionicons name="create-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.navButton}
-          onPress={() => Alert.alert('Coming Soon', 'Favorites feature coming soon!')}
+          onPress={() => {
+            setAlertTitle('Coming Soon');
+            setAlertMessage('Favorites feature coming soon!');
+            setShowAlert(true);
+          }}
         >
           <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -235,6 +257,19 @@ export default function UserProfileScreen({ onNavigate }) {
           </View>
         </TouchableOpacity>
       </View>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setShowAlert(false);
+          if (alertAction) {
+            alertAction();
+            setAlertAction(null);
+          }
+        }}
+      />
     </View>
   );
 }

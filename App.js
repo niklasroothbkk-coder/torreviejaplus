@@ -309,7 +309,7 @@ export default function App() {
       case 'venues':
         return <VenuesPage onNavigate={handleMenuItemPress} />;
       case 'venuedetails':
-        return <VenueDetailsScreen onNavigate={handleMenuItemPress} />;
+  return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} />;
       case 'signin':
         return <SignInScreen onNavigate={handleMenuItemPress} />;
       case 'signup':

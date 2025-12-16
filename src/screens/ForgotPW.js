@@ -2,21 +2,29 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sendPasswordResetLink } from '../services/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function ForgotPasswordScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
 
   const handleContinue = async () => {
     if (!email) {
-      Alert.alert('Error', 'Please enter your email');
+      setAlertTitle('Error');
+      setAlertMessage('Please enter your email');
+      setShowAlert(true);
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      setAlertTitle('Error');
+      setAlertMessage('Please enter a valid email address');
+      setShowAlert(true);
       return;
     }
 
@@ -26,7 +34,9 @@ export default function ForgotPasswordScreen({ onNavigate }) {
     if (result.success) {
       setEmailSent(true);
     } else {
-      Alert.alert('Error', result.error);
+      setAlertTitle('Error');
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
@@ -101,6 +111,13 @@ export default function ForgotPasswordScreen({ onNavigate }) {
           </View>
         )}
       </ScrollView>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setShowAlert(false)}
+      />
     </View>
   );
 }

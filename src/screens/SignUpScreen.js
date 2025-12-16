@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import CountryPicker from 'react-native-country-picker-modal';
 import { signUpWithEmail } from '../services/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function SignUpScreen({ onNavigate }) {
   const [firstName, setFirstName] = useState('');
@@ -16,20 +17,30 @@ export default function SignUpScreen({ onNavigate }) {
   const [rememberPassword, setRememberPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !phoneNumber || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setAlertTitle('Error');
+      setAlertMessage('Please fill in all fields');
+      setShowAlert(true);
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setAlertTitle('Error');
+      setAlertMessage('Passwords do not match');
+      setShowAlert(true);
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      setAlertTitle('Error');
+      setAlertMessage('Password must be at least 6 characters');
+      setShowAlert(true);
       return;
     }
 
@@ -40,24 +51,33 @@ export default function SignUpScreen({ onNavigate }) {
     const result = await signUpWithEmail(email, password, firstName, lastName, fullPhoneNumber);
     
     if (result.success) {
-      Alert.alert('Success', 'Account created successfully! Please sign in.', [
-        { text: 'OK', onPress: () => onNavigate('signin') }
-      ]);
+      setAlertTitle('Success');
+      setAlertMessage('Account created successfully! Please sign in.');
+      setAlertAction(() => () => onNavigate('signin'));
+      setShowAlert(true);
     } else {
-      Alert.alert('Error', result.error);
+      setAlertTitle('Error');
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
   const handleFacebookSignUp = () => {
-    Alert.alert('Coming Soon', 'Facebook sign up will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Facebook sign up will be available soon!');
+    setShowAlert(true);
   };
 
   const handleGoogleSignUp = () => {
-    Alert.alert('Coming Soon', 'Google sign up will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Google sign up will be available soon!');
+    setShowAlert(true);
   };
 
   const handleAppleSignUp = () => {
-    Alert.alert('Coming Soon', 'Apple sign up will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Apple sign up will be available soon!');
+    setShowAlert(true);
   };
 
   return (
@@ -237,6 +257,19 @@ export default function SignUpScreen({ onNavigate }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setShowAlert(false);
+          if (alertAction) {
+            alertAction();
+            setAlertAction(null);
+          }
+        }}
+      />
     </View>
   );
 }

@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function FilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCuisine, setSelectedCuisine] = useState('All');
-  const [selectedPubType, setSelectedPubType] = useState('All');
+  const [selectedPubTypes, setSelectedPubTypes] = useState([]); // Changed to array for multiple selection
   const [selectedSpaType, setSelectedSpaType] = useState('All');
   const [selectedSportType, setSelectedSportType] = useState('All');
   const [selectedAttractionType, setSelectedAttractionType] = useState('All');
@@ -43,10 +43,12 @@ export default function FilterScreen({ onClose, onApply }) {
   ];
 
   const pubTypes = [
-    'All',
     'English Pub',
     'Irish Pub',
     'Sportbar',
+    'Live Band',
+    'Serve Food',
+    'Sport on TV',
   ];
 
   const spaTypes = [
@@ -90,11 +92,20 @@ export default function FilterScreen({ onClose, onApply }) {
     }
   };
 
+  // Toggle pub type selection (multiple selection)
+  const togglePubType = (pubType) => {
+    if (selectedPubTypes.includes(pubType)) {
+      setSelectedPubTypes(selectedPubTypes.filter(p => p !== pubType));
+    } else {
+      setSelectedPubTypes([...selectedPubTypes, pubType]);
+    }
+  };
+
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
       cuisine: selectedCategory === 'Restaurants' ? selectedCuisine : null,
-      pubType: selectedCategory === 'Sports Bars & Pubs' ? selectedPubType : null,
+      pubTypes: selectedCategory === 'Sports Bars & Pubs' ? selectedPubTypes : [],
       spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
       sportType: selectedCategory === 'Sports Activities' ? selectedSportType : null,
       attractionType: selectedCategory === 'Markets & Attractions' ? selectedAttractionType : null,
@@ -111,7 +122,7 @@ export default function FilterScreen({ onClose, onApply }) {
       setSelectedCuisine('All');
     }
     if (category !== 'Sports Bars & Pubs') {
-      setSelectedPubType('All');
+      setSelectedPubTypes([]);
     }
     if (category !== 'Massage & Spa') {
       setSelectedSpaType('All');
@@ -194,40 +205,32 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
-        {/* Pub Type Filter - Only show when Sports Bars & Pubs is selected */}
+        {/* Pub Type Filter - Only show when Sports Bars & Pubs is selected - MULTIPLE SELECTION */}
         {selectedCategory === 'Sports Bars & Pubs' && (
           <>
-            <Text style={styles.sectionTitle}>Pub Type</Text>
-            <TouchableOpacity 
-              style={styles.dropdown}
-              onPress={() => setShowPubTypeDropdown(!showPubTypeDropdown)}
-            >
-              <Text style={styles.dropdownText}>{selectedPubType}</Text>
-              <Ionicons name="chevron-down" size={20} color="#666" />
-            </TouchableOpacity>
-
-            {/* Pub Type Dropdown Menu */}
-            {showPubTypeDropdown && (
-              <View style={styles.dropdownMenu}>
-                {pubTypes.map((pubType, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setSelectedPubType(pubType);
-                      setShowPubTypeDropdown(false);
-                    }}
-                  >
-                    <Text style={[
-                      styles.dropdownItemText,
-                      selectedPubType === pubType && styles.dropdownItemTextActive
-                    ]}>
-                      {pubType}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+            <Text style={styles.sectionTitle}>Pub Type (Select Multiple)</Text>
+            <View style={styles.multiSelectContainer}>
+              {pubTypes.map((pubType, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.multiSelectButton,
+                    selectedPubTypes.includes(pubType) && styles.multiSelectButtonActive
+                  ]}
+                  onPress={() => togglePubType(pubType)}
+                >
+                  <Text style={[
+                    styles.multiSelectText,
+                    selectedPubTypes.includes(pubType) && styles.multiSelectTextActive
+                  ]}>
+                    {pubType}
+                  </Text>
+                  {selectedPubTypes.includes(pubType) && (
+                    <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" style={styles.checkIcon} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
           </>
         )}
 
@@ -463,6 +466,37 @@ const styles = StyleSheet.create({
   dropdownItemTextActive: {
     color: '#0077B6',
     fontWeight: '600',
+  },
+  // NEW: Multiple selection styles for pub types
+  multiSelectContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  multiSelectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#0077B6',
+  },
+  multiSelectButtonActive: {
+    backgroundColor: '#0077B6',
+  },
+  multiSelectText: {
+    fontSize: 11,
+    color: '#0077B6',
+    fontWeight: '500',
+  },
+  multiSelectTextActive: {
+    color: '#FFFFFF',
+  },
+  checkIcon: {
+    marginLeft: 2,
   },
   ratingContainer: {
     flexDirection: 'row',

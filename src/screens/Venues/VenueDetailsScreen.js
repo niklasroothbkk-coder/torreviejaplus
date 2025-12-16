@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
+import CustomAlert from '../../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -20,11 +21,16 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const scrollViewRef = React.useRef(null);
   const textInputRef = React.useRef(null);
   
+  // CustomAlert states
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  
   // Chat states
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // TODO: Connect to real auth
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     fetchVenueData();
@@ -35,7 +41,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId || 1}&select=*`,
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId}&select=*`,
         {
           method: 'GET',
           headers: {
@@ -60,7 +66,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const fetchReviews = async () => {
     try {
       const response = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId || 1}&select=*&order=created_at.desc`,
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=*&order=created_at.desc`,
         {
           method: 'GET',
           headers: {
@@ -79,14 +85,15 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
   const submitReview = async () => {
     if (!reviewText.trim() || selectedRating === 0) {
-      alert('Please select a rating and write a review');
+      setAlertTitle('Error');
+      setAlertMessage('Please select a rating and write a review');
+      setShowAlert(true);
       return;
     }
 
     try {
       setSubmitting(true);
       
-      // Insert review
       const reviewResponse = await fetch(
         'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews',
         {
@@ -98,7 +105,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             'Prefer': 'return=minimal'
           },
           body: JSON.stringify({
-            venue_id: venueId || 1,
+            venue_id: venueId,
             user_name: 'Anonymous User',
             rating: selectedRating,
             comment: reviewText
@@ -108,9 +115,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
       if (!reviewResponse.ok) throw new Error('Failed to submit review');
 
-      // Calculate new average rating
       const allReviews = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId || 1}&select=rating`,
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=rating`,
         {
           method: 'GET',
           headers: {
@@ -122,9 +128,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
       const reviewsData = await allReviews.json();
       const avgRating = reviewsData.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviewsData.length;
 
-      // Update venue rating and count
       await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId || 1}`,
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId}`,
         {
           method: 'PATCH',
           headers: {
@@ -139,18 +144,18 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         }
       );
 
-      Alert.alert(
-        'Thank You!',
-        'Your review is submitted successfully!',
-        [{ text: 'OK' }]
-      );
+      setAlertTitle('Thank You!');
+      setAlertMessage('Your review is submitted successfully!');
+      setShowAlert(true);
       setReviewText('');
       setSelectedRating(0);
       fetchVenueData();
       fetchReviews();
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
+      setAlertTitle('Error');
+      setAlertMessage('Failed to submit review. Please try again.');
+      setShowAlert(true);
     } finally {
       setSubmitting(false);
     }
@@ -246,10 +251,14 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`);
         break;
       case 'instagram':
-        alert('Please share via Instagram app');
+        setAlertTitle('Share');
+        setAlertMessage('Please share via Instagram app');
+        setShowAlert(true);
         break;
       case 'tiktok':
-        alert('Please share via TikTok app');
+        setAlertTitle('Share');
+        setAlertMessage('Please share via TikTok app');
+        setShowAlert(true);
         break;
       case 'twitter':
         Linking.openURL(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
@@ -260,14 +269,9 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
   const handleOpenBookingChat = () => {
     if (!isLoggedIn) {
-      Alert.alert(
-        'Login Required',
-        'Please login to make a booking.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => onNavigate('login') }
-        ]
-      );
+      setAlertTitle('Login Required');
+      setAlertMessage('Please login to make a booking.');
+      setShowAlert(true);
       return;
     }
     setChatModalOpen(true);
@@ -285,9 +289,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     
     setChatMessages([...chatMessages, newMessage]);
     setChatMessage('');
-    
-    // TODO: Send notification to venue owner
-    // TODO: Save message to database
   };
 
   const imageUrls = venueData.images || [];
@@ -296,7 +297,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     <View style={styles.container}>
       <Image source={require('../../../assets/backgrounds/BG2.png')} style={styles.backgroundImage} />
       
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('venues')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
@@ -312,7 +312,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               <Text style={styles.shareButtonText}>SHARE</Text>
             </TouchableOpacity>
 
-            {/* Share Dropdown Menu */}
             {showShareMenu && (
               <View style={styles.shareDropdown}>
                 <TouchableOpacity style={styles.shareOption} onPress={() => handleShare('facebook')}>
@@ -351,7 +350,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 25 }}
       >
-        {/* Image Gallery */}
         {imageUrls.length > 0 && (
           <View style={styles.imageContainer}>
             <FlatList
@@ -403,7 +401,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
           </View>
         )}
 
-        {/* Content Card */}
         <View style={styles.contentCard}>
           <Text style={styles.venueTitle}>{venueData.name}</Text>
           
@@ -433,7 +430,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
 
           <Text style={styles.description}>{venueData.description}</Text>
 
-          {/* Opening Hours */}
           {venueData.opening_hours && Object.values(venueData.opening_hours).some(hours => hours) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Open</Text>
@@ -449,7 +445,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
-          {/* Cuisine */}
           {venueData.cuisine && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Cuisine</Text>
@@ -475,46 +470,19 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
-          {/* Features & Amenities */}
           {venueData.features && venueData.features.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Features</Text>
               <View style={styles.featuresGrid}>
-                {venueData.features.map((feature, index) => {
-                  // Map features to icons
-                  let iconName = 'checkmark-circle';
-                  switch(feature) {
-                    case 'Indoor Seating':
-                      iconName = 'home';
-                      break;
-                    case 'Outdoor Seating':
-                      iconName = 'sunny';
-                      break;
-                    case 'Accept Credit Cards':
-                      iconName = 'card';
-                      break;
-                    case 'Sea view':
-                      iconName = 'water';
-                      break;
-                    case 'Smoking Area':
-                      iconName = 'cloud';
-                      break;
-                    case 'Wheelchair accessible':
-                      iconName = 'accessibility';
-                      break;
-                  }
-                  
-                  return (
-                    <View key={index} style={styles.featureTag}>
-                      <Text style={styles.featureText}>{feature}</Text>
-                    </View>
-                  );
-                })}
+                {venueData.features.map((feature, index) => (
+                  <View key={index} style={styles.featureTag}>
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
               </View>
             </View>
           )}
 
-          {/* Contact Details */}
           {(venueData.phone || venueData.email || venueData.website || venueData.whatsapp || venueData.line) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Contact Details</Text>
@@ -533,7 +501,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 </TouchableOpacity>
               )}
 
-              {/* WhatsApp & Line Icons */}
               {(venueData.whatsapp || venueData.line) && (
                 <View style={styles.contactIconsRow}>
                   {venueData.whatsapp && (
@@ -558,7 +525,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 </View>
               )}
 
-              {/* Social Media */}
               {(venueData.website || venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
                 <View style={styles.socialMediaSection}>
                   <Text style={styles.sectionTitle}>Social Media</Text>
@@ -613,7 +579,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
-          {/* Give a Review */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Give a Review</Text>
             
@@ -630,7 +595,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           </View>
 
-          {/* Write Review */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Write Review</Text>
             <Text style={styles.maxWords}>Max 250 words</Text>
@@ -652,7 +616,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </TouchableOpacity>
           </View>
 
-          {/* Reviews Section */}
           {reviews.length > 0 && (
             <View style={styles.section}>
               <View style={styles.reviewsHeader}>
@@ -692,14 +655,12 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         </View>
       </ScrollView>
 
-      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <TouchableOpacity style={styles.bookButton} onPress={handleOpenBookingChat}>
           <Text style={styles.bookButtonText}>Make a Booking (Chat)</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Chat Modal */}
       <Modal
         visible={chatModalOpen}
         transparent={true}
@@ -758,6 +719,13 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setShowAlert(false)}
+      />
     </View>
   );
 }
@@ -1011,13 +979,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: '#333',
-  },
-  socialTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 12,
   },
   socialButtons: {
     flexDirection: 'row',

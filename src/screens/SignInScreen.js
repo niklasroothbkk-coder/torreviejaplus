@@ -2,15 +2,22 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmail } from '../services/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function SignInScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
 
   const handleEmailSignIn = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      setAlertTitle('Error');
+      setAlertMessage('Please enter email and password');
+      setShowAlert(true);
       return;
     }
 
@@ -18,27 +25,33 @@ export default function SignInScreen({ onNavigate }) {
     const result = await signInWithEmail(email, password, keepSignedIn);
     
     if (result.success) {
-      Alert.alert('Success', 'Logged in successfully!', [
-        { text: 'OK', onPress: () => onNavigate('userprofile') }
-      ]);
+      setAlertTitle('Success');
+      setAlertMessage('Logged in successfully!');
+      setAlertAction(() => () => onNavigate('userprofile'));
+      setShowAlert(true);
     } else {
-      Alert.alert('Error', result.error);
+      setAlertTitle('Error');
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
   const handleFacebookLogin = () => {
-    // TODO: Implement Facebook OAuth
-    Alert.alert('Coming Soon', 'Facebook login will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Facebook login will be available soon!');
+    setShowAlert(true);
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    Alert.alert('Coming Soon', 'Google login will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Google login will be available soon!');
+    setShowAlert(true);
   };
 
   const handleAppleLogin = () => {
-    // TODO: Implement Apple OAuth
-    Alert.alert('Coming Soon', 'Apple login will be available soon!');
+    setAlertTitle('Coming Soon');
+    setAlertMessage('Apple login will be available soon!');
+    setShowAlert(true);
   };
 
   return (
@@ -153,6 +166,19 @@ export default function SignInScreen({ onNavigate }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setShowAlert(false);
+          if (alertAction) {
+            alertAction();
+            setAlertAction(null);
+          }
+        }}
+      />
     </View>
   );
 }

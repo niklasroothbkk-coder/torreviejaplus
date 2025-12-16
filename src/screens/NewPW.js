@@ -2,26 +2,37 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { updatePassword } from '../services/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function NewPasswordScreen({ onNavigate }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
 
   const handleContinue = async () => {
     if (!newPassword || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setAlertTitle('Error');
+      setAlertMessage('Please fill in all fields');
+      setShowAlert(true);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setAlertTitle('Error');
+      setAlertMessage('Passwords do not match');
+      setShowAlert(true);
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      setAlertTitle('Error');
+      setAlertMessage('Password must be at least 6 characters');
+      setShowAlert(true);
       return;
     }
 
@@ -29,9 +40,14 @@ export default function NewPasswordScreen({ onNavigate }) {
     const result = await updatePassword(newPassword);
     
     if (result.success) {
-      onNavigate('alldone');
+      setAlertTitle('Success');
+      setAlertMessage('Password changed successfully!');
+      setAlertAction(() => () => onNavigate('alldone'));
+      setShowAlert(true);
     } else {
-      Alert.alert('Error', result.error);
+      setAlertTitle('Error');
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
@@ -110,6 +126,19 @@ export default function NewPasswordScreen({ onNavigate }) {
           </TouchableOpacity>
         </View>
       </View>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setShowAlert(false);
+          if (alertAction) {
+            alertAction();
+            setAlertAction(null);
+          }
+        }}
+      />
     </View>
   );
 }
