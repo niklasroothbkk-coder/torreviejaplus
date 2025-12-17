@@ -11,7 +11,7 @@ export default function VenuesPage({ onNavigate }) {
   const [slideAnim] = useState(new Animated.Value(-width * 0.75));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [filterFadeAnim] = useState(new Animated.Value(0));
+  const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
   const [venues, setVenues] = useState([]);
   const [filteredVenues, setFilteredVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,17 +45,16 @@ export default function VenuesPage({ onNavigate }) {
 
   const openFilter = () => {
     setShowFilter(true);
-    filterFadeAnim.setValue(0);
-    Animated.timing(filterFadeAnim, {
-      toValue: 1,
-      duration: 500,
+    Animated.timing(filterSlideAnim, {
+      toValue: 0,
+      duration: 300,
       useNativeDriver: true,
     }).start();
   };
 
   const closeFilter = () => {
-    Animated.timing(filterFadeAnim, {
-      toValue: 0,
+    Animated.timing(filterSlideAnim, {
+      toValue: -Dimensions.get('window').height,
       duration: 300,
       useNativeDriver: true,
     }).start(() => setShowFilter(false));
@@ -420,21 +419,22 @@ export default function VenuesPage({ onNavigate }) {
         animationType="none"
         onRequestClose={closeFilter}
       >
-        <Animated.View 
-          style={[
-            styles.filterModalContainer,
-            { opacity: filterFadeAnim }
-          ]}
-        >
-          <View style={styles.filterContent}>
-            <FilterScreen 
+        <View style={styles.filterModalContainer}>
+          <Animated.View 
+            style={[
+              styles.filterBottomSheet,
+              { transform: [{ translateY: filterSlideAnim }] }
+            ]}
+          >
+            <View style={styles.filterHandle} />
+            <FilterScreen
               onClose={closeFilter}
               onApply={(filters) => {
                 console.log('Applied filters:', filters);
                 setActiveFilters({
                   category: filters.category,
                   cuisine: filters.cuisine,
-                  pubTypes: filters.pubTypes || [], // Array for multiple pub types
+                  pubTypes: filters.pubTypes || [],
                   spaType: filters.spaType,
                   sportType: filters.sportType,
                   attractionType: filters.attractionType,
@@ -444,14 +444,14 @@ export default function VenuesPage({ onNavigate }) {
                 closeFilter();
               }}
             />
-          </View>
+            </Animated.View>
           
           <TouchableOpacity 
             style={styles.filterOverlay}
             activeOpacity={1}
             onPress={closeFilter}
           />
-        </Animated.View>
+        </View>
       </Modal>
     </View>
   );
@@ -756,18 +756,29 @@ const styles = StyleSheet.create({
   },
   filterModalContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
-  },
-  filterOverlay: {
-    height: '30%',
     backgroundColor: 'transparent',
   },
-  filterContent: {
-    height: '70%',
+  filterOverlay: {
+    flex: 1,
+  },
+  filterBottomSheet: {
+    height: '65%',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  filterHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#CCCCCC',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
 });
