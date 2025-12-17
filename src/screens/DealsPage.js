@@ -10,7 +10,7 @@ export default function DealsPage({ onNavigate }) {
   const [slideAnim] = useState(new Animated.Value(-width * 0.75));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [filterFadeAnim] = useState(new Animated.Value(0));
+  const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -31,17 +31,16 @@ export default function DealsPage({ onNavigate }) {
 
   const openFilter = () => {
     setShowFilter(true);
-    filterFadeAnim.setValue(0);
-    Animated.timing(filterFadeAnim, {
-      toValue: 1,
-      duration: 500,
+    Animated.timing(filterSlideAnim, {
+      toValue: 0,
+      duration: 300,
       useNativeDriver: true,
     }).start();
   };
 
   const closeFilter = () => {
-    Animated.timing(filterFadeAnim, {
-      toValue: 0,
+    Animated.timing(filterSlideAnim, {
+      toValue: -Dimensions.get('window').height,
       duration: 300,
       useNativeDriver: true,
     }).start(() => setShowFilter(false));
@@ -247,7 +246,7 @@ export default function DealsPage({ onNavigate }) {
                 <Text style={styles.menuItemText}>Venues & Services</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.menuItem}
                 onPress={() => {
                   closeMenu();
@@ -255,13 +254,13 @@ export default function DealsPage({ onNavigate }) {
                 }}
               >
                 <Text style={styles.menuItemText}>Happenings & Events</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity 
                 style={[styles.menuItem, styles.activeMenuItem]}
                 onPress={closeMenu}
               >
-                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Great Deals</Text>
+                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Deals & Promotions</Text>
               </TouchableOpacity>
 
 <TouchableOpacity 
@@ -343,14 +342,14 @@ export default function DealsPage({ onNavigate }) {
         animationType="none"
         onRequestClose={closeFilter}
       >
-        <Animated.View 
-          style={[
-            styles.filterModalContainer,
-            { opacity: filterFadeAnim }
-          ]}
-        >
-          {/* Filter content (70% from top) */}
-          <View style={styles.filterContent}>
+        <View style={styles.filterModalContainer}>
+          <Animated.View 
+            style={[
+              styles.filterBottomSheet,
+              { transform: [{ translateY: filterSlideAnim }] }
+            ]}
+          >
+            <View style={styles.filterHandle} />
             <DealsFilterScreen 
               onClose={closeFilter}
               onApply={(filters) => {
@@ -358,15 +357,14 @@ export default function DealsPage({ onNavigate }) {
                 closeFilter();
               }}
             />
-          </View>
+          </Animated.View>
           
-          {/* Touchable overlay (30% at bottom) */}
           <TouchableOpacity 
             style={styles.filterOverlay}
             activeOpacity={1}
             onPress={closeFilter}
           />
-        </Animated.View>
+        </View>
       </Modal>
     </View>
   );
@@ -646,18 +644,29 @@ const styles = StyleSheet.create({
   },
   filterModalContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
+    backgroundColor: 'transparent',
   },
   filterOverlay: {
-    height: '30%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
   },
-  filterContent: {
-    height: '70%',
+  filterBottomSheet: {
+    height: '65%',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  filterHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#CCCCCC',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
 });

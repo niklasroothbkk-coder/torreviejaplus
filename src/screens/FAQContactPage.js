@@ -289,7 +289,7 @@ export default function FAQContactPage({ onNavigate }) {
                 <Text style={styles.menuItemText}>Venues & Services</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.menuItem}
                 onPress={() => {
                   closeMenu();
@@ -297,7 +297,7 @@ export default function FAQContactPage({ onNavigate }) {
                 }}
               >
                 <Text style={styles.menuItemText}>Happenings & Events</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity 
                 style={styles.menuItem}
@@ -306,7 +306,7 @@ export default function FAQContactPage({ onNavigate }) {
                   setTimeout(() => onNavigate && onNavigate('testdeals'), 300);
                 }}
               >
-                <Text style={styles.menuItemText}>Great Deals</Text>
+                <Text style={styles.menuItemText}>Deals & Promotions</Text>
               </TouchableOpacity>
 
 <TouchableOpacity 

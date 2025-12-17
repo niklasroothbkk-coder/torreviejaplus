@@ -313,7 +313,7 @@ export default function ShareAirportTaxiPage({ onNavigate, rides: ridesFromApp }
                 <Text style={styles.menuItemText}>Venues & Services</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.menuItem}
                 onPress={() => {
                   closeMenu();
@@ -321,7 +321,7 @@ export default function ShareAirportTaxiPage({ onNavigate, rides: ridesFromApp }
                 }}
               >
                 <Text style={styles.menuItemText}>Happenings & Events</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity 
                 style={styles.menuItem}
@@ -330,7 +330,7 @@ export default function ShareAirportTaxiPage({ onNavigate, rides: ridesFromApp }
                   setTimeout(() => onNavigate && onNavigate('testdeals'), 300);
                 }}
               >
-                <Text style={styles.menuItemText}>Great Deals</Text>
+                <Text style={styles.menuItemText}>Deals & Promotions</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 

@@ -268,15 +268,15 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 6,
     flexWrap: 'wrap',
   },
   ratingButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,

@@ -143,10 +143,6 @@ export default function App() {
             style={styles.splashLogo}
             resizeMode="contain"
           />
-          
-          <View style={styles.sloganContainer}>
-            <Text style={styles.sloganText}>My Hua Hin</Text>
-          </View>
         </View>
 
         {/* Slide-in Menu Modal */}
@@ -186,18 +182,18 @@ export default function App() {
                   <Text style={styles.menuItemText}>Venues & Services</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                {/* <TouchableOpacity 
                   style={styles.menuItem}
                   onPress={() => handleMenuItemPress('events')}
                 >
                   <Text style={styles.menuItemText}>Happenings & Events</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 <TouchableOpacity 
                   style={styles.menuItem}
                   onPress={() => handleMenuItemPress('testdeals')}
                 >
-                  <Text style={styles.menuItemText}>Great Deals</Text>
+                  <Text style={styles.menuItemText}>Deals & Promotions</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
