@@ -9,6 +9,7 @@ import FAQContactPage from './src/screens/FAQContactPage';
 import ShareAirportTaxiPage from './src/screens/ShareAirportTaxiPage';
 import AddRidePage from './src/screens/AddRidePage';
 import DealsPage from './src/screens/DealsPage';
+import DealDetailsScreen from './src/screens/Deals/DealDetailsScreen.js';
 import MeatballDetailsScreen from './src/screens/Deals/MeatballDetailsScreen';
 import HappyHourDetailsScreen from './src/screens/Deals/HappyHourDetailsScreen';
 import GolfDetailsScreen from './src/screens/Deals/GolfDetailsScreen';
@@ -279,6 +280,8 @@ export default function App() {
       case 'testdeals':
         return <DealsPage onNavigate={handleMenuItemPress} />;
       case 'dealdetails':
+        return <DealDetailsScreen onNavigate={handleMenuItemPress} dealId={authParams?.dealId} />;
+      case 'meatballdetails':
         return <MeatballDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'happyhourdetails':
         return <HappyHourDetailsScreen onNavigate={handleMenuItemPress} />;

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DealsFilterScreen from './DealsFilterScreen';
+import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,8 @@ export default function DealsPage({ onNavigate }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
+  const [deals, setDeals] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -46,68 +49,64 @@ export default function DealsPage({ onNavigate }) {
     }).start(() => setShowFilter(false));
   };
 
-  const deals = [
-    {
-      id: 1,
-      rating: 4.0,
-      title: 'Meatball Deal',
-      venue: 'Caramelos Café',
-      date: '2025-12-09 (14:00)',
-      price: '€10:00',
-      image: require('../../assets/deals/Meatballs.png'),
-    },
-    {
-      id: 2,
-      rating: 4.3,
-      title: 'Happy Hour',
-      venue: 'Bar Estrella',
-      date: 'Whole December',
-      price: 'Buy 1 Get 1',
-      image: require('../../assets/deals/HH.png'),
-    },
-    {
-      id: 3,
-      rating: 4.1,
-      title: 'Golf Special',
-      venue: 'Golf Club Torrevieja',
-       date: 'Whole December',
-      price: '50% off',
-      image: require('../../assets/deals/Golf.png'),
-    },
-    {
-      id: 4,
-      rating: 4.4,
-      title: 'Paella Day',
-      venue: 'Restaurante Mar',
-      date: '2025-12-10 (18:00)',
-      price: '€15:00',
-      image: require('../../assets/deals/Paella.png'),
-    },
-    {
-      id: 5,
-      rating: 4.4,
-      title: 'Tapas Night',
-      venue: 'La Tasca',
-      date: '2025-12-11 (19:00)',
-      price: '€12:00',
-      image: require('../../assets/deals/Tapas.png'),
-    },
-    {
-      id: 6,
-      rating: 4.0,
-      title: 'Jetski Adventure',
-      venue: 'Beach Sports Center',
-       date: 'Whole December',
-      price: '€10:00',
-      image: require('../../assets/deals/Jetski.png'),
-    },
-  ];
+  // Fetch deals from Supabase
+  useEffect(() => {
+    fetchDeals();
+  }, []);
+
+  const fetchDeals = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('deals')
+        .select(`
+          *,
+          venues!deals_venue_id_fkey(name, location_short)
+        `)
+        .eq('active', true)
+        .gte('deal_date', new Date().toISOString().split('T')[0])
+        .order('deal_date', { ascending: true });
+      
+      if (error) throw error;
+      
+      // Map data to match the format expected by the UI
+      const mappedDeals = data.map(deal => {
+        // Format time to HH:MM
+        let timeString = '';
+        if (deal.start_time) {
+          const startTime = deal.start_time.substring(0, 5); // Gets HH:MM from HH:MM:SS
+          timeString = ` (${startTime})`;
+          if (deal.end_time) {
+            const endTime = deal.end_time.substring(0, 5);
+            timeString = ` (${startTime}-${endTime})`;
+          }
+        }
+        
+        return {
+          id: deal.id,
+          rating: 0, // We don't have ratings on deals yet
+          title: deal.name,
+          venue: deal.venues?.name || 'Unknown Venue',
+          date: `${deal.deal_date}${timeString}`,
+          price: deal.price || 'N/A',
+          image: deal.image_url ? { uri: deal.image_url } : require('../../assets/deals/HH.png'),
+          category: deal.category,
+        };
+      });
+      
+      setDeals(mappedDeals);
+    } catch (error) {
+      console.error('Error fetching deals:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Background Image */}
       <Image 
-        source={require('../../assets/backgrounds/BG2.png')} 
+        source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -141,7 +140,7 @@ export default function DealsPage({ onNavigate }) {
 
         {/* Title */}
         <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>Top Deals</Text>
+          <Text style={styles.titleText}>Deals & Promotions</Text>
         </View>
       </View>
 
@@ -150,8 +149,21 @@ export default function DealsPage({ onNavigate }) {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.grid}>
-          {deals.map((deal, index) => (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0077B6" />
+            <Text style={styles.loadingText}>Loading deals...</Text>
+          </View>
+        ) : deals.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="pricetag-outline" size={64} color="#999" />
+            <Text style={styles.emptyTitle}>No Deals Yet</Text>
+            <Text style={styles.emptyText}>Check back soon for exciting deals and promotions!</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.grid}>
+              {deals.map((deal, index) => (
             <TouchableOpacity 
               key={deal.id} 
               style={[
@@ -159,19 +171,7 @@ export default function DealsPage({ onNavigate }) {
                 (index === 0 || index === 1) && styles.dealCardFeatured
               ]}
               onPress={() => {
-                if (deal.id === 1) {
-                  onNavigate && onNavigate('dealdetails');
-                } else if (deal.id === 2) {
-                  onNavigate && onNavigate('happyhourdetails');
-                } else if (deal.id === 3) {
-                  onNavigate && onNavigate('golfdetails');
-                } else if (deal.id === 4) {
-                  onNavigate && onNavigate('paelladetails');
-                } else if (deal.id === 5) {
-                  onNavigate && onNavigate('tapasdetails');
-                } else if (deal.id === 6) {
-                  onNavigate && onNavigate('jetskidetails');
-                }
+                onNavigate && onNavigate('dealdetails', { dealId: deal.id });
               }}
               activeOpacity={0.7}
             >
@@ -191,8 +191,6 @@ export default function DealsPage({ onNavigate }) {
                   <Text style={styles.venueText}>{deal.venue}</Text>
                 </View>
                 
-                <Text style={styles.dateText}>{deal.date}</Text>
-                
                 <Text style={styles.priceText}>Price: {deal.price}</Text>
               </View>
             </TouchableOpacity>
@@ -203,6 +201,8 @@ export default function DealsPage({ onNavigate }) {
         <TouchableOpacity style={styles.showMoreButton}>
           <Text style={styles.showMoreButtonText}>Show more</Text>
         </TouchableOpacity>
+      </>
+    )}
       </ScrollView>
 
       {/* Hamburger Menu Modal */}
@@ -378,8 +378,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    top: 60,
-    left: 0,
   },
   headerImageContainer: {
     position: 'relative',
@@ -553,6 +551,36 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
   },
   menuModalOverlay: {
     flex: 1,

@@ -14,7 +14,6 @@ export default function DealsFilterScreen({ onClose, onApply }) {
     'Sport Deals',
     'Tour Deals',
     'Pub & Bar Deals',
-    'Take Away Deal',
   ];
 
   const prices = ['€', '€€', '€€€'];

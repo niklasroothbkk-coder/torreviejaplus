@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Linking, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
 import CustomAlert from '../../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 
-export default function VenueDetailsScreen({ onNavigate, venueId }) {
-  const [reviewText, setReviewText] = useState('');
-  const [selectedRating, setSelectedRating] = useState(0);
+export default function DealDetailsScreen({ onNavigate, dealId }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [dealData, setDealData] = useState(null);
   const [venueData, setVenueData] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [visibleReviews, setVisibleReviews] = useState(3);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const flatListRef = React.useRef(null);
   const scrollViewRef = React.useRef(null);
-  const textInputRef = React.useRef(null);
   
   // CustomAlert states
   const [showAlert, setShowAlert] = useState(false);
@@ -33,131 +26,33 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    fetchVenueData();
-    fetchReviews();
-  }, [venueId]);
+    fetchDealData();
+  }, [dealId]);
 
-  const fetchVenueData = async () => {
+  const fetchDealData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId}&select=*`,
-        {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      
+      // Fetch deal with venue data
+      const { data: dealData, error: dealError } = await supabase
+        .from('deals')
+        .select(`
+          *,
+          venues!deals_venue_id_fkey(*)
+        `)
+        .eq('id', dealId)
+        .single();
 
-      const data = await response.json();
-      if (data && data.length > 0) {
-        setVenueData(data[0]);
+      if (dealError) throw dealError;
+      
+      if (dealData) {
+        setDealData(dealData);
+        setVenueData(dealData.venues);
       }
     } catch (error) {
-      console.error('Error fetching venue:', error);
+      console.error('Error fetching deal:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchReviews = async () => {
-    try {
-      const response = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=*&order=created_at.desc`,
-        {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const data = await response.json();
-      setReviews(data || []);
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    }
-  };
-
-  const submitReview = async () => {
-    if (!reviewText.trim() || selectedRating === 0) {
-      setAlertTitle('Error');
-      setAlertMessage('Please select a rating and write a review');
-      setShowAlert(true);
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      
-      const reviewResponse = await fetch(
-        'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews',
-        {
-          method: 'POST',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            venue_id: venueId,
-            user_name: 'Anonymous User',
-            rating: selectedRating,
-            comment: reviewText
-          })
-        }
-      );
-
-      if (!reviewResponse.ok) throw new Error('Failed to submit review');
-
-      const allReviews = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=rating`,
-        {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-          },
-        }
-      );
-      const reviewsData = await allReviews.json();
-      const avgRating = reviewsData.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviewsData.length;
-
-      await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            rating: Math.round(avgRating * 10) / 10,
-            review_count: reviewsData.length
-          })
-        }
-      );
-
-      setAlertTitle('Thank You!');
-      setAlertMessage('Your review is submitted successfully!');
-      setShowAlert(true);
-      setReviewText('');
-      setSelectedRating(0);
-      fetchVenueData();
-      fetchReviews();
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      setAlertTitle('Error');
-      setAlertMessage('Failed to submit review. Please try again.');
-      setShowAlert(true);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -169,57 +64,24 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     );
   }
 
-  if (!venueData) {
+  if (!dealData) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Venue not found</Text>
+        <Text>Deal not found</Text>
       </View>
     );
   }
 
-  const handleScrollEnd = (event) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / (width - 32));
-    setCurrentImageIndex(index);
-  };
-
-  const scrollToImage = (index) => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToIndex({ index, animated: true });
-      setCurrentImageIndex(index);
-    }
-  };
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(
-          <Ionicons key={i} name="star" size={14} color="#FFD700" />
-        );
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(
-          <Ionicons key={i} name="star-half" size={14} color="#FFD700" />
-        );
-      } else {
-        stars.push(
-          <Ionicons key={i} name="star-outline" size={14} color="#DDD" />
-        );
-      }
-    }
-    return stars;
-  };
-
   const handlePhonePress = () => {
-    if (venueData.phone) {
-      Linking.openURL(`tel:${venueData.phone}`);
+    const phone = dealData.phone || venueData?.phone;
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
     }
   };
 
   const handleSocialPress = (platform) => {
+    if (!venueData) return;
+    
     switch(platform) {
       case 'facebook':
         if (venueData.facebook) Linking.openURL(venueData.facebook);
@@ -237,14 +99,15 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         if (venueData.line) Linking.openURL(`https://line.me/R/ti/p/${venueData.line}`);
         break;
       case 'whatsapp':
-        if (venueData.whatsapp) Linking.openURL(`https://wa.me/${venueData.whatsapp.replace(/\s+/g, '')}`);
+        const whatsapp = dealData.phone || venueData.whatsapp;
+        if (whatsapp) Linking.openURL(`https://wa.me/${whatsapp.replace(/\s+/g, '')}`);
         break;
     }
   };
 
   const handleShare = (platform) => {
-    const shareUrl = `https://huahin.app/venue/${venueId}`;
-    const shareText = `Check out ${venueData?.name} on Hua Hin App!`;
+    const shareUrl = `https://huahin.app/deal/${dealId}`;
+    const shareText = `Check out ${dealData?.name} on Hua Hin App!`;
     
     switch(platform) {
       case 'facebook':
@@ -291,14 +154,23 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
     setChatMessage('');
   };
 
-  const imageUrls = venueData.images || [];
+  // Format date and time
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    return timeString.substring(0, 5); // HH:MM from HH:MM:SS
+  };
 
   return (
     <View style={styles.container}>
       <Image source={require('../../../assets/backgrounds/BG_ALL.png')} style={styles.backgroundImage} />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('venues')}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('deals')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 
@@ -350,89 +222,72 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 25 }}
       >
-        {imageUrls.length > 0 && (
+        {dealData.image_url && (
           <View style={styles.imageContainer}>
-            <FlatList
-              ref={flatListRef}
-              data={imageUrls}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              scrollEventThrottle={16}
-              decelerationRate="fast"
-              snapToInterval={width - 32}
-              snapToAlignment="center"
-              keyExtractor={(item, index) => index.toString()}
-              onMomentumScrollEnd={handleScrollEnd}
-              renderItem={({ item }) => (
-                <Image source={{ uri: item }} style={styles.venueImage} resizeMode="cover" />
-              )}
-            />
-            
-            {currentImageIndex > 0 && (
-              <TouchableOpacity 
-                style={styles.leftArrow}
-                onPress={() => scrollToImage(currentImageIndex - 1)}
-              >
-                <Ionicons name="chevron-back" size={50} color="#FFF" />
-              </TouchableOpacity>
-            )}
-            
-            {currentImageIndex < imageUrls.length - 1 && (
-              <TouchableOpacity 
-                style={styles.rightArrow}
-                onPress={() => scrollToImage(currentImageIndex + 1)}
-              >
-                <Ionicons name="chevron-forward" size={50} color="#FFF" />
-              </TouchableOpacity>
-            )}
-            
-            <View style={styles.dotContainer}>
-              {imageUrls.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    index === currentImageIndex && styles.activeDot
-                  ]}
-                />
-              ))}
-            </View>
+            <Image source={{ uri: dealData.image_url }} style={styles.dealImage} resizeMode="cover" />
           </View>
         )}
 
         <View style={styles.contentCard}>
-          <Text style={styles.venueTitle}>{venueData.name}</Text>
+          <Text style={styles.dealTitle}>{dealData.name}</Text>
           
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
-              <Ionicons name="location" size={14} color="#0077B6" />
-              <Text style={styles.metaText}>{venueData.location}</Text>
+              <Ionicons name="pricetag" size={14} color="#0077B6" />
+              <Text style={styles.metaText}>{dealData.category}</Text>
             </View>
             
-            {venueData.views > 0 && (
+            {dealData.views > 0 && (
               <View style={styles.metaItem}>
                 <Ionicons name="eye" size={14} color="#0077B6" />
-                <Text style={styles.metaText}>{venueData.views} views</Text>
+                <Text style={styles.metaText}>{dealData.views} views</Text>
               </View>
             )}
           </View>
 
-          {venueData.rating > 0 && (
+          {venueData && (
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <Ionicons name="thumbs-up" size={14} color="#0077B6" />
-                <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                <Ionicons name="location" size={14} color="#0077B6" />
+                <Text style={styles.metaText}>{venueData.name} - {venueData.location_short || venueData.location}</Text>
               </View>
             </View>
           )}
 
-          <Text style={styles.description}>{venueData.description}</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Deal Schedule</Text>
+            <View style={styles.scheduleRow}>
+              <Ionicons name="calendar" size={16} color="#0077B6" />
+              <Text style={styles.scheduleText}>{formatDate(dealData.deal_date)}</Text>
+            </View>
+            
+            {(dealData.start_time || dealData.end_time) && (
+              <View style={styles.scheduleRow}>
+                <Ionicons name="time" size={16} color="#0077B6" />
+                <Text style={styles.scheduleText}>
+                  {dealData.start_time && formatTime(dealData.start_time)}
+                  {dealData.start_time && dealData.end_time && ' - '}
+                  {dealData.end_time && formatTime(dealData.end_time)}
+                </Text>
+              </View>
+            )}
 
-          {venueData.opening_hours && Object.values(venueData.opening_hours).some(hours => hours) && (
+            {dealData.price && (
+              <View style={styles.scheduleRow}>
+                <Ionicons name="cash" size={16} color="#0077B6" />
+                <Text style={styles.priceText}>{dealData.price}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>About this Deal</Text>
+            <Text style={styles.description}>{dealData.description}</Text>
+          </View>
+
+          {venueData && venueData.opening_hours && Object.values(venueData.opening_hours).some(hours => hours) && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Open</Text>
+              <Text style={styles.sectionTitle}>Venue Opening Hours</Text>
               {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
                 const hours = venueData.opening_hours[day];
                 return hours ? (
@@ -445,63 +300,25 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             </View>
           )}
 
-          {venueData.cuisine && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Cuisine</Text>
-              <View style={styles.featuresGrid}>
-                {(() => {
-                  let cuisineArray = [];
-                  if (Array.isArray(venueData.cuisine)) {
-                    cuisineArray = venueData.cuisine;
-                  } else if (typeof venueData.cuisine === 'string') {
-                    try {
-                      cuisineArray = JSON.parse(venueData.cuisine);
-                    } catch (e) {
-                      cuisineArray = [venueData.cuisine];
-                    }
-                  }
-                  return cuisineArray.map((cuisineType, index) => (
-                    <View key={index} style={styles.featureTag}>
-                      <Text style={styles.featureText}>{cuisineType}</Text>
-                    </View>
-                  ));
-                })()}
-              </View>
-            </View>
-          )}
-
-          {venueData.features && venueData.features.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Features</Text>
-              <View style={styles.featuresGrid}>
-                {venueData.features.map((feature, index) => (
-                  <View key={index} style={styles.featureTag}>
-                    <Text style={styles.featureText}>{feature}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {(venueData.phone || venueData.email || venueData.website || venueData.whatsapp || venueData.line) && (
+          {(dealData.phone || venueData?.phone || venueData?.email || venueData?.whatsapp || venueData?.line) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Contact Details</Text>
               
-              {venueData.phone && (
+              {(dealData.phone || venueData?.phone) && (
                 <TouchableOpacity onPress={handlePhonePress} style={styles.contactTextRow}>
                   <Text style={styles.contactLabel}>Phone:</Text>
-                  <Text style={styles.contactValue}>{venueData.phone}</Text>
+                  <Text style={styles.contactValue}>{dealData.phone || venueData.phone}</Text>
                 </TouchableOpacity>
               )}
 
-              {venueData.email && (
+              {venueData?.email && (
                 <TouchableOpacity onPress={() => Linking.openURL(`mailto:${venueData.email}`)} style={styles.contactTextRow}>
                   <Text style={styles.contactLabel}>Email:</Text>
                   <Text style={styles.contactValue}>{venueData.email}</Text>
                 </TouchableOpacity>
               )}
 
-              {(venueData.whatsapp || venueData.line) && (
+              {(venueData?.whatsapp || venueData?.line) && (
                 <View style={styles.contactIconsRow}>
                   {venueData.whatsapp && (
                     <TouchableOpacity 
@@ -525,7 +342,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 </View>
               )}
 
-              {(venueData.website || venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
+              {venueData && (venueData.website || venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
                 <View style={styles.socialMediaSection}>
                   <Text style={styles.sectionTitle}>Social Media</Text>
                   <View style={styles.socialButtons}>
@@ -578,86 +395,12 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               )}
             </View>
           )}
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Give a Review</Text>
-            
-            <View style={styles.ratingSelector}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity key={star} onPress={() => setSelectedRating(star)}>
-                  <Ionicons
-                    name={star <= selectedRating ? 'star' : 'star-outline'}
-                    size={28}
-                    color={star <= selectedRating ? '#FFD700' : '#DDD'}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Write Review</Text>
-            <Text style={styles.maxWords}>Max 250 words</Text>
-            
-            <TextInput
-              ref={textInputRef}
-              style={styles.reviewInput}
-              placeholder="Write here..."
-              placeholderTextColor="#999"
-              value={reviewText}
-              onChangeText={setReviewText}
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
-            />
-
-            <TouchableOpacity style={styles.submitReviewButton} onPress={submitReview} disabled={submitting}>
-              <Text style={styles.submitReviewButtonText}>{submitting ? 'Submitting...' : 'Submit Review'}</Text>
-            </TouchableOpacity>
-          </View>
-
-          {reviews.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.reviewsHeader}>
-                <View style={styles.reviewsHeaderLeft}>
-                  <Text style={styles.sectionTitle}>Reviews</Text>
-                  <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                  <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
-                </View>
-              </View>
-              
-              {reviews.slice(0, visibleReviews).map((review) => (
-                <View key={review.id} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewHeaderText}>
-                      <Text style={styles.reviewUserName}>{review.user_name}</Text>
-                      <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</Text>
-                    </View>
-                    <View style={styles.reviewRatingBadge}>
-                      <Ionicons name="star" size={12} color="#FFD700" />
-                      <Text style={styles.reviewRatingText}>{review.rating}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
-                </View>
-              ))}
-              
-              {visibleReviews < reviews.length && (
-                <TouchableOpacity 
-                  style={styles.viewAllButton}
-                  onPress={() => setVisibleReviews(prev => Math.min(prev + 10, reviews.length))}
-                >
-                  <Text style={styles.viewAllText}>View All</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
         </View>
       </ScrollView>
 
       <View style={styles.bottomButton}>
         <TouchableOpacity style={styles.bookButton} onPress={handleOpenBookingChat}>
-          <Text style={styles.bookButtonText}>Make a Booking (Chat)</Text>
+          <Text style={styles.bookButtonText}>Book this Deal (Chat)</Text>
         </TouchableOpacity>
       </View>
 
@@ -673,7 +416,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
         >
           <View style={styles.chatModal}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Chat with {venueData?.name}</Text>
+              <Text style={styles.modalTitle}>Chat about {dealData?.name}</Text>
               <TouchableOpacity 
                 onPress={() => setChatModalOpen(false)}
                 style={styles.closeButton}
@@ -687,7 +430,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
                 <View style={styles.emptyChatContainer}>
                   <Ionicons name="chatbubbles-outline" size={48} color="#999" />
                   <Text style={styles.emptyChatText}>No messages yet.</Text>
-                  <Text style={styles.emptyChatSubText}>Start the conversation by making your booking request!</Text>
+                  <Text style={styles.emptyChatSubText}>Start the conversation about this deal!</Text>
                 </View>
               ) : (
                 chatMessages.map((msg) => (
@@ -703,7 +446,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             <View style={styles.chatInputContainer}>
               <TextInput
                 style={styles.chatInput}
-                placeholder="Type your booking request..."
+                placeholder="Ask about this deal..."
                 placeholderTextColor="#999"
                 value={chatMessage}
                 onChangeText={setChatMessage}
@@ -835,49 +578,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E0E0E0',
   },
-  venueImage: {
-    width: width - 32,
-    height: 222,
-  },
-  leftArrow: {
-    position: 'absolute',
-    left: 0,
-    top: '50%',
-    transform: [{ translateY: -25 }],
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    borderRadius: 50,
-    padding: 8,
-  },
-  rightArrow: {
-    position: 'absolute',
-    right: 0,
-    top: '50%',
-    transform: [{ translateY: -25 }],
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    borderRadius: 50,
-    padding: 8,
-  },
-  dotContainer: {
-    position: 'absolute',
-    bottom: 10,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  activeDot: {
-    backgroundColor: '#FFF',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  dealImage: {
+    width: '100%',
+    height: '100%',
   },
   contentCard: {
     backgroundColor: '#FFF',
@@ -886,7 +589,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 80,
   },
-  venueTitle: {
+  dealTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
@@ -899,27 +602,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   metaItem: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 4,
-  flex: 1,
-  maxWidth: '100%',
-},
-  metaText: {
-  fontSize: 11,
-  color: '#666',
-  flexShrink: 1,
-  flexWrap: 'wrap',
-},
-  starsRow: {
     flexDirection: 'row',
-    gap: 2,
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
+    maxWidth: '100%',
   },
-  description: {
+  metaText: {
     fontSize: 11,
     color: '#666',
-    lineHeight: 16,
-    marginBottom: 20,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   section: {
     marginTop: 20,
@@ -932,6 +625,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
+  },
+  scheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  scheduleText: {
+    fontSize: 11,
+    color: '#333',
+  },
+  priceText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#0077B6',
+  },
+  description: {
+    fontSize: 11,
+    color: '#666',
+    lineHeight: 16,
   },
   hoursRow: {
     flexDirection: 'row',
@@ -984,6 +697,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
+  socialMediaSection: {
+    marginTop: 25,
+  },
   socialButtons: {
     flexDirection: 'row',
     gap: 16,
@@ -997,106 +713,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-  },
-  reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  reviewsHeaderLeft: {
-    flex: 1,
-  },
-  reviewsCount: {
-    fontSize: 11,
-    color: '#666',
-    marginTop: 4,
-  },
-  reviewCard: {
-    backgroundColor: '#F9F9F9',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    justifyContent: 'space-between',
-  },
-  reviewHeaderText: {
-    flex: 1,
-  },
-  reviewUserName: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#000',
-  },
-  reviewDate: {
-    fontSize: 11,
-    color: '#999',
-    marginTop: 2,
-  },
-  reviewRatingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  reviewRatingText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#000',
-  },
-  reviewComment: {
-    fontSize: 11,
-    color: '#666',
-    lineHeight: 16,
-  },
-  viewAllButton: {
-    alignItems: 'center',
-    marginTop: 16,
-    paddingVertical: 8,
-  },
-  viewAllText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-  },
-  ratingSelector: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  maxWords: {
-    fontSize: 11,
-    color: '#999',
-    marginBottom: 8,
-  },
-  reviewInput: {
-    backgroundColor: '#F9F9F9',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 11,
-    color: '#000',
-    minHeight: 150,
-    textAlignVertical: 'top',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginBottom: 16,
-  },
-  submitReviewButton: {
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  submitReviewButtonText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#FFF',
   },
   bottomButton: {
     position: 'absolute',
@@ -1120,30 +736,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#FFF',
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  featureTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#000000',
-  },
-  featureText: {
-    fontSize: 10,
-    color: '#000000',
-    fontWeight: '500',
-  },
-  socialMediaSection: {
-    marginTop: 25,
   },
   modalOverlayCenter: {
     flex: 1,

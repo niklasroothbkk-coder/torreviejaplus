@@ -14,7 +14,7 @@ export default function BoatDayDetailsScreen({ onNavigate }) {
     <View style={styles.container}>
       {/* Background Image */}
       <Image 
-        source={require('../../../assets/backgrounds/BG1.png')} 
+        source={require('../../../assets/backgrounds/BG_NEW.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />

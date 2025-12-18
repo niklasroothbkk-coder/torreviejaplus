@@ -11,7 +11,7 @@ export default function AllDoneScreen({ onNavigate }) {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../../assets/backgrounds/BG2.png')} 
+        source={require('../../assets/backgrounds/BG_NEW.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />

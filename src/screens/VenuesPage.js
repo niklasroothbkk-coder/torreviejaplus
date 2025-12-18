@@ -196,7 +196,7 @@ export default function VenuesPage({ onNavigate }) {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../../assets/backgrounds/BG2.png')} 
+        source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -465,8 +465,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    top: 60,
-    left: 0,
   },
   headerImageContainer: {
     position: 'relative',

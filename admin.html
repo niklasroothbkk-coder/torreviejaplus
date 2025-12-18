@@ -9,7 +9,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             min-height: 100vh;
             padding: 20px;
         }
@@ -189,6 +189,38 @@
             margin: 0;
             font-weight: 600;
         }
+        
+        /* Tab Styles */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            color: #666;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            color: #667eea;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -198,8 +230,16 @@
         <div id="errorMessage" class="error"></div>
 
         <div class="panel">
-            <h2 id="formTitle">➕ Add New Venue</h2>
-            <form id="venueForm">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button type="button" class="tab active" onclick="switchTab('venues')">➕ Add New Venue</button>
+                <button type="button" class="tab" onclick="switchTab('deals')">🎁 Add New Deal</button>
+            </div>
+
+            <!-- Venue Tab Content -->
+            <div id="venuesTab" class="tab-content active">
+                <h2 id="formTitle">➕ Add New Venue</h2>
+                <form id="venueForm">
                 <input type="hidden" id="venueId">
                 
                 <div class="form-group">
@@ -509,15 +549,216 @@
                 <button type="submit" id="submitBtn">Add Venue</button>
                 <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none; background: #95a5a6;">Cancel</button>
             </form>
+            </div>
+
+            <!-- Deal Tab Content -->
+            <div id="dealsTab" class="tab-content">
+                <h2 id="dealFormTitle">🎁 Add New Deal</h2>
+                <form id="dealForm">
+                    <input type="hidden" id="dealId">
+                    
+                    <div class="form-group">
+                        <label for="deal_name">Deal Name *</label>
+                        <input type="text" id="deal_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_category">Deal / Promotion Category *</label>
+                        <select id="deal_category" required>
+                            <option value="">Select category...</option>
+                            <option value="Happy Hour">Happy Hour</option>
+                            <option value="Watersport Deals">Watersport Deals</option>
+                            <option value="Restaurant Deals">Restaurant Deals</option>
+                            <option value="Sport Deals">Sport Deals</option>
+                            <option value="Tour Deals">Tour Deals</option>
+                            <option value="Pub & Bar Deals">Pub & Bar Deals</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_description">Description *</label>
+                        <textarea id="deal_description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_phone">Phone</label>
+                        <input type="text" id="deal_phone" placeholder="+66 81 880 7119">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_venue_link">Link to Venue (for contact/hours/rating) *</label>
+                        <select id="deal_venue_link" required>
+                            <option value="">Select venue...</option>
+                            <!-- Will be populated with venues from database -->
+                        </select>
+                    </div>
+
+                    <!-- Date & Time Section -->
+                    <div class="form-group">
+                        <label>📅 Deal Schedule</label>
+                        
+                        <div class="form-row" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label for="deal_date">Date *</label>
+                                <input type="date" id="deal_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="deal_start_time">Start Time</label>
+                                <input type="time" id="deal_start_time" value="12:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="deal_end_time">End Time</label>
+                                <input type="time" id="deal_end_time" value="12:00">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>
+                                <input type="checkbox" id="deal_repeat" onchange="toggleRepeatOptions()" style="width: auto; margin-right: 8px;">
+                                <span>🔁 Repeat (show for entire month or specific days)</span>
+                            </label>
+                        </div>
+
+                        <!-- Repeat Options (hidden by default) -->
+                        <div id="repeatOptions" class="form-group hidden" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <label style="margin-bottom: 10px;">Repeat on:</label>
+                            
+                            <!-- Grid layout: 4 columns -->
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                                <!-- Row 1 -->
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Monday">
+                                    <span>Monday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Tuesday">
+                                    <span>Tuesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Wednesday">
+                                    <span>Wednesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Thursday">
+                                    <span>Thursday</span>
+                                </label>
+                                
+                                <!-- Row 2 -->
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Friday">
+                                    <span>Friday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Saturday">
+                                    <span>Saturday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="repeat_days" value="Sunday">
+                                    <span>Sunday</span>
+                                </label>
+                            </div>
+
+                            <!-- Third row: Number of weeks -->
+                            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                                <label for="repeat_weeks">Number of weeks to repeat</label>
+                                <input type="number" id="repeat_weeks" min="1" max="52" placeholder="4" style="width: 150px;">
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    📝 Example: Select Friday + Saturday with 4 weeks = 8 deals total (Friday × 4 + Saturday × 4)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📸 Deal Image (Max 1) - Main card image</label>
+                        <div class="image-upload-section">
+                            <input type="file" id="dealImageInput" accept="image/*">
+                            <label for="dealImageInput" class="upload-btn">Choose Image</label>
+                            <div class="upload-info">
+                                Max 1 image • JPG, PNG, WebP
+                            </div>
+                            <div id="dealImagePreview" class="image-preview-grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="deal_price">Price (e.g. €15, Buy 1 Get 1, 50% off)</label>
+                            <input type="text" id="deal_price" placeholder="€15:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="deal_views">Views</label>
+                            <input type="number" id="deal_views" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_registered_date">Registered Date</label>
+                        <input type="date" id="deal_registered_date">
+                    </div>
+
+                    <button type="submit" id="dealSubmitBtn">Add Deal</button>
+                    <button type="button" id="dealCancelBtn" onclick="cancelDealEdit()" style="display: none; background: #95a5a6;">Cancel</button>
+                </form>
+            </div>
         </div>
 
         <div class="panel">
-            <h2>📋 All Venues</h2>
-            <div id="venuesList" class="loading">Loading venues...</div>
+            <!-- Tabs for viewing -->
+            <div class="tabs">
+                <button type="button" class="tab active" onclick="switchViewTab('venues')">📋 All Venues & Services</button>
+                <button type="button" class="tab" onclick="switchViewTab('deals')">🎁 All Deals & Promotions</button>
+            </div>
+
+            <!-- Venues List -->
+            <div id="venuesListTab" class="tab-content active">
+                <div id="venuesList" class="loading">Loading venues...</div>
+            </div>
+
+            <!-- Deals List -->
+            <div id="dealsListTab" class="tab-content">
+                <div id="dealsList" class="loading">Loading deals...</div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Tab switching
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            
+            if (tab === 'venues') {
+                tabs[0].classList.add('active');
+                document.getElementById('venuesTab').classList.add('active');
+            } else if (tab === 'deals') {
+                tabs[1].classList.add('active');
+                document.getElementById('dealsTab').classList.add('active');
+            }
+        }
+
+        // View tab switching (for bottom section)
+        function switchViewTab(tab) {
+            const panel = document.querySelector('.panel:last-child');
+            const tabs = panel.querySelectorAll('.tab');
+            const tabContents = panel.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            
+            if (tab === 'venues') {
+                tabs[0].classList.add('active');
+                document.getElementById('venuesListTab').classList.add('active');
+            } else if (tab === 'deals') {
+                tabs[1].classList.add('active');
+                document.getElementById('dealsListTab').classList.add('active');
+                loadDeals(); // Load deals when tab is opened
+            }
+        }
+
         const SUPABASE_URL = 'https://vfponburmjbuqqneigjr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM';
         
@@ -525,6 +766,8 @@
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let editingVenue = null;
         let uploadedImages = [];
+        let editingDeal = null;
+        let uploadedDealImage = null;
 
         function updateSubCategories() {
             const category = document.getElementById('category').value;
@@ -548,7 +791,10 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => { loadVenues(); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            loadVenues();
+            loadVenuesForDealDropdown();
+        });
 
         document.getElementById('imageInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
@@ -562,6 +808,19 @@
                 await uploadImage(file);
             }
             renderImagePreviews();
+        });
+
+        // Deal image upload handler
+        document.getElementById('dealImageInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+
+            await uploadDealImage(file);
         });
 
         async function uploadImage(file) {
@@ -601,6 +860,51 @@
         function removeImage(index) {
             uploadedImages.splice(index, 1);
             renderImagePreviews();
+        }
+
+        async function uploadDealImage(file) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `deal-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = fileName;
+
+                const { data, error } = await supabaseClient.storage
+                    .from('venue-images')
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from('venue-images')
+                    .getPublicUrl(filePath);
+
+                uploadedDealImage = publicUrl;
+                renderDealImagePreview();
+                showSuccess('Image uploaded!');
+            } catch (error) {
+                showError('Upload failed: ' + error.message);
+            }
+        }
+
+        function renderDealImagePreview() {
+            const container = document.getElementById('dealImagePreview');
+            if (!uploadedDealImage) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = `
+                <div class="image-preview-item main-image">
+                    <img src="${uploadedDealImage}" alt="Deal image">
+                    <div class="main-badge">MAIN</div>
+                    <button type="button" class="remove-image" onclick="removeDealImage()">×</button>
+                </div>
+            `;
+        }
+
+        function removeDealImage() {
+            uploadedDealImage = null;
+            renderDealImagePreview();
+            document.getElementById('dealImageInput').value = '';
         }
 
         document.getElementById('venueForm').addEventListener('submit', async (e) => {
@@ -866,6 +1170,219 @@
             div.textContent = msg;
             div.style.display = 'block';
             setTimeout(() => div.style.display = 'none', 5000);
+        }
+
+        // Deal form placeholder functions
+        function toggleRepeatOptions() {
+            const checkbox = document.getElementById('deal_repeat');
+            const repeatOptions = document.getElementById('repeatOptions');
+            
+            if (checkbox.checked) {
+                repeatOptions.classList.remove('hidden');
+            } else {
+                repeatOptions.classList.add('hidden');
+            }
+        }
+
+        function cancelDealEdit() {
+            document.getElementById('dealForm').reset();
+            document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+            document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
+            document.getElementById('dealCancelBtn').style.display = 'none';
+        }
+
+        document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const dealName = document.getElementById('deal_name').value;
+            const dealCategory = document.getElementById('deal_category').value;
+            const dealDescription = document.getElementById('deal_description').value;
+            const dealPhone = document.getElementById('deal_phone').value;
+            const venueId = document.getElementById('deal_venue_link').value;
+            const dealDate = document.getElementById('deal_date').value;
+            const startTime = document.getElementById('deal_start_time').value;
+            const endTime = document.getElementById('deal_end_time').value;
+            const isRepeat = document.getElementById('deal_repeat').checked;
+            const dealPrice = document.getElementById('deal_price').value;
+            const dealViews = parseInt(document.getElementById('deal_views').value) || 0;
+            const registeredDate = document.getElementById('deal_registered_date').value || null;
+
+            try {
+                // Get selected repeat days
+                const repeatDaysCheckboxes = document.querySelectorAll('input[name="repeat_days"]:checked');
+                const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
+                const repeatWeeks = parseInt(document.getElementById('repeat_weeks').value) || 0;
+
+                // If repeat is enabled, create multiple deals
+                if (isRepeat && repeatDays.length > 0 && repeatWeeks > 0) {
+                    const dealsToCreate = [];
+                    const baseDate = new Date(dealDate);
+                    
+                    // For each selected day
+                    for (const day of repeatDays) {
+                        // For each week
+                        for (let week = 0; week < repeatWeeks; week++) {
+                            // Calculate the date for this occurrence
+                            const occurrenceDate = getNextDayOfWeek(baseDate, day, week);
+                            
+                            dealsToCreate.push({
+                                name: dealName,
+                                category: dealCategory,
+                                description: dealDescription,
+                                phone: dealPhone,
+                                venue_id: parseInt(venueId),
+                                deal_date: occurrenceDate.toISOString().split('T')[0],
+                                start_time: startTime || null,
+                                end_time: endTime || null,
+                                is_recurring: true,
+                                recurring_day: day,
+                                recurring_weeks: repeatWeeks,
+                                price: dealPrice,
+                                image_url: uploadedDealImage,
+                                views: dealViews,
+                                registered_date: registeredDate,
+                                active: true
+                            });
+                        }
+                    }
+                    
+                    // Insert all deals
+                    const { error } = await supabaseClient.from('deals').insert(dealsToCreate);
+                    if (error) throw error;
+                    
+                    showSuccess(`Created ${dealsToCreate.length} deals successfully!`);
+                } else {
+                    // Single deal (no repeat)
+                    const dealData = {
+                        name: dealName,
+                        category: dealCategory,
+                        description: dealDescription,
+                        phone: dealPhone,
+                        venue_id: parseInt(venueId),
+                        deal_date: dealDate,
+                        start_time: startTime || null,
+                        end_time: endTime || null,
+                        is_recurring: false,
+                        recurring_day: null,
+                        recurring_weeks: null,
+                        price: dealPrice,
+                        image_url: uploadedDealImage,
+                        views: dealViews,
+                        registered_date: registeredDate,
+                        active: true
+                    };
+
+                    const { error } = await supabaseClient.from('deals').insert([dealData]);
+                    if (error) throw error;
+                    
+                    showSuccess('Deal created successfully!');
+                }
+                
+                document.getElementById('dealForm').reset();
+                uploadedDealImage = null;
+                renderDealImagePreview();
+                loadDeals();
+            } catch (error) {
+                showError('Error creating deal: ' + error.message);
+            }
+        });
+
+        // Helper function to get next occurrence of a day of week
+        function getNextDayOfWeek(baseDate, dayName, weekOffset) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const targetDay = days.indexOf(dayName);
+            const date = new Date(baseDate);
+            
+            // Find the first occurrence of the target day
+            const currentDay = date.getDay();
+            let daysUntilTarget = targetDay - currentDay;
+            if (daysUntilTarget < 0) daysUntilTarget += 7;
+            
+            date.setDate(date.getDate() + daysUntilTarget + (weekOffset * 7));
+            return date;
+        }
+
+        // Load deals function
+        async function loadDeals() {
+            const listDiv = document.getElementById('dealsList');
+            listDiv.innerHTML = '<div class="loading">Loading deals...</div>';
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('deals')
+                    .select(`
+                        *,
+                        venues!deals_venue_id_fkey(name, location_short)
+                    `)
+                    .order('deal_date', { ascending: false });
+                    
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;color:#999;">No deals yet! Create your first deal using the form above.</p>';
+                    return;
+                }
+                
+                listDiv.innerHTML = data.map(deal => `
+                    <div class="venue-item">
+                        <div class="venue-info">
+                            <h3>${deal.name}</h3>
+                            <p><strong>Category:</strong> ${deal.category || 'N/A'}</p>
+                            <p><strong>Venue:</strong> ${deal.venues?.name || 'N/A'} - ${deal.venues?.location_short || ''}</p>
+                            <p><strong>Date:</strong> ${deal.deal_date} ${deal.start_time ? `(${deal.start_time} - ${deal.end_time})` : ''}</p>
+                            ${deal.is_recurring ? `<p><strong>Recurring:</strong> ${deal.recurring_day} (${deal.recurring_weeks} weeks)</p>` : ''}
+                            <p><strong>Price:</strong> ${deal.price || 'N/A'} | <strong>Status:</strong> ${deal.active ? '✅ Active' : '❌ Inactive'}</p>
+                            ${deal.image_url ? '<p><strong>Image:</strong> 📸</p>' : ''}
+                        </div>
+                        <div class="venue-actions">
+                            <button class="edit" onclick="editDeal(${deal.id})">Edit</button>
+                            <button class="delete" onclick="deleteDeal(${deal.id}, '${deal.name.replace(/'/g, "\\'")}')" >Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showError('Error loading deals: ' + error.message);
+                listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading deals. Check console for details.</p>';
+            }
+        }
+
+        // Delete deal
+        async function deleteDeal(id, name) {
+            if (!confirm(`Delete deal "${name}"?`)) return;
+            
+            try {
+                const { error } = await supabaseClient.from('deals').delete().eq('id', id);
+                if (error) throw error;
+                showSuccess('Deal deleted!');
+                loadDeals();
+            } catch (error) {
+                showError('Error deleting deal: ' + error.message);
+            }
+        }
+
+        // Edit deal (placeholder for now)
+        function editDeal(id) {
+            showSuccess('Edit functionality coming soon!');
+        }
+
+        // Load venues for deal dropdown
+        async function loadVenuesForDealDropdown() {
+            try {
+                const { data, error } = await supabaseClient.from('venues').select('id, name, location_short').order('name', { ascending: true });
+                if (error) throw error;
+                
+                const dropdown = document.getElementById('deal_venue_link');
+                dropdown.innerHTML = '<option value="">Select venue...</option>';
+                
+                data.forEach(venue => {
+                    const option = document.createElement('option');
+                    option.value = venue.id;
+                    option.textContent = `${venue.name} - ${venue.location_short || venue.location}`;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading venues for dropdown:', error);
+            }
         }
     </script>
 </body>
