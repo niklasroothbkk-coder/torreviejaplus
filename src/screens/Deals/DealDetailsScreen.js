@@ -249,10 +249,15 @@ export default function DealDetailsScreen({ onNavigate, dealId }) {
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Ionicons name="location" size={14} color="#0077B6" />
-                <Text style={styles.metaText}>{venueData.name} - {venueData.location_short || venueData.location}</Text>
+                <Text style={styles.metaText}>{venueData.name}</Text>
               </View>
             </View>
           )}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>About this Deal</Text>
+            <Text style={styles.description}>{dealData.description}</Text>
+          </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Deal Schedule</Text>
@@ -280,119 +285,15 @@ export default function DealDetailsScreen({ onNavigate, dealId }) {
             )}
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About this Deal</Text>
-            <Text style={styles.description}>{dealData.description}</Text>
-          </View>
-
-          {venueData && venueData.opening_hours && Object.values(venueData.opening_hours).some(hours => hours) && (
+          {venueData && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Venue Opening Hours</Text>
-              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
-                const hours = venueData.opening_hours[day];
-                return hours ? (
-                  <View key={day} style={styles.hoursRow}>
-                    <Text style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
-                    <Text style={styles.hoursText}>{hours}</Text>
-                  </View>
-                ) : null;
-              })}
-            </View>
-          )}
-
-          {(dealData.phone || venueData?.phone || venueData?.email || venueData?.whatsapp || venueData?.line) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Contact Details</Text>
-              
-              {(dealData.phone || venueData?.phone) && (
-                <TouchableOpacity onPress={handlePhonePress} style={styles.contactTextRow}>
-                  <Text style={styles.contactLabel}>Phone:</Text>
-                  <Text style={styles.contactValue}>{dealData.phone || venueData.phone}</Text>
-                </TouchableOpacity>
-              )}
-
-              {venueData?.email && (
-                <TouchableOpacity onPress={() => Linking.openURL(`mailto:${venueData.email}`)} style={styles.contactTextRow}>
-                  <Text style={styles.contactLabel}>Email:</Text>
-                  <Text style={styles.contactValue}>{venueData.email}</Text>
-                </TouchableOpacity>
-              )}
-
-              {(venueData?.whatsapp || venueData?.line) && (
-                <View style={styles.contactIconsRow}>
-                  {venueData.whatsapp && (
-                    <TouchableOpacity 
-                      style={styles.contactIconButton} 
-                      onPress={() => handleSocialPress('whatsapp')}
-                    >
-                      <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
-                      <Text style={styles.contactIconText}>WhatsApp</Text>
-                    </TouchableOpacity>
-                  )}
-                  
-                  {venueData.line && (
-                    <TouchableOpacity 
-                      style={styles.contactIconButton} 
-                      onPress={() => handleSocialPress('line')}
-                    >
-                      <Ionicons name="chatbubble-ellipses" size={24} color="#00B900" />
-                      <Text style={styles.contactIconText}>Line</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-
-              {venueData && (venueData.website || venueData.facebook || venueData.instagram || venueData.tiktok || venueData['x/twitter']) && (
-                <View style={styles.socialMediaSection}>
-                  <Text style={styles.sectionTitle}>Social Media</Text>
-                  <View style={styles.socialButtons}>
-                    {venueData.website && (
-                      <TouchableOpacity 
-                        style={styles.socialButton} 
-                        onPress={() => Linking.openURL(venueData.website)}
-                      >
-                        <Ionicons name="globe-outline" size={24} color="#0077B6" />
-                      </TouchableOpacity>
-                    )}
-                    
-                    {venueData.facebook && (
-                      <TouchableOpacity 
-                        style={styles.socialButton} 
-                        onPress={() => handleSocialPress('facebook')}
-                      >
-                        <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-                      </TouchableOpacity>
-                    )}
-                    
-                    {venueData.instagram && (
-                      <TouchableOpacity 
-                        style={styles.socialButton} 
-                        onPress={() => handleSocialPress('instagram')}
-                      >
-                        <Ionicons name="logo-instagram" size={24} color="#E4405F" />
-                      </TouchableOpacity>
-                    )}
-                    
-                    {venueData.tiktok && (
-                      <TouchableOpacity 
-                        style={styles.socialButton} 
-                        onPress={() => handleSocialPress('tiktok')}
-                      >
-                        <Ionicons name="logo-tiktok" size={24} color="#000" />
-                      </TouchableOpacity>
-                    )}
-                    
-                    {venueData['x/twitter'] && (
-                      <TouchableOpacity 
-                        style={styles.socialButton} 
-                        onPress={() => handleSocialPress('twitter')}
-                      >
-                        <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              )}
+              <Text style={styles.sectionTitle}>Link to the Venue</Text>
+              <TouchableOpacity 
+                style={styles.venueLink}
+                onPress={() => onNavigate('venuedetails', { venueId: venueData.id })}
+              >
+                <Text style={styles.venueLinkText}>{venueData.name}</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -602,12 +503,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    flex: 1,
-    maxWidth: '100%',
-  },
+  flexDirection: 'row',
+  alignItems: 'center',  // ÄNDRA från 'flex-start' till 'center'
+  gap: 4,
+  flex: 1,
+  maxWidth: '100%',
+},
   metaText: {
     fontSize: 11,
     color: '#666',
@@ -844,5 +745,18 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  venueLink: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    padding: 16,
+  },
+  venueLinkText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0077B6',
+    textAlign: 'center',
   },
 });

@@ -10,12 +10,6 @@ import ShareAirportTaxiPage from './src/screens/ShareAirportTaxiPage';
 import AddRidePage from './src/screens/AddRidePage';
 import DealsPage from './src/screens/DealsPage';
 import DealDetailsScreen from './src/screens/Deals/DealDetailsScreen.js';
-import MeatballDetailsScreen from './src/screens/Deals/MeatballDetailsScreen';
-import HappyHourDetailsScreen from './src/screens/Deals/HappyHourDetailsScreen';
-import GolfDetailsScreen from './src/screens/Deals/GolfDetailsScreen';
-import PaellaDetailsScreen from './src/screens/Deals/PaellaDetailsScreen';
-import TapasDetailsScreen from './src/screens/Deals/TapasDetailsScreen';
-import JetskiDetailsScreen from './src/screens/Deals/JetskiDetailsScreen';
 import WineTastingDetailsScreen from './src/screens/Events/WineTastingDetailsScreen';
 import FridayMarketDetailsScreen from './src/screens/Events/FridayMarketDetailsScreen';
 import FootballMatchDetailsScreen from './src/screens/Events/FootballMatchDetailsScreen';
@@ -281,18 +275,6 @@ export default function App() {
         return <DealsPage onNavigate={handleMenuItemPress} />;
       case 'dealdetails':
         return <DealDetailsScreen onNavigate={handleMenuItemPress} dealId={authParams?.dealId} />;
-      case 'meatballdetails':
-        return <MeatballDetailsScreen onNavigate={handleMenuItemPress} />;
-      case 'happyhourdetails':
-        return <HappyHourDetailsScreen onNavigate={handleMenuItemPress} />;
-      case 'golfdetails':
-        return <GolfDetailsScreen onNavigate={handleMenuItemPress} />;
-      case 'paelladetails':
-        return <PaellaDetailsScreen onNavigate={handleMenuItemPress} />;
-      case 'tapasdetails':
-        return <TapasDetailsScreen onNavigate={handleMenuItemPress} />;
-      case 'jetskidetails':
-        return <JetskiDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'winetastingdetails':
         return <WineTastingDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'fridaymarketdetails':

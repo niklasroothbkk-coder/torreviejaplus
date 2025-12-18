@@ -595,7 +595,7 @@
 
                     <!-- Date & Time Section -->
                     <div class="form-group">
-                        <label>📅 Deal Schedule</label>
+                        <label>📅 Deal Schedule Start Day</label>
                         
                         <div class="form-row" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr;">
                             <div class="form-group">
@@ -1213,74 +1213,52 @@
                 const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
                 const repeatWeeks = parseInt(document.getElementById('repeat_weeks').value) || 0;
 
-                // If repeat is enabled, create multiple deals
-                if (isRepeat && repeatDays.length > 0 && repeatWeeks > 0) {
-                    const dealsToCreate = [];
-                    const baseDate = new Date(dealDate);
-                    
-                    // For each selected day
-                    for (const day of repeatDays) {
-                        // For each week
-                        for (let week = 0; week < repeatWeeks; week++) {
-                            // Calculate the date for this occurrence
-                            const occurrenceDate = getNextDayOfWeek(baseDate, day, week);
-                            
-                            dealsToCreate.push({
-                                name: dealName,
-                                category: dealCategory,
-                                description: dealDescription,
-                                phone: dealPhone,
-                                venue_id: parseInt(venueId),
-                                deal_date: occurrenceDate.toISOString().split('T')[0],
-                                start_time: startTime || null,
-                                end_time: endTime || null,
-                                is_recurring: true,
-                                recurring_day: day,
-                                recurring_weeks: repeatWeeks,
-                                price: dealPrice,
-                                image_url: uploadedDealImage,
-                                views: dealViews,
-                                registered_date: registeredDate,
-                                active: true
-                            });
-                        }
-                    }
-                    
-                    // Insert all deals
-                    const { error } = await supabaseClient.from('deals').insert(dealsToCreate);
-                    if (error) throw error;
-                    
-                    showSuccess(`Created ${dealsToCreate.length} deals successfully!`);
-                } else {
-                    // Single deal (no repeat)
-                    const dealData = {
-                        name: dealName,
-                        category: dealCategory,
-                        description: dealDescription,
-                        phone: dealPhone,
-                        venue_id: parseInt(venueId),
-                        deal_date: dealDate,
-                        start_time: startTime || null,
-                        end_time: endTime || null,
-                        is_recurring: false,
-                        recurring_day: null,
-                        recurring_weeks: null,
-                        price: dealPrice,
-                        image_url: uploadedDealImage,
-                        views: dealViews,
-                        registered_date: registeredDate,
-                        active: true
-                    };
+                // Create single deal with repeat settings
+                const dealData = {
+                    name: dealName,
+                    category: dealCategory,
+                    description: dealDescription,
+                    phone: dealPhone,
+                    venue_id: parseInt(venueId),
+                    deal_date: dealDate,
+                    start_time: startTime || null,
+                    end_time: endTime || null,
+                    is_recurring: isRepeat,
+                    recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
+                    recurring_weeks: (isRepeat && repeatWeeks > 0) ? repeatWeeks : null,
+                    price: dealPrice,
+                    image_url: uploadedDealImage,
+                    views: dealViews,
+                    registered_date: registeredDate,
+                    active: true
+                };
 
+                if (editingDeal) {
+                    // UPDATE existing deal
+                    const { error } = await supabaseClient.from('deals').update(dealData).eq('id', editingDeal);
+                    if (error) throw error;
+                    showSuccess('Deal updated successfully!');
+                    
+                    // Reset editing state
+                    editingDeal = null;
+                    document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+                    document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
+                    document.getElementById('dealCancelBtn').style.display = 'none';
+                } else {
+                    // INSERT new deal
                     const { error } = await supabaseClient.from('deals').insert([dealData]);
                     if (error) throw error;
-                    
                     showSuccess('Deal created successfully!');
                 }
                 
+                // Reset form and editing state
+                editingDeal = null;
                 document.getElementById('dealForm').reset();
                 uploadedDealImage = null;
                 renderDealImagePreview();
+                document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+                document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
+                document.getElementById('dealCancelBtn').style.display = 'none';
                 loadDeals();
             } catch (error) {
                 showError('Error creating deal: ' + error.message);
@@ -1361,9 +1339,64 @@
         }
 
         // Edit deal (placeholder for now)
-        function editDeal(id) {
-            showSuccess('Edit functionality coming soon!');
+        async function editDeal(id) {
+    try {
+        const { data, error } = await supabaseClient.from('deals').select('*').eq('id', id).single();
+        if (error) throw error;
+        
+        editingDeal = id;
+        document.getElementById('dealFormTitle').textContent = '✏️ Edit Deal';
+        document.getElementById('dealSubmitBtn').textContent = 'Update Deal';
+        document.getElementById('dealCancelBtn').style.display = 'inline-block';
+        
+        // Switch to deals tab
+        switchTab('deals');
+        
+        // Fill form with deal data
+        document.getElementById('deal_name').value = data.name || '';
+        document.getElementById('deal_category').value = data.category || '';
+        document.getElementById('deal_description').value = data.description || '';
+        document.getElementById('deal_phone').value = data.phone || '';
+        document.getElementById('deal_venue_link').value = data.venue_id || '';
+        document.getElementById('deal_date').value = data.deal_date || '';
+        document.getElementById('deal_start_time').value = data.start_time || '12:00';
+        document.getElementById('deal_end_time').value = data.end_time || '12:00';
+        document.getElementById('deal_price').value = data.price || '';
+        document.getElementById('deal_views').value = data.views || 0;
+        document.getElementById('deal_registered_date').value = data.registered_date || '';
+        
+        // Set image
+        uploadedDealImage = data.image_url || null;
+        renderDealImagePreview();
+        
+        // Handle recurring deals
+        if (data.is_recurring) {
+            document.getElementById('deal_repeat').checked = true;
+            toggleRepeatOptions();
+            
+            // Check all recurring days (they're stored comma-separated)
+            if (data.recurring_day) {
+                const days = data.recurring_day.split(',');
+                days.forEach(day => {
+                    const dayCheckbox = document.querySelector(`input[name="repeat_days"][value="${day.trim()}"]`);
+                    if (dayCheckbox) dayCheckbox.checked = true;
+                });
+            }
+            
+            // Set recurring weeks
+            if (data.recurring_weeks) {
+                document.getElementById('repeat_weeks').value = data.recurring_weeks;
+            }
+        } else {
+            document.getElementById('deal_repeat').checked = false;
+            toggleRepeatOptions();
         }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+        showError('Error loading deal: ' + error.message);
+    }
+}
 
         // Load venues for deal dropdown
         async function loadVenuesForDealDropdown() {
@@ -1377,7 +1410,7 @@
                 data.forEach(venue => {
                     const option = document.createElement('option');
                     option.value = venue.id;
-                    option.textContent = `${venue.name} - ${venue.location_short || venue.location}`;
+                    option.textContent = venue.name;
                     dropdown.appendChild(option);
                 });
             } catch (error) {
