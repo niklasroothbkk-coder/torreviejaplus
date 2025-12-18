@@ -4,8 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function DealsFilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('Happy Hour');
-  const [selectedRatings, setSelectedRatings] = useState([]);
-  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
+  const [selectedPrices, setSelectedPrices] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
@@ -18,29 +17,20 @@ export default function DealsFilterScreen({ onClose, onApply }) {
     'Take Away Deal',
   ];
 
-  const ratings = [1, 2, 3, 4, 5];
+  const prices = ['€', '€€', '€€€'];
 
-  const toggleRating = (rating) => {
-    if (rating === 'All') {
-      if (selectedRatings.length === 5) {
-        setSelectedRatings([]);
-      } else {
-        setSelectedRatings([1, 2, 3, 4, 5]);
-      }
+  const togglePrice = (price) => {
+    if (selectedPrices.includes(price)) {
+      setSelectedPrices(selectedPrices.filter(p => p !== price));
     } else {
-      if (selectedRatings.includes(rating)) {
-        setSelectedRatings(selectedRatings.filter(r => r !== rating));
-      } else {
-        setSelectedRatings([...selectedRatings, rating]);
-      }
+      setSelectedPrices([...selectedPrices, price]);
     }
   };
 
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
-      ratings: selectedRatings,
-      priceRange: selectedPriceRange,
+      prices: selectedPrices,
     });
     onClose && onClose();
   };
@@ -81,108 +71,41 @@ export default function DealsFilterScreen({ onClose, onApply }) {
           </View>
         )}
 
-        {/* Rating */}
-        <Text style={styles.sectionTitle}>Rating</Text>
-        <View style={styles.ratingContainer}>
-          {ratings.map((rating) => (
-            <TouchableOpacity
-              key={rating}
-              style={[
-                styles.ratingButton,
-                selectedRatings.includes(rating) && styles.ratingButtonActive
-              ]}
-              onPress={() => toggleRating(rating)}
-            >
-              <Ionicons 
-                name="star" 
-                size={16} 
-                color={selectedRatings.includes(rating) ? "#FFFFFF" : "#0077B6"} 
-              />
-              <Text style={[
-                styles.ratingText,
-                selectedRatings.includes(rating) && styles.ratingTextActive
-              ]}>
-                {rating}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* Price Level */}
+        <Text style={styles.sectionTitle}>Price Level</Text>
+        <View style={styles.priceContainer}>
           <TouchableOpacity
             style={[
-              styles.ratingButton,
-              selectedRatings.length === 5 && styles.ratingButtonActive
+              styles.priceButton,
+              selectedPrices.length === 0 && styles.priceButtonActive
             ]}
-            onPress={() => toggleRating('All')}
+            onPress={() => setSelectedPrices([])}
           >
             <Text style={[
-              styles.allText,
-              selectedRatings.length === 5 && styles.allTextActive
+              styles.priceText,
+              selectedPrices.length === 0 && styles.priceTextActive
             ]}>
               All
             </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Price Range */}
-        <Text style={styles.sectionTitle}>Price Range</Text>
-        <View style={styles.priceRangeContainer}>
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('1-50')}
-          >
-            <Text style={[
-              styles.priceRangeButtonText,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonTextActive
-            ]}>
-              1 - 50
-            </Text>
-            <Text style={[
-              styles.priceRangeButtonSubText,
-              selectedPriceRange === '1-50' && styles.priceRangeButtonTextActive
-            ]}>
-              Euro
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('51-100')}
-          >
-            <Text style={[
-              styles.priceRangeButtonText,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonTextActive
-            ]}>
-              51 - 100
-            </Text>
-            <Text style={[
-              styles.priceRangeButtonSubText,
-              selectedPriceRange === '51-100' && styles.priceRangeButtonTextActive
-            ]}>
-              Euro
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.priceRangeButton,
-              selectedPriceRange === 'all' && styles.priceRangeButtonActive
-            ]}
-            onPress={() => setSelectedPriceRange('all')}
-          >
-            <View style={styles.allPricesContainer}>
+          
+          {prices.map((price) => (
+            <TouchableOpacity
+              key={price}
+              style={[
+                styles.priceButton,
+                selectedPrices.includes(price) && styles.priceButtonActive
+              ]}
+              onPress={() => togglePrice(price)}
+            >
               <Text style={[
-                styles.priceRangeButtonText,
-                selectedPriceRange === 'all' && styles.priceRangeButtonTextActive
+                styles.priceText,
+                selectedPrices.includes(price) && styles.priceTextActive
               ]}>
-                All Prices
+                {price}
               </Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Buttons */}
@@ -266,80 +189,34 @@ const styles = StyleSheet.create({
     color: '#0077B6',
     fontWeight: '600',
   },
-  ratingContainer: {
+  priceContainer: {
     flexDirection: 'row',
     gap: 6,
     flexWrap: 'wrap',
   },
-  ratingButton: {
+  priceButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#0077B6',
-    minWidth: 50,
-    justifyContent: 'center',
-  },
-  ratingButtonActive: {
-    backgroundColor: '#0077B6',
-  },
-  ratingText: {
-    fontSize: 9,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  ratingTextActive: {
-    color: '#FFFFFF',
-  },
-  allText: {
-    fontSize: 9,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  allTextActive: {
-    color: '#FFFFFF',
-  },
-  priceRangeContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  priceRangeButton: {
-    minWidth: 100,
-    paddingVertical: 12,
     paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#0077B6',
-    alignItems: 'center',
+    minWidth: 60,
     justifyContent: 'center',
   },
-  priceRangeButtonActive: {
+  priceButtonActive: {
     backgroundColor: '#0077B6',
   },
-  priceRangeButtonText: {
+  priceText: {
     fontSize: 11,
     color: '#0077B6',
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  priceRangeButtonSubText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  priceRangeButtonTextActive: {
+  priceTextActive: {
     color: '#FFFFFF',
-  },
-  allPricesContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',

@@ -9,7 +9,7 @@ export default function FilterScreen({ onClose, onApply }) {
   const [selectedSpaType, setSelectedSpaType] = useState('All');
   const [selectedSportType, setSelectedSportType] = useState('All');
   const [selectedAttractionType, setSelectedAttractionType] = useState('All');
-  const [selectedRatings, setSelectedRatings] = useState([]);
+  const [selectedPrices, setSelectedPrices] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
   const [showPubTypeDropdown, setShowPubTypeDropdown] = useState(false);
@@ -48,7 +48,6 @@ export default function FilterScreen({ onClose, onApply }) {
     'Sportbar',
     'Live Band',
     'Serve Food',
-    'Sport on TV',
   ];
 
   const spaTypes = [
@@ -74,21 +73,13 @@ export default function FilterScreen({ onClose, onApply }) {
     'Tours',
   ];
 
-  const ratings = [1, 2, 3, 4, 5];
+  const prices = ['€', '€€', '€€€'];
 
-  const toggleRating = (rating) => {
-    if (rating === 'All') {
-      if (selectedRatings.length === 5) {
-        setSelectedRatings([]);
-      } else {
-        setSelectedRatings([1, 2, 3, 4, 5]);
-      }
+  const togglePrice = (price) => {
+    if (selectedPrices.includes(price)) {
+      setSelectedPrices(selectedPrices.filter(p => p !== price));
     } else {
-      if (selectedRatings.includes(rating)) {
-        setSelectedRatings(selectedRatings.filter(r => r !== rating));
-      } else {
-        setSelectedRatings([...selectedRatings, rating]);
-      }
+      setSelectedPrices([...selectedPrices, price]);
     }
   };
 
@@ -109,7 +100,7 @@ export default function FilterScreen({ onClose, onApply }) {
       spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
       sportType: selectedCategory === 'Sports Activities' ? selectedSportType : null,
       attractionType: selectedCategory === 'Markets & Attractions' ? selectedAttractionType : null,
-      ratings: selectedRatings,
+      prices: selectedPrices,
     });
     onClose && onClose();
   };
@@ -208,7 +199,7 @@ export default function FilterScreen({ onClose, onApply }) {
         {/* Pub Type Filter - Only show when Sports Bars & Pubs is selected - MULTIPLE SELECTION */}
         {selectedCategory === 'Sports Bars & Pubs' && (
           <>
-            <Text style={styles.sectionTitle}>Pub Type (Select Multiple)</Text>
+            <Text style={styles.sectionTitle}>Features</Text>
             <View style={styles.multiSelectContainer}>
               {pubTypes.map((pubType, index) => (
                 <TouchableOpacity
@@ -225,9 +216,7 @@ export default function FilterScreen({ onClose, onApply }) {
                   ]}>
                     {pubType}
                   </Text>
-                  {selectedPubTypes.includes(pubType) && (
-                    <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" style={styles.checkIcon} />
-                  )}
+              
                 </TouchableOpacity>
               ))}
             </View>
@@ -345,45 +334,41 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
-        {/* Rating */}
-        <Text style={styles.sectionTitle}>Rating</Text>
-        <View style={styles.ratingContainer}>
-          {ratings.map((rating) => (
-            <TouchableOpacity
-              key={rating}
-              style={[
-                styles.ratingButton,
-                selectedRatings.includes(rating) && styles.ratingButtonActive
-              ]}
-              onPress={() => toggleRating(rating)}
-            >
-              <Ionicons 
-                name="star" 
-                size={16} 
-                color={selectedRatings.includes(rating) ? "#FFFFFF" : "#0077B6"} 
-              />
-              <Text style={[
-                styles.ratingText,
-                selectedRatings.includes(rating) && styles.ratingTextActive
-              ]}>
-                {rating}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* Price Level */}
+        <Text style={styles.sectionTitle}>Price Level</Text>
+        <View style={styles.priceContainer}>
           <TouchableOpacity
             style={[
-              styles.ratingButton,
-              selectedRatings.length === 5 && styles.ratingButtonActive
+              styles.priceButton,
+              selectedPrices.length === 0 && styles.priceButtonActive
             ]}
-            onPress={() => toggleRating('All')}
+            onPress={() => setSelectedPrices([])}
           >
             <Text style={[
-              styles.allText,
-              selectedRatings.length === 5 && styles.allTextActive
+              styles.priceText,
+              selectedPrices.length === 0 && styles.priceTextActive
             ]}>
               All
             </Text>
           </TouchableOpacity>
+          
+          {prices.map((price) => (
+            <TouchableOpacity
+              key={price}
+              style={[
+                styles.priceButton,
+                selectedPrices.includes(price) && styles.priceButtonActive
+              ]}
+              onPress={() => togglePrice(price)}
+            >
+              <Text style={[
+                styles.priceText,
+                selectedPrices.includes(price) && styles.priceTextActive
+              ]}>
+                {price}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Buttons */}
@@ -498,41 +483,33 @@ const styles = StyleSheet.create({
   checkIcon: {
     marginLeft: 2,
   },
-  ratingContainer: {
+  priceContainer: {
     flexDirection: 'row',
     gap: 6,
     flexWrap: 'wrap',
   },
-  ratingButton: {
+  priceButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#0077B6',
-    minWidth: 50,
+    minWidth: 60,
     justifyContent: 'center',
   },
-  ratingButtonActive: {
+  priceButtonActive: {
     backgroundColor: '#0077B6',
   },
-  ratingText: {
-    fontSize: 9,
+  priceText: {
+    fontSize: 11,
     color: '#0077B6',
     fontWeight: '500',
   },
-  ratingTextActive: {
-    color: '#FFFFFF',
-  },
-  allText: {
-    fontSize: 9,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  allTextActive: {
+  priceTextActive: {
     color: '#FFFFFF',
   },
   buttonContainer: {

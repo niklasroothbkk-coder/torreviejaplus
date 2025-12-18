@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterBottomSheet: {
-    height: '65%',
+    height: '70%',
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
