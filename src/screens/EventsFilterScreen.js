@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function EventsFilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedRatings, setSelectedRatings] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
@@ -15,28 +14,9 @@ export default function EventsFilterScreen({ onClose, onApply }) {
     'Tours',
   ];
 
-  const ratings = [1, 2, 3, 4, 5];
-
-  const toggleRating = (rating) => {
-    if (rating === 'All') {
-      if (selectedRatings.length === 5) {
-        setSelectedRatings([]);
-      } else {
-        setSelectedRatings([1, 2, 3, 4, 5]);
-      }
-    } else {
-      if (selectedRatings.includes(rating)) {
-        setSelectedRatings(selectedRatings.filter(r => r !== rating));
-      } else {
-        setSelectedRatings([...selectedRatings, rating]);
-      }
-    }
-  };
-
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
-      ratings: selectedRatings,
     });
     onClose && onClose();
   };
@@ -77,47 +57,6 @@ export default function EventsFilterScreen({ onClose, onApply }) {
           </View>
         )}
 
-        {/* Rating */}
-        <Text style={styles.sectionTitle}>Rating</Text>
-        <View style={styles.ratingContainer}>
-          {ratings.map((rating) => (
-            <TouchableOpacity
-              key={rating}
-              style={[
-                styles.ratingButton,
-                selectedRatings.includes(rating) && styles.ratingButtonActive
-              ]}
-              onPress={() => toggleRating(rating)}
-            >
-              <Ionicons 
-                name="star" 
-                size={16} 
-                color={selectedRatings.includes(rating) ? "#FFFFFF" : "#0077B6"} 
-              />
-              <Text style={[
-                styles.ratingText,
-                selectedRatings.includes(rating) && styles.ratingTextActive
-              ]}>
-                {rating}
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={[
-              styles.ratingButton,
-              selectedRatings.length === 5 && styles.ratingButtonActive
-            ]}
-            onPress={() => toggleRating('All')}
-          >
-            <Text style={[
-              styles.allText,
-              selectedRatings.length === 5 && styles.allTextActive
-            ]}>
-              All
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
@@ -152,7 +91,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
     marginTop: 24,
@@ -170,7 +109,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dropdownText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownMenu: {
@@ -192,49 +131,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   dropdownItemText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownItemTextActive: {
     color: '#0077B6',
     fontWeight: '600',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  ratingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#0077B6',
-    minWidth: 50,
-    justifyContent: 'center',
-  },
-  ratingButtonActive: {
-    backgroundColor: '#0077B6',
-  },
-  ratingText: {
-    fontSize: 9,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  ratingTextActive: {
-    color: '#FFFFFF',
-  },
-  allText: {
-    fontSize: 9,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  allTextActive: {
-    color: '#FFFFFF',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -256,7 +158,7 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   cancelButton: {
@@ -270,7 +172,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#0077B6',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

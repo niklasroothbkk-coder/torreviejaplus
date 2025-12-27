@@ -16,7 +16,7 @@ export default function DealsFilterScreen({ onClose, onApply }) {
     'Pub & Bar Deals',
   ];
 
-  const prices = ['€', '€€', '€€€'];
+  const prices = ['€', '€€', '€€€', '€€€€'];
 
   const togglePrice = (price) => {
     if (selectedPrices.includes(price)) {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
     marginTop: 24,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dropdownText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownMenu: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   dropdownItemText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownItemTextActive: {
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0077B6',
   },
   priceText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   cancelButton: {
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#0077B6',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

@@ -186,10 +186,7 @@ export default function DealsPage({ onNavigate }) {
               <View style={styles.dealInfo}>
                 <Text style={styles.dealTitle}>{deal.title}</Text>
                 
-                <View style={styles.venueRow}>
-                  <Ionicons name="location" size={14} color="#00A8E1" />
-                  <Text style={styles.venueText}>{deal.venue}</Text>
-                </View>
+                <Text style={styles.venueText}>{deal.venue}</Text>
                 
                 <Text style={styles.priceText}>Price: {deal.price}</Text>
               </View>
@@ -508,7 +505,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   dealTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
@@ -522,6 +519,7 @@ const styles = StyleSheet.create({
   venueText: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 3,
   },
   dateText: {
     fontSize: 9,

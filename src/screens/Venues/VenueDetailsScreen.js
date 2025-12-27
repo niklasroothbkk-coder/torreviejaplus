@@ -31,11 +31,42 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [chatMessage, setChatMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const viewsIncrementedRef = React.useRef(false);
 
   useEffect(() => {
     fetchVenueData();
     fetchReviews();
+    
+    // Only increment views once per venue visit
+    if (!viewsIncrementedRef.current) {
+      incrementViews();
+      viewsIncrementedRef.current = true;
+    }
+    
+    // Reset flag when venueId changes
+    return () => {
+      viewsIncrementedRef.current = false;
+    };
   }, [venueId]);
+
+  const incrementViews = async () => {
+    try {
+      await fetch(
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/rpc/increment_venue_views`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ venue_id_param: venueId })
+        }
+      );
+    } catch (error) {
+      console.error('Error incrementing views:', error);
+    }
+  };
 
   const fetchVenueData = async () => {
     try {
@@ -415,7 +446,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Ionicons name="star" size={14} color="#FFD700" />
-                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0})</Text>
+                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
               </View>
             </View>
           )}
@@ -425,6 +456,17 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               <View style={styles.metaItem}>
                 <Ionicons name="eye" size={14} color="#999" />
                 <Text style={styles.metaText}>{venueData.views} views</Text>
+              </View>
+            </View>
+          )}
+
+          {venueData.price_range && (
+            <View style={styles.metaRow}>
+              <View style={styles.metaItem}>
+                <Ionicons name="cash-outline" size={14} color="#0077B6" />
+                <Text style={styles.metaText}>
+                  Price Level: {venueData.price_range}
+                </Text>
               </View>
             </View>
           )}
@@ -921,7 +963,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: 0,
   },
   section: {
     marginTop: 20,

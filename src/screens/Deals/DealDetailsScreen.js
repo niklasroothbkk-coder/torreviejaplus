@@ -254,6 +254,15 @@ export default function DealDetailsScreen({ onNavigate, dealId }) {
             </View>
           )}
 
+          {dealData.price && (
+            <View style={styles.metaRow}>
+              <View style={styles.metaItem}>
+                <Ionicons name="cash" size={14} color="#0077B6" />
+                <Text style={styles.priceText}>{dealData.price}</Text>
+              </View>
+            </View>
+          )}
+
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>About this Deal</Text>
             <Text style={styles.description}>{dealData.description}</Text>
@@ -274,13 +283,6 @@ export default function DealDetailsScreen({ onNavigate, dealId }) {
                   {dealData.start_time && dealData.end_time && ' - '}
                   {dealData.end_time && formatTime(dealData.end_time)}
                 </Text>
-              </View>
-            )}
-
-            {dealData.price && (
-              <View style={styles.scheduleRow}>
-                <Ionicons name="cash" size={16} color="#0077B6" />
-                <Text style={styles.priceText}>{dealData.price}</Text>
               </View>
             )}
           </View>

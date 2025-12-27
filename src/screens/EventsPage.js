@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   eventTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,

@@ -256,6 +256,7 @@
                         <option value="Massage & Spa">Massage & Spa</option>
                         <option value="Sports Activities">Sports Activities</option>
                         <option value="Markets & Attractions">Markets & Attractions</option>
+                        <option value="Healthcare & Emergency">Healthcare & Emergency</option>
                     </select>
                 </div>
 
@@ -382,6 +383,19 @@
                         <option value="Markets">Markets</option>
                         <option value="Shopping">Shopping</option>
                         <option value="Tours">Tours</option>
+                    </select>
+                </div>
+
+                <!-- HEALTHCARE TYPE SELECT -->
+                <div class="form-group hidden" id="healthcareTypeGroup">
+                    <label for="healthcare_type">Healthcare Type</label>
+                    <select id="healthcare_type">
+                        <option value="">Select healthcare type...</option>
+                        <option value="Hospital">Hospital</option>
+                        <option value="Clinic">Clinic</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="Dentist">Dentist</option>
+                        <option value="Emergency Services">Emergency Services</option>
                     </select>
                 </div>
 
@@ -533,6 +547,7 @@
                             <option value="€">€ (Budget)</option>
                             <option value="€€">€€ (Moderate)</option>
                             <option value="€€€">€€€ (Upscale)</option>
+                            <option value="€€€€">€€€€ (Luxury)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -681,7 +696,17 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label for="deal_price_range">Price Range</label>
+                            <select id="deal_price_range">
+                                <option value="">Select price...</option>
+                                <option value="€">€ (Budget)</option>
+                                <option value="€€">€€ (Moderate)</option>
+                                <option value="€€€">€€€ (Upscale)</option>
+                                <option value="€€€€">€€€€ (Luxury)</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="deal_price">Price (e.g. €15, Buy 1 Get 1, 50% off)</label>
                             <input type="text" id="deal_price" placeholder="€15:00">
@@ -777,6 +802,7 @@
             document.getElementById('spaTypeGroup').classList.add('hidden');
             document.getElementById('sportTypeGroup').classList.add('hidden');
             document.getElementById('attractionTypeGroup').classList.add('hidden');
+            document.getElementById('healthcareTypeGroup').classList.add('hidden');
             
             if (category === 'Restaurants') {
                 document.getElementById('cuisineGroup').classList.remove('hidden');
@@ -788,6 +814,8 @@
                 document.getElementById('sportTypeGroup').classList.remove('hidden');
             } else if (category === 'Markets & Attractions') {
                 document.getElementById('attractionTypeGroup').classList.remove('hidden');
+            } else if (category === 'Healthcare & Emergency') {
+                document.getElementById('healthcareTypeGroup').classList.remove('hidden');
             }
         }
 
@@ -940,11 +968,13 @@
             const venueData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
-                cuisine: selectedCuisines.length > 0 ? selectedCuisines : null,
-                pub_types: selectedPubTypes.length > 0 ? selectedPubTypes : null,
-                spa_types: selectedSpaTypes.length > 0 ? selectedSpaTypes : null,
-                sport_types: document.getElementById('sport_type').value ? [document.getElementById('sport_type').value] : null,
-                attraction_types: document.getElementById('attraction_type').value ? [document.getElementById('attraction_type').value] : null,
+                // Only include sub-category fields relevant to the selected category
+                cuisine: selectedCuisines.length > 0 && document.getElementById('category').value === 'Restaurants' ? selectedCuisines : null,
+                pub_types: selectedPubTypes.length > 0 && document.getElementById('category').value === 'Sports Bars & Pubs' ? selectedPubTypes : null,
+                spa_types: selectedSpaTypes.length > 0 && document.getElementById('category').value === 'Massage & Spa' ? selectedSpaTypes : null,
+                sport_types: document.getElementById('sport_type').value && document.getElementById('category').value === 'Sports Activities' ? [document.getElementById('sport_type').value] : null,
+                attraction_types: document.getElementById('attraction_type').value && document.getElementById('category').value === 'Markets & Attractions' ? [document.getElementById('attraction_type').value] : null,
+                healthcare_type: document.getElementById('healthcare_type').value && document.getElementById('category').value === 'Healthcare & Emergency' ? document.getElementById('healthcare_type').value : null,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
                 location_short: document.getElementById('location_short').value,
@@ -1007,6 +1037,7 @@
                             ${v.spa_types && v.spa_types.length > 0 ? `<p><strong>Spa Types:</strong> ${Array.isArray(v.spa_types) ? v.spa_types.join(', ') : v.spa_types}</p>` : ''}
                             ${v.sport_types && v.sport_types.length > 0 ? `<p><strong>Sport Types:</strong> ${Array.isArray(v.sport_types) ? v.sport_types.join(', ') : v.sport_types}</p>` : ''}
                             ${v.attraction_types && v.attraction_types.length > 0 ? `<p><strong>Attraction Types:</strong> ${Array.isArray(v.attraction_types) ? v.attraction_types.join(', ') : v.attraction_types}</p>` : ''}
+                            ${v.healthcare_type ? `<p><strong>Healthcare Type:</strong> ${v.healthcare_type}</p>` : ''}
                             <p><strong>Location:</strong> ${v.location_short || v.location}</p>
                             <p><strong>Price:</strong> ${v.price_range} | <strong>Rating:</strong> ${v.rating || 0} ⭐</p>
                             ${v.images && v.images.length > 0 ? `<p><strong>Images:</strong> ${v.images.length} 📸</p>` : ''}
@@ -1086,6 +1117,7 @@
                 
                 document.getElementById('sport_type').value = (data.sport_types && data.sport_types[0]) || '';
                 document.getElementById('attraction_type').value = (data.attraction_types && data.attraction_types[0]) || '';
+                document.getElementById('healthcare_type').value = data.healthcare_type || '';
                 
                 document.getElementById('description').value = data.description || '';
                 document.getElementById('location').value = data.location || '';
@@ -1227,6 +1259,7 @@
                     recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
                     recurring_weeks: (isRepeat && repeatWeeks > 0) ? repeatWeeks : null,
                     price: dealPrice,
+                    price_range: document.getElementById('deal_price_range').value || null,
                     image_url: uploadedDealImage,
                     views: dealViews,
                     registered_date: registeredDate,
@@ -1362,6 +1395,7 @@
         document.getElementById('deal_start_time').value = data.start_time || '12:00';
         document.getElementById('deal_end_time').value = data.end_time || '12:00';
         document.getElementById('deal_price').value = data.price || '';
+        document.getElementById('deal_price_range').value = data.price_range || '';
         document.getElementById('deal_views').value = data.views || 0;
         document.getElementById('deal_registered_date').value = data.registered_date || '';
         

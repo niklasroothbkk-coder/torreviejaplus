@@ -9,6 +9,7 @@ export default function FilterScreen({ onClose, onApply }) {
   const [selectedSpaType, setSelectedSpaType] = useState('All');
   const [selectedSportType, setSelectedSportType] = useState('All');
   const [selectedAttractionType, setSelectedAttractionType] = useState('All');
+  const [selectedHealthcareType, setSelectedHealthcareType] = useState('All');
   const [selectedPrices, setSelectedPrices] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
@@ -16,6 +17,7 @@ export default function FilterScreen({ onClose, onApply }) {
   const [showSpaTypeDropdown, setShowSpaTypeDropdown] = useState(false);
   const [showSportTypeDropdown, setShowSportTypeDropdown] = useState(false);
   const [showAttractionTypeDropdown, setShowAttractionTypeDropdown] = useState(false);
+  const [showHealthcareTypeDropdown, setShowHealthcareTypeDropdown] = useState(false);
 
   const categories = [
     'All',
@@ -24,6 +26,7 @@ export default function FilterScreen({ onClose, onApply }) {
     'Massage & Spa',
     'Sports Activities',
     'Markets & Attractions',
+    'Healthcare & Emergency',
   ];
 
   const cuisines = [
@@ -73,7 +76,16 @@ export default function FilterScreen({ onClose, onApply }) {
     'Tours',
   ];
 
-  const prices = ['€', '€€', '€€€'];
+  const healthcareTypes = [
+    'All',
+    'Hospital',
+    'Clinic',
+    'Pharmacy',
+    'Dentist',
+    'Emergency Services',
+  ];
+
+  const prices = ['€', '€€', '€€€', '€€€€'];
 
   const togglePrice = (price) => {
     if (selectedPrices.includes(price)) {
@@ -100,6 +112,7 @@ export default function FilterScreen({ onClose, onApply }) {
       spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
       sportType: selectedCategory === 'Sports Activities' ? selectedSportType : null,
       attractionType: selectedCategory === 'Markets & Attractions' ? selectedAttractionType : null,
+      healthcareType: selectedCategory === 'Healthcare & Emergency' ? selectedHealthcareType : null,
       prices: selectedPrices,
     });
     onClose && onClose();
@@ -123,6 +136,9 @@ export default function FilterScreen({ onClose, onApply }) {
     }
     if (category !== 'Markets & Attractions') {
       setSelectedAttractionType('All');
+    }
+    if (category !== 'Healthcare & Emergency') {
+      setSelectedHealthcareType('All');
     }
   };
 
@@ -334,6 +350,43 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
+        {/* Healthcare Type Filter - Only show when Healthcare & Emergency is selected */}
+        {selectedCategory === 'Healthcare & Emergency' && (
+          <>
+            <Text style={styles.sectionTitle}>Healthcare Type</Text>
+            <TouchableOpacity 
+              style={styles.dropdown}
+              onPress={() => setShowHealthcareTypeDropdown(!showHealthcareTypeDropdown)}
+            >
+              <Text style={styles.dropdownText}>{selectedHealthcareType}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+
+            {/* Healthcare Type Dropdown Menu */}
+            {showHealthcareTypeDropdown && (
+              <View style={styles.dropdownMenu}>
+                {healthcareTypes.map((healthcareType, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedHealthcareType(healthcareType);
+                      setShowHealthcareTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedHealthcareType === healthcareType && styles.dropdownItemTextActive
+                    ]}>
+                      {healthcareType}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
         {/* Price Level */}
         <Text style={styles.sectionTitle}>Price Level</Text>
         <View style={styles.priceContainer}>
@@ -405,7 +458,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
     marginTop: 24,
@@ -423,7 +476,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dropdownText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownMenu: {
@@ -445,7 +498,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   dropdownItemText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownItemTextActive: {
@@ -473,7 +526,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0077B6',
   },
   multiSelectText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -505,7 +558,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0077B6',
   },
   priceText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -532,7 +585,7 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   cancelButton: {
@@ -546,7 +599,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#0077B6',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

@@ -93,12 +93,24 @@ export default function FridayMarketDetailsScreen({ onNavigate }) {
               <Ionicons name="star" size={16} color="#0077B6" />
               <Text style={styles.infoText}>4.3 (92 Reviews)</Text>
             </View>
-            
+          </View>
+
+          <View style={styles.infoRow}>
             <View style={styles.infoItem}>
               <Ionicons name="calendar" size={16} color="#0077B6" />
               <Text style={styles.infoText}>2025-12-09 (10:00)</Text>
             </View>
           </View>
+
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <Ionicons name="cash" size={16} color="#0077B6" />
+              <Text style={styles.infoText}>FREE /entry</Text>
+            </View>
+          </View>
+
+          {/* Separator Line */}
+          <View style={styles.separator} />
 
           {/* Details Section */}
           <View style={styles.section}>
@@ -239,16 +251,6 @@ export default function FridayMarketDetailsScreen({ onNavigate }) {
         {/* Bottom spacing */}
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Bottom Book Now Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>FREE</Text>
-        </View>
-        <TouchableOpacity style={styles.bookButton}>
-          <Text style={styles.bookButtonText}>Get Directions</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -267,7 +269,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 10,
     zIndex: 10,
   },
@@ -301,7 +303,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   shareButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   shareOptionText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   eventTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -386,8 +388,15 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   infoText: {
-    fontSize: 11,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginTop: 10,
+    marginBottom: 10,
   },
   section: {
     marginTop: 20,
@@ -399,19 +408,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
   },
   viewLink: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
   detailsText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
   },
   mapContainer: {
     width: '100%',
@@ -439,7 +448,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '500',
   },
@@ -466,12 +475,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   reviewerName: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
   reviewDate: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
     marginTop: 2,
   },
@@ -485,21 +494,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   reviewRatingText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '600',
   },
   reviewText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
   },
   viewAllButton: {
     alignItems: 'center',
     marginTop: 16,
   },
   viewAllText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -515,14 +524,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   maxWords: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
   },
   reviewInput: {
     backgroundColor: '#F9F9F9',
     borderRadius: 8,
     padding: 12,
-    fontSize: 11,
+    fontSize: 16,
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -542,43 +551,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   addMediaText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
     marginTop: 8,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  price: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0077B6',
-  },
-  bookButton: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 40,
-    paddingVertical: 14,
-    borderRadius: 15,
-  },
-  bookButtonText: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
   },
 });

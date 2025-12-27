@@ -22,6 +22,7 @@ export default function VenuesPage({ onNavigate }) {
     spaType: null,
     sportType: null,
     attractionType: null,
+    healthcareType: null,
     ratings: [],
     priceRange: null
   });
@@ -107,17 +108,20 @@ export default function VenuesPage({ onNavigate }) {
         id: venue.id,
         rating: venue.rating || 0,
         title: venue.name,
-        category: venue.category || 'Restaurant',
+        category: venue.category || 'Restaurants',
         location: venue.location_short || venue.location,
         cuisine: venue.cuisine,
         pubTypes: venue.pub_types || [], // Array for multiple pub types
         spaType: venue.spa_type,
         sportType: venue.sport_type,
         attractionType: venue.attraction_type,
+        healthcareType: venue.healthcare_type,
         priceRange: venue.price_range,
         views: venue.views || 0,
-        // Use placeholder image for now (we'll add image URLs later)
-        image: require('../../assets/venuephotos/Sweden1.png'),
+        // Use first image from images array, or placeholder if no images
+        image: (venue.images && venue.images.length > 0) 
+          ? { uri: venue.images[0] } 
+          : require('../../assets/venuephotos/Sweden1.png'),
       }));
 
       console.log('Mapped venues:', mappedVenues);
@@ -166,6 +170,11 @@ export default function VenuesPage({ onNavigate }) {
     // Filter by attraction type (only for Markets & Attractions)
     if (activeFilters.attractionType && activeFilters.attractionType !== 'All') {
       filtered = filtered.filter(venue => venue.attractionType === activeFilters.attractionType);
+    }
+
+    // Filter by healthcare type (only for Healthcare & Emergency)
+    if (activeFilters.healthcareType && activeFilters.healthcareType !== 'All') {
+      filtered = filtered.filter(venue => venue.healthcareType === activeFilters.healthcareType);
     }
 
     // Filter by rating
@@ -269,10 +278,6 @@ export default function VenuesPage({ onNavigate }) {
                 <View style={styles.locationRow}>
                   <Ionicons name="location" size={12} color="#00A8E1" />
                   <Text style={styles.locationText}>{venue.location}</Text>
-                </View>
-                
-                <View style={styles.bottomRow}>
-                  <Text style={styles.priceText}>{venue.priceRange}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -439,6 +444,7 @@ export default function VenuesPage({ onNavigate }) {
                   spaType: filters.spaType,
                   sportType: filters.sportType,
                   attractionType: filters.attractionType,
+                  healthcareType: filters.healthcareType,
                   ratings: filters.ratings,
                   priceRange: filters.priceRange
                 });
@@ -596,7 +602,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   venueTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,

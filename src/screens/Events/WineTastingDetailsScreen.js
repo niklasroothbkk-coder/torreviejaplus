@@ -93,12 +93,24 @@ export default function WineTastingDetailsScreen({ onNavigate }) {
               <Ionicons name="star" size={16} color="#0077B6" />
               <Text style={styles.infoText}>4.0 (55 Reviews)</Text>
             </View>
-            
+          </View>
+
+          <View style={styles.infoRow}>
             <View style={styles.infoItem}>
               <Ionicons name="calendar" size={16} color="#0077B6" />
               <Text style={styles.infoText}>2025-12-09 (14:00)</Text>
             </View>
           </View>
+
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <Ionicons name="cash" size={16} color="#0077B6" />
+              <Text style={styles.infoText}>€10:00 /person</Text>
+            </View>
+          </View>
+
+          {/* Separator Line */}
+          <View style={styles.separator} />
 
           {/* Details Section */}
           <View style={styles.section}>
@@ -239,17 +251,6 @@ export default function WineTastingDetailsScreen({ onNavigate }) {
         {/* Bottom spacing */}
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Bottom Book Now Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>€10:00</Text>
-          <Text style={styles.perPerson}>/person</Text>
-        </View>
-        <TouchableOpacity style={styles.bookButton}>
-          <Text style={styles.bookButtonText}>Book Now</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -390,6 +391,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginTop: 10,
+    marginBottom: 10,
   },
   section: {
     marginTop: 20,
@@ -548,44 +555,5 @@ const styles = StyleSheet.create({
     color: '#0077B6',
     fontWeight: '500',
     marginTop: 8,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0077B6',
-  },
-  perPerson: {
-    fontSize: 20,
-    color: '#666',
-    marginLeft: 4,
-  },
-  bookButton: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 40,
-    paddingVertical: 14,
-    borderRadius: 15,
-  },
-  bookButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
   },
 });
