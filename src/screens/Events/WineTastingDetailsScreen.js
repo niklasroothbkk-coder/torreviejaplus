@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 10,
     zIndex: 10,
   },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   shareButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   shareOptionText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   eventTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -387,7 +387,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   infoText: {
-    fontSize: 11,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#666',
   },
   section: {
@@ -400,19 +401,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
   },
   viewLink: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
   detailsText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
   },
   mapContainer: {
     width: '100%',
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '500',
   },
@@ -467,12 +468,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   reviewerName: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
   reviewDate: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
     marginTop: 2,
   },
@@ -486,21 +487,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   reviewRatingText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '600',
   },
   reviewText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
   },
   viewAllButton: {
     alignItems: 'center',
     marginTop: 16,
   },
   viewAllText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
   },
@@ -516,14 +517,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   maxWords: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
   },
   reviewInput: {
     backgroundColor: '#F9F9F9',
     borderRadius: 8,
     padding: 12,
-    fontSize: 11,
+    fontSize: 16,
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -543,7 +544,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   addMediaText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '500',
     marginTop: 8,
@@ -567,12 +568,12 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   price: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#0077B6',
   },
   perPerson: {
-    fontSize: 12,
+    fontSize: 20,
     color: '#666',
     marginLeft: 4,
   },
@@ -583,7 +584,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   bookButtonText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },

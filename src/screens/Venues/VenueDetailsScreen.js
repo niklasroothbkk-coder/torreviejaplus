@@ -409,21 +409,22 @@ export default function VenueDetailsScreen({ onNavigate, venueId }) {
               <Ionicons name="location" size={14} color="#0077B6" />
               <Text style={styles.metaText}>{venueData.location}</Text>
             </View>
-            
-            {venueData.views > 0 && (
-              <View style={styles.metaItem}>
-                <Ionicons name="eye" size={14} color="#0077B6" />
-                <Text style={styles.metaText}>{venueData.views} views</Text>
-              </View>
-            )}
           </View>
 
           {venueData.rating > 0 && (
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <Ionicons name="thumbs-up" size={14} color="#0077B6" />
-                <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                <Ionicons name="star" size={14} color="#FFD700" />
+                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0})</Text>
+              </View>
+            </View>
+          )}
+
+          {venueData.views > 0 && (
+            <View style={styles.metaRow}>
+              <View style={styles.metaItem}>
+                <Ionicons name="eye" size={14} color="#999" />
+                <Text style={styles.metaText}>{venueData.views} views</Text>
               </View>
             </View>
           )}
@@ -744,7 +745,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 10,
     zIndex: 10,
   },
@@ -778,7 +779,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   shareButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -806,7 +807,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   shareOptionText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
@@ -887,7 +888,7 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   venueTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 8,
@@ -896,7 +897,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 6,
   },
   metaItem: {
   flexDirection: 'row',
@@ -906,7 +907,8 @@ const styles = StyleSheet.create({
   maxWidth: '100%',
 },
   metaText: {
-  fontSize: 11,
+  fontSize: 16,
+  fontWeight: 'bold',
   color: '#666',
   flexShrink: 1,
   flexWrap: 'wrap',
@@ -916,9 +918,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   description: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
     marginBottom: 20,
   },
   section: {
@@ -928,7 +930,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -939,11 +941,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   dayText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
   },
   hoursText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
   },
   contactTextRow: {
@@ -951,13 +953,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   contactLabel: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     width: 80,
   },
   contactValue: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     flex: 1,
   },
@@ -980,7 +982,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   contactIconText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -1008,7 +1010,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reviewsCount: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
     marginTop: 4,
   },
@@ -1028,12 +1030,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reviewUserName: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
   reviewDate: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
     marginTop: 2,
   },
@@ -1047,14 +1049,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   reviewRatingText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
   reviewComment: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 18,
   },
   viewAllButton: {
     alignItems: 'center',
@@ -1062,7 +1064,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   viewAllText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#0077B6',
     fontWeight: '600',
   },
@@ -1071,7 +1073,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   maxWords: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#999',
     marginBottom: 8,
   },
@@ -1079,7 +1081,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     borderRadius: 8,
     padding: 12,
-    fontSize: 11,
+    fontSize: 16,
     color: '#000',
     minHeight: 150,
     textAlignVertical: 'top',
@@ -1094,7 +1096,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitReviewButtonText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFF',
   },
@@ -1117,7 +1119,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFF',
   },
@@ -1138,7 +1140,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   featureText: {
-    fontSize: 10,
+    fontSize: 16,
     color: '#000000',
     fontWeight: '500',
   },
@@ -1169,7 +1171,7 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   modalTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginRight: 10,
@@ -1201,7 +1203,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   emptyChatSubText: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#999',
     marginTop: 5,
     textAlign: 'center',
@@ -1214,18 +1216,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chatMessageSender: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#0077B6',
     marginBottom: 5,
   },
   chatMessageText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     marginBottom: 5,
   },
   chatMessageTime: {
-    fontSize: 9,
+    fontSize: 16,
     color: '#999',
   },
   chatInputContainer: {
@@ -1239,7 +1241,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
     maxHeight: 100,
     borderWidth: 1,

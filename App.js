@@ -177,12 +177,12 @@ export default function App() {
                   <Text style={styles.menuItemText}>Venues & Services</Text>
                 </TouchableOpacity>
 
-                {/* <TouchableOpacity 
+                <TouchableOpacity 
                   style={styles.menuItem}
                   onPress={() => handleMenuItemPress('events')}
                 >
-                  <Text style={styles.menuItemText}>Happenings & Events</Text>
-                </TouchableOpacity> */}
+                  <Text style={styles.menuItemText}>Events & Happenings</Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity 
                   style={styles.menuItem}
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   menuItemText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '500',
     color: '#000000',
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
   newBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   logoutText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#000000',
     fontWeight: '500',
   },

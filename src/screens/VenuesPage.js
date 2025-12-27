@@ -115,6 +115,7 @@ export default function VenuesPage({ onNavigate }) {
         sportType: venue.sport_type,
         attractionType: venue.attraction_type,
         priceRange: venue.price_range,
+        views: venue.views || 0,
         // Use placeholder image for now (we'll add image URLs later)
         image: require('../../assets/venuephotos/Sweden1.png'),
       }));
@@ -322,15 +323,15 @@ export default function VenuesPage({ onNavigate }) {
                 <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Venues & Services</Text>
               </TouchableOpacity>
 
-              {/* <TouchableOpacity 
+              <TouchableOpacity 
                 style={styles.menuItem}
                 onPress={() => {
                   closeMenu();
                   setTimeout(() => onNavigate && onNavigate('events'), 300);
                 }}
               >
-                <Text style={styles.menuItemText}>Happenings & Events</Text>
-              </TouchableOpacity> */}
+                <Text style={styles.menuItemText}>Events & Happenings</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.menuItem}
@@ -480,7 +481,7 @@ const styles = StyleSheet.create({
   },
   menuButtonWrapper: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     left: 20,
     zIndex: 1000,
   },
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     right: 20,
     zIndex: 1000,
     flexDirection: 'row',
@@ -516,7 +517,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   filterButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -527,7 +528,7 @@ const styles = StyleSheet.create({
     left: 30,
   },
   titleText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -586,7 +587,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -595,7 +596,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   venueTitle: {
-    fontSize: 9,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
@@ -617,7 +618,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   locationText: {
-    fontSize: 9,
+    fontSize: 14,
     color: '#999',
   },
   bottomRow: {
@@ -630,7 +631,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   priceText: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '600',
     color: '#00A8E1',
   },
@@ -650,7 +651,7 @@ const styles = StyleSheet.create({
   },
   showMoreButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   loadingContainer: {
@@ -705,7 +706,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   menuItemText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '500',
     color: '#000000',
   },
@@ -718,7 +719,7 @@ const styles = StyleSheet.create({
   },
   newBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
@@ -737,7 +738,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   logoutText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#000000',
     fontWeight: '500',
   },

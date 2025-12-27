@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 10,
     zIndex: 10,
   },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   shareButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   shareOptionText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   dealTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 8,
@@ -510,7 +510,8 @@ const styles = StyleSheet.create({
   maxWidth: '100%',
 },
   metaText: {
-    fontSize: 11,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#666',
     flexShrink: 1,
     flexWrap: 'wrap',
@@ -522,7 +523,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
@@ -534,18 +535,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   scheduleText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
   },
   priceText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#0077B6',
   },
   description: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 16,
+    lineHeight: 22,
   },
   hoursRow: {
     flexDirection: 'row',
@@ -634,7 +635,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFF',
   },
@@ -662,7 +663,7 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   modalTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginRight: 10,
@@ -694,7 +695,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   emptyChatSubText: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#999',
     marginTop: 5,
     textAlign: 'center',
@@ -707,18 +708,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chatMessageSender: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#0077B6',
     marginBottom: 5,
   },
   chatMessageText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     marginBottom: 5,
   },
   chatMessageTime: {
-    fontSize: 9,
+    fontSize: 16,
     color: '#999',
   },
   chatInputContainer: {
@@ -732,7 +733,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
     maxHeight: 100,
     borderWidth: 1,
@@ -754,7 +755,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   venueLinkText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '700',
     color: '#0077B6',
     textAlign: 'center',

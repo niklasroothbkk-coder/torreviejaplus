@@ -10,7 +10,7 @@ export default function EventsPage({ onNavigate }) {
   const [slideAnim] = useState(new Animated.Value(-width * 0.75));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [filterFadeAnim] = useState(new Animated.Value(0));
+  const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -31,17 +31,16 @@ export default function EventsPage({ onNavigate }) {
 
   const openFilter = () => {
     setShowFilter(true);
-    filterFadeAnim.setValue(0);
-    Animated.timing(filterFadeAnim, {
-      toValue: 1,
-      duration: 500,
+    Animated.timing(filterSlideAnim, {
+      toValue: 0,
+      duration: 300,
       useNativeDriver: true,
     }).start();
   };
 
   const closeFilter = () => {
-    Animated.timing(filterFadeAnim, {
-      toValue: 0,
+    Animated.timing(filterSlideAnim, {
+      toValue: -Dimensions.get('window').height,
       duration: 300,
       useNativeDriver: true,
     }).start(() => setShowFilter(false));
@@ -108,7 +107,7 @@ export default function EventsPage({ onNavigate }) {
     <View style={styles.container}>
       {/* Background Image */}
       <Image 
-        source={require('../../assets/backgrounds/BG_NEW.png')} 
+        source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -247,12 +246,12 @@ export default function EventsPage({ onNavigate }) {
                 <Text style={styles.menuItemText}>Venues & Services</Text>
               </TouchableOpacity>
 
-              {/* <TouchableOpacity 
+              <TouchableOpacity 
                 style={[styles.menuItem, styles.activeMenuItem]}
                 onPress={closeMenu}
               >
-                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Happenings & Events</Text>
-              </TouchableOpacity> */}
+                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Events & Happenings</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.menuItem}
@@ -343,30 +342,29 @@ export default function EventsPage({ onNavigate }) {
         animationType="none"
         onRequestClose={closeFilter}
       >
-        <Animated.View 
-          style={[
-            styles.filterModalContainer,
-            { opacity: filterFadeAnim }
-          ]}
-        >
-          {/* Filter content (65% from top) */}
-          <View style={styles.filterContent}>
-            <EventsFilterScreen 
+        <View style={styles.filterModalContainer}>
+          <Animated.View 
+            style={[
+              styles.filterBottomSheet,
+              { transform: [{ translateY: filterSlideAnim }] }
+            ]}
+          >
+            <View style={styles.filterHandle} />
+            <EventsFilterScreen
               onClose={closeFilter}
               onApply={(filters) => {
                 console.log('Applied filters:', filters);
                 closeFilter();
               }}
             />
-          </View>
+            </Animated.View>
           
-          {/* Touchable overlay (35% at bottom) */}
           <TouchableOpacity 
             style={styles.filterOverlay}
             activeOpacity={1}
             onPress={closeFilter}
           />
-        </Animated.View>
+        </View>
       </Modal>
     </View>
   );
@@ -380,8 +378,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    top: 60,
-    left: 0,
   },
   headerImageContainer: {
     position: 'relative',
@@ -397,7 +393,7 @@ const styles = StyleSheet.create({
   },
   menuButtonWrapper: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     left: 20,
     zIndex: 1000,
   },
@@ -416,7 +412,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     right: 20,
     zIndex: 1000,
     flexDirection: 'row',
@@ -433,7 +429,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   filterButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -444,7 +440,7 @@ const styles = StyleSheet.create({
     left: 30,
   },
   titleText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -503,7 +499,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -512,7 +508,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   eventTitle: {
-    fontSize: 9,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
@@ -524,16 +520,16 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   venueText: {
-    fontSize: 9,
+    fontSize: 14,
     color: '#666',
   },
   dateText: {
-    fontSize: 9,
+    fontSize: 14,
     color: '#999',
     marginBottom: 4,
   },
   priceText: {
-    fontSize: 9,
+    fontSize: 14,
     fontWeight: '600',
     color: '#00A8E1',
   },
@@ -553,7 +549,7 @@ const styles = StyleSheet.create({
   },
   showMoreButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   menuModalOverlay: {
@@ -597,7 +593,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   menuItemText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '500',
     color: '#000000',
   },
@@ -610,7 +606,7 @@ const styles = StyleSheet.create({
   },
   newBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
@@ -629,7 +625,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   logoutText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#000000',
     fontWeight: '500',
   },
@@ -646,18 +642,29 @@ const styles = StyleSheet.create({
   },
   filterModalContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
+    backgroundColor: 'transparent',
   },
   filterOverlay: {
-    height: '30%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
   },
-  filterContent: {
+  filterBottomSheet: {
     height: '70%',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  filterHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#CCCCCC',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
 });
