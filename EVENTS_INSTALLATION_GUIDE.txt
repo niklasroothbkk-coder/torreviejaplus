@@ -1,0 +1,49 @@
+=================================================================
+EVENTS & HAPPENINGS - INSTALLATION GUIDE
+=================================================================
+
+STEG 1: KÖR SQL I SUPABASE
+-----------------------------------------------------------------
+1. Öppna Supabase Dashboard → SQL Editor
+2. Kör filen: UPDATE_EVENTS_TABLE.sql
+3. Detta skapar events-tabellen identisk med deals
+
+STEG 2: LÄGG TILL HTML I admin.html  
+-----------------------------------------------------------------  
+1. Öppna admin.html i VS Code
+2. Sök efter: <!-- All Deals Page -->
+3. Scrolla ner och hitta där All Deals Page SLUTAR
+   (det är en </div> följt av </div> som stänger all-deals-page)
+4. DIREKT EFTER dessa två </div>, kopiera in HELA innehållet från: 
+   EVENTS_TO_ADD.html
+
+STEG 3: LÄGG TILL JAVASCRIPT I admin.html
+-----------------------------------------------------------------
+1. Scrolla längst ner i admin.html till </script> taggen
+2. PRECIS FÖRE </script>, kopiera in HELA innehållet från:
+   EVENTS_JAVASCRIPT_TO_ADD.js
+
+STEG 4: TESTA!
+-----------------------------------------------------------------
+1. Öppna admin.html i webbläsaren
+2. Du ska nu se i sidomenyn:
+   - All Events & Happenings  
+   - + New Event & Happening
+3. Klicka på "+ New Event & Happening" och skapa ett test-event
+4. Klicka på "All Events & Happenings" för att se dina events
+
+=================================================================
+FEL SÖKNING
+=================================================================
+
+Problem: "events is not defined" eller liknande fel
+Lösning: Kontrollera att JavaScript-koden är inlagd FÖRE </script>
+
+Problem: Events-sidan visar inte
+Lösning: Kontrollera att HTML-koden är inlagd efter All Deals Page
+
+Problem: Cannot read 'value' of null  
+Lösning: loadVenuesForEventDropdown() måste köras i DOMContentLoaded
+         (Detta är redan fixat i switchPage och DOMContentLoaded)
+
+=================================================================

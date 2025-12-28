@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Animated, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EventsFilterScreen from './EventsFilterScreen';
+import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,56 @@ export default function EventsPage({ onNavigate }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('active', true)
+        .order('event_date', { ascending: true });
+
+      if (error) throw error;
+
+      const transformedEvents = data.map(event => ({
+        id: event.id,
+        rating: 4.5,
+        title: event.name,
+        venue: event.category,
+        date: formatEventDate(event.event_date, event.start_time, event.end_time),
+        price: event.price || 'FREE',
+        image: event.image_url ? { uri: event.image_url } : require('../../assets/events/market-photo.png'),
+      }));
+
+      setEvents(transformedEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatEventDate = (date, startTime, endTime) => {
+    if (!date) return 'TBA';
+    
+    const eventDate = new Date(date);
+    const formattedDate = eventDate.toISOString().split('T')[0];
+    
+    if (startTime && endTime) {
+      return `${formattedDate} (${startTime.substring(0, 5)} - ${endTime.substring(0, 5)})`;
+    } else if (startTime) {
+      return `${formattedDate} (${startTime.substring(0, 5)})`;
+    }
+    
+    return formattedDate;
+  };
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -46,73 +97,14 @@ export default function EventsPage({ onNavigate }) {
     }).start(() => setShowFilter(false));
   };
 
-  const events = [
-    {
-      id: 1,
-      rating: 4.0,
-      title: 'Wine Tasting',
-      venue: 'WineGuro',
-      date: '2025-12-09 (14:00)',
-      price: '€10:00',
-      image: require('../../assets/events/Wine.png'),
-    },
-    {
-      id: 2,
-      rating: 4.3,
-      title: 'Friday Market',
-      venue: 'Plaza Antonio X',
-      date: '2025-12-09 (10:00)',
-      price: 'FREE',
-      image: require('../../assets/events/market-photo.png'),
-    },
-    {
-      id: 3,
-      rating: 5.0,
-      title: 'Spain vs Sweden',
-      venue: 'Plaza Elit',
-      date: '2025-12-09 (16:00)',
-      price: 'FREE',
-      image: require('../../assets/events/fotball-photo.png'),
-    },
-    {
-      id: 4,
-      rating: 4.4,
-      title: 'Boat Day',
-      venue: 'Playa del Cura',
-      date: '2025-12-10',
-      price: '€5:00',
-      image: require('../../assets/events/Boat.png'),
-    },
-    {
-      id: 5,
-      rating: 3.9,
-      title: 'Night Club Event',
-      venue: 'Club Elite',
-      date: '2025-12-11 (22:00)',
-      price: '€15:00',
-      image: require('../../assets/events/candy-photo.png'),
-    },
-    {
-      id: 6,
-      rating: 3.7,
-      title: 'Get 2 Pay 1',
-      venue: 'La Tasca',
-      date: 'Whole December',
-      price: '€3:00',
-      image: require('../../assets/events/happy-hour-photo.png'),
-    },
-  ];
-
   return (
     <View style={styles.container}>
-      {/* Background Image */}
       <Image 
         source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />
       
-      {/* Header Image Background */}
       <View style={styles.headerImageContainer}>
         <Image 
           source={require('../../assets/backgrounds/Header Image Container.png')} 
@@ -120,7 +112,6 @@ export default function EventsPage({ onNavigate }) {
           resizeMode="cover"
         />
         
-        {/* Hamburger Menu Button */}
         <TouchableOpacity 
           style={styles.menuButtonWrapper}
           onPress={openMenu}
@@ -130,7 +121,6 @@ export default function EventsPage({ onNavigate }) {
           </View>
         </TouchableOpacity>
 
-        {/* Filter Button */}
         <TouchableOpacity 
           style={styles.filterButton}
           onPress={openFilter}
@@ -139,73 +129,65 @@ export default function EventsPage({ onNavigate }) {
           <Text style={styles.filterButtonText}>FILTER</Text>
         </TouchableOpacity>
 
-        {/* Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleText}>Happenings & Events</Text>
         </View>
       </View>
 
-      {/* Events Grid */}
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.grid}>
-          {events.map((event, index) => (
-            <TouchableOpacity
-              key={event.id}
-              style={[
-                styles.eventCard,
-                (index === 0 || index === 1) && styles.eventCardFeatured
-              ]}
-              onPress={() => {
-                if (event.id === 1) {
-                  onNavigate && onNavigate('winetastingdetails');
-                } else if (event.id === 2) {
-                  onNavigate && onNavigate('fridaymarketdetails');
-                } else if (event.id === 3) {
-                  onNavigate && onNavigate('footballmatchdetails');
-                } else if (event.id === 4) {
-                  onNavigate && onNavigate('boatdaydetails');
-                } else if (event.id === 5) {
-                  onNavigate && onNavigate('nightclubdetails');
-                } else if (event.id === 6) {
-                  onNavigate && onNavigate('happyhoureventdetails');
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={styles.imageContainer}>
-                <Image source={event.image} style={styles.eventImage} />
-                <View style={styles.ratingBadge}>
-                  <Ionicons name="star" size={14} color="#FFD700" />
-                  <Text style={styles.ratingText}>{event.rating}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.eventInfo}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                
-                <View style={styles.venueRow}>
-                  <Ionicons name="location" size={14} color="#00A8E1" />
-                  <Text style={styles.venueText}>{event.venue}</Text>
-                </View>
-                
-                <Text style={styles.dateText}>{event.date}</Text>
-                
-                <Text style={styles.priceText}>Price: {event.price}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Show More Button */}
-        <TouchableOpacity style={styles.showMoreButton}>
-          <Text style={styles.showMoreButtonText}>Show more</Text>
-        </TouchableOpacity>
+        {loading ? (
+          <ActivityIndicator size="large" color="#0077B6" style={{ marginTop: 40 }} />
+        ) : (
+          <>
+            <View style={styles.grid}>
+              {events.map((event, index) => (
+                <TouchableOpacity
+  key={event.id}
+  style={[
+    styles.eventCard,
+    (index === 0 || index === 1) && styles.eventCardFeatured
+  ]}
+  onPress={() => {
+    onNavigate && onNavigate('eventdetails', { eventId: event.id });
+  }}
+  activeOpacity={0.7}
+>
+                  <View style={styles.imageContainer}>
+                    <Image source={event.image} style={styles.eventImage} />
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={14} color="#FFD700" />
+                      <Text style={styles.ratingText}>{event.rating}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.eventInfo}>
+                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    
+                    <View style={styles.venueRow}>
+                      <Ionicons name="location" size={14} color="#00A8E1" />
+                      <Text style={styles.venueText}>{event.venue}</Text>
+                    </View>
+                    
+                    <Text style={styles.dateText}>{event.date}</Text>
+                    
+                    <Text style={styles.priceText}>Price: {event.price}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {events.length > 6 && (
+              <TouchableOpacity style={styles.showMoreButton}>
+                <Text style={styles.showMoreButtonText}>Show more</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
       </ScrollView>
 
-      {/* Hamburger Menu Modal */}
       <Modal
         visible={menuOpen}
         transparent={true}
@@ -311,7 +293,6 @@ export default function EventsPage({ onNavigate }) {
               </TouchableOpacity>
             )}
 
-            {/* Logo at Bottom */}
             <TouchableOpacity 
               style={styles.bottomLogoSection}
               onPress={() => {
@@ -335,7 +316,6 @@ export default function EventsPage({ onNavigate }) {
         </View>
       </Modal>
 
-      {/* Filter Modal */}
       <Modal
         visible={showFilter}
         transparent={true}

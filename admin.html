@@ -9,24 +9,103 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000000;
+            background: #f0f0f1;
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 2.5em; }
+        
+        /* WordPress-style Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #23282d;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            color: white;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: #191e23;
+            border-bottom: 1px solid #32373c;
+        }
+        
+        .sidebar-header h1 {
+            color: white;
+            font-size: 20px;
+            margin: 0;
+        }
+        
+        .sidebar-menu {
+            padding: 10px 0;
+        }
+        
+        .menu-item {
+            padding: 12px 20px;
+            color: #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+        }
+        
+        .menu-item:hover {
+            background: #32373c;
+            color: #00b9eb;
+        }
+        
+        .menu-item.active {
+            background: #0073aa;
+            border-left-color: #00b9eb;
+            color: white;
+        }
+        
+        .menu-item span {
+            font-size: 20px;
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 20px 40px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ccd0d4;
+            padding-bottom: 15px;
+        }
+        
+        .page-header h1 {
+            color: #23282d;
+            font-size: 23px;
+            font-weight: 400;
+            margin: 0;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #23282d; text-align: left; margin-bottom: 20px; font-size: 23px; font-weight: 400; }
         .panel {
             background: white;
-            border-radius: 10px;
+            border-radius: 0;
             padding: 30px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+            border: 1px solid #c3c4c7;
         }
         h2 {
-            color: #333;
+            color: #23282d;
             margin-bottom: 20px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 1px solid #c3c4c7;
             padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 400;
         }
         .form-group { margin-bottom: 20px; }
         .form-group.hidden { display: none; }
@@ -42,48 +121,54 @@
         textarea { min-height: 100px; resize: vertical; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         button {
-            background: #667eea;
+            background: #2271b1;
             color: white;
-            padding: 12px 30px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 400;
             cursor: pointer;
+            box-shadow: 0 1px 0 #2271b1;
         }
-        button:hover { background: #5568d3; }
-        button.delete { background: #e74c3c; }
-        button.delete:hover { background: #c0392b; }
-        button.edit { background: #3498db; padding: 8px 16px; font-size: 14px; }
-        button.edit:hover { background: #2980b9; }
+        button:hover { background: #135e96; box-shadow: 0 1px 0 #135e96; }
+        button.delete { background: #b32d2e; box-shadow: 0 1px 0 #b32d2e; }
+        button.delete:hover { background: #8a2424; box-shadow: 0 1px 0 #8a2424; }
+        button.edit { background: #2271b1; padding: 6px 12px; font-size: 13px; box-shadow: 0 1px 0 #2271b1; }
+        button.edit:hover { background: #135e96; box-shadow: 0 1px 0 #135e96; }
+        button.reactivate { background: #00a32a; padding: 6px 12px; font-size: 13px; box-shadow: 0 1px 0 #00a32a; }
+        button.reactivate:hover { background: #008a20; box-shadow: 0 1px 0 #008a20; }
         .venue-item {
-            background: #f8f9fa;
+            background: #f6f7f7;
             padding: 20px;
             margin-bottom: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
+            border-radius: 0;
+            border-left: 4px solid #2271b1;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid #c3c4c7;
         }
         .venue-info h3 { color: #333; margin-bottom: 5px; text-align: left; }
         .venue-info p { color: #666; margin: 3px 0; font-size: 14px; text-align: left; } 
         .venue-actions { display: flex; gap: 10px; }
         .success {
-            background: #27ae60;
+            background: #00a32a;
             color: white;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 12px 15px;
+            border-radius: 0;
             margin-bottom: 20px;
             display: none;
+            border-left: 4px solid #008a20;
         }
         .error {
-            background: #e74c3c;
+            background: #d63638;
             color: white;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 12px 15px;
+            border-radius: 0;
             margin-bottom: 20px;
             display: none;
+            border-left: 4px solid #b02a2c;
         }
         .loading { text-align: center; padding: 20px; color: #666; }
         
@@ -120,15 +205,17 @@
         }
         .image-upload-section input[type="file"] { display: none; }
         .upload-btn {
-            background: #667eea;
+            background: #2271b1;
             color: white;
-            padding: 12px 30px;
-            border-radius: 5px;
+            padding: 8px 16px;
+            border-radius: 3px;
             cursor: pointer;
             display: inline-block;
             margin: 10px 0;
+            font-size: 14px;
+            box-shadow: 0 1px 0 #2271b1;
         }
-        .upload-btn:hover { background: #5568d3; }
+        .upload-btn:hover { background: #135e96; box-shadow: 0 1px 0 #135e96; }
         .image-preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -141,7 +228,7 @@
             overflow: hidden;
             border: 3px solid transparent;
         }
-        .image-preview-item.main-image { border-color: #27ae60; }
+        .image-preview-item.main-image { border-color: #00a32a; }
         .image-preview-item img {
             width: 100%;
             height: 150px;
@@ -152,7 +239,7 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background: #e74c3c;
+            background: #b32d2e;
             color: white;
             border: none;
             border-radius: 50%;
@@ -166,7 +253,7 @@
             position: absolute;
             bottom: 5px;
             left: 5px;
-            background: #27ae60;
+            background: #00a32a;
             color: white;
             padding: 3px 8px;
             border-radius: 3px;
@@ -190,56 +277,127 @@
             font-weight: 600;
         }
         
-        /* Tab Styles */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        .tab {
-            padding: 12px 24px;
-            background: transparent;
-            color: #666;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .tab:hover {
-            color: #667eea;
-        }
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-        .tab-content {
+        /* Content Pages */
+        .content-page {
             display: none;
         }
-        .tab-content.active {
+        
+        .content-page.active {
             display: block;
+        }
+        
+        /* Venue Filters */
+        .venue-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #c3c4c7;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #2271b1;
+        }
+        
+        .category-filter select {
+            padding: 10px 15px;
+            border: 1px solid #c3c4c7;
+            border-radius: 3px;
+            font-size: 14px;
+            min-width: 200px;
+            background: white;
+        }
+        
+        .category-filter select:focus {
+            outline: none;
+            border-color: #2271b1;
+        }
+        
+        .filter-results {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏖️ TorreviejaPlus Admin Panel</h1>
-        <div id="successMessage" class="success"></div>
-        <div id="errorMessage" class="error"></div>
+    <!-- WordPress-style Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header" onclick="switchPage('dashboard')" style="cursor: pointer;">
+            <h1>🏖️ TorreviejaPlus</h1>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item active" onclick="switchPage('dashboard')">
+                <span>🏠</span>
+                <div>Dashboard</div>
+            </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('all-venues')">
+                <span>📋</span>
+                <div>All Venues</div>
+            </div>
+            <div class="menu-item" onclick="switchPage('add-venue')">
+                <span style="color: white;">➕</span>
+                <div>Add Venue</div>
+            </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('all-deals')">
+                <span>🎯</span>
+                <div>All Deals</div>
+            </div>
+            <div class="menu-item" onclick="switchPage('add-deal')">
+                <span style="color: white;">➕</span>
+                <div>New Deal</div>
+            </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('all-events')">
+                <span>🎉</span>
+                <div>All Events</div>
+            </div>
+            <div class="menu-item" onclick="switchPage('add-event')">
+                <span style="color: white;">➕</span>
+                <div>New Event</div>
+            </div>
+        </div>
+    </div>
 
-        <div class="panel">
-            <!-- Tabs -->
-            <div class="tabs">
-                <button type="button" class="tab active" onclick="switchTab('venues')">➕ Add New Venue</button>
-                <button type="button" class="tab" onclick="switchTab('deals')">🎁 Add New Deal</button>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="container">
+            <div id="successMessage" class="success"></div>
+            <div id="errorMessage" class="error"></div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="content-page active">
+                <div class="page-header">
+                    <h1>Welcome to TorreviejaPlus Admin</h1>
+                </div>
+                <div class="panel" style="text-align: center; padding: 100px 30px;">
+                    <img src="assets/backgrounds/TV+STOR.png" alt="TorreviejaPlus Logo" style="max-width: 600px; width: 100%; height: auto;">
+                </div>
             </div>
 
-            <!-- Venue Tab Content -->
-            <div id="venuesTab" class="tab-content active">
-                <h2 id="formTitle">➕ Add New Venue</h2>
-                <form id="venueForm">
+            <!-- Add Venue Page -->
+            <div id="add-venue-page" class="content-page">
+                <div class="page-header">
+                    <h1 id="formTitle">Add New Venue</h1>
+                </div>
+                <div class="panel">
+                    <form id="venueForm">
                 <input type="hidden" id="venueId">
                 
                 <div class="form-group">
@@ -564,11 +722,15 @@
                 <button type="submit" id="submitBtn">Add Venue</button>
                 <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none; background: #95a5a6;">Cancel</button>
             </form>
+                </div>
             </div>
 
-            <!-- Deal Tab Content -->
-            <div id="dealsTab" class="tab-content">
-                <h2 id="dealFormTitle">🎁 Add New Deal</h2>
+            <!-- Add Deal Page -->
+            <div id="add-deal-page" class="content-page">
+                <div class="page-header">
+                    <h1 id="dealFormTitle">Add New Deal</h1>
+                </div>
+                <div class="panel">
                 <form id="dealForm">
                     <input type="hidden" id="dealId">
                     
@@ -725,62 +887,276 @@
                     <button type="submit" id="dealSubmitBtn">Add Deal</button>
                     <button type="button" id="dealCancelBtn" onclick="cancelDealEdit()" style="display: none; background: #95a5a6;">Cancel</button>
                 </form>
-            </div>
-        </div>
-
-        <div class="panel">
-            <!-- Tabs for viewing -->
-            <div class="tabs">
-                <button type="button" class="tab active" onclick="switchViewTab('venues')">📋 All Venues & Services</button>
-                <button type="button" class="tab" onclick="switchViewTab('deals')">🎁 All Deals & Promotions</button>
+                </div>
             </div>
 
-            <!-- Venues List -->
-            <div id="venuesListTab" class="tab-content active">
-                <div id="venuesList" class="loading">Loading venues...</div>
+            <!-- All Venues Page -->
+            <div id="all-venues-page" class="content-page">
+                <div class="page-header">
+                    <h1>All Venues & Services</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="venueSearch" placeholder="🔍 Search by venue name..." oninput="filterVenues()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="categoryFilter" onchange="filterVenues()">
+                                <option value="">All Categories</option>
+                                <option value="Restaurants">Restaurants</option>
+                                <option value="Sports Bars & Pubs">Sports Bars & Pubs</option>
+                                <option value="Massage & Spa">Massage & Spa</option>
+                                <option value="Sports Activities">Sports Activities</option>
+                                <option value="Markets & Attractions">Markets & Attractions</option>
+                                <option value="Healthcare & Emergency">Healthcare & Emergency</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="filterResults" class="filter-results" style="display: none;"></div>
+                    <div id="venuesList" class="loading">Loading venues...</div>
+                </div>
             </div>
 
-            <!-- Deals List -->
-            <div id="dealsListTab" class="tab-content">
-                <div id="dealsList" class="loading">Loading deals...</div>
+            <!-- All Deals Page -->
+            <div id="all-deals-page" class="content-page">
+                <div class="page-header">
+                    <h1>All Deals & Promotions</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="dealSearch" placeholder="🔍 Search by deal name..." oninput="filterDeals()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="dealCategoryFilter" onchange="filterDeals()">
+                                <option value="">All Categories</option>
+                                <option value="Happy Hour">Happy Hour</option>
+                                <option value="Watersport Deals">Watersport Deals</option>
+                                <option value="Restaurant Deals">Restaurant Deals</option>
+                                <option value="Sport Deals">Sport Deals</option>
+                                <option value="Tour Deals">Tour Deals</option>
+                                <option value="Pub & Bar Deals">Pub & Bar Deals</option>
+                            </select>
+                        </div>
+                        <div class="category-filter">
+                            <select id="dealStatusFilter" onchange="filterDeals()">
+                                <option value="all">All Deals</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Old/Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="dealFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="dealsList" class="loading">Loading deals...</div>
+                </div>
+            </div>
+
+            <!-- Add Event Page -->
+            <div id="add-event-page" class="content-page">
+                <div class="page-header">
+                    <h1 id="eventFormTitle">Add New Event</h1>
+                </div>
+                <div class="panel">
+                <form id="eventForm">
+                    <input type="hidden" id="eventId">
+                    
+                    <div class="form-group">
+                        <label for="event_name">Event Name *</label>
+                        <input type="text" id="event_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_category">Events / Happenings Category *</label>
+                        <select id="event_category" required>
+                            <option value="">Select category...</option>
+                            <option value="Concerts">Concerts</option>
+                            <option value="Festivals">Festivals</option>
+                            <option value="Markets">Markets</option>
+                            <option value="Tours">Tours</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_description">Description *</label>
+                        <textarea id="event_description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_phone">Phone</label>
+                        <input type="text" id="event_phone" placeholder="+34 XXX XXX XXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_website">Website / Link</label>
+                        <input type="url" id="event_website" placeholder="https://example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>📅 Event Schedule Start Day</label>
+                        
+                        <div class="form-row" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label for="event_date">Date *</label>
+                                <input type="date" id="event_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="event_start_time">Start Time</label>
+                                <input type="time" id="event_start_time" value="20:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="event_end_time">End Time</label>
+                                <input type="time" id="event_end_time" value="23:00">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>
+                                <input type="checkbox" id="event_repeat" onchange="toggleEventRepeatOptions()" style="width: auto; margin-right: 8px;">
+                                <span>🔁 Repeat (show for entire month or specific days)</span>
+                            </label>
+                        </div>
+
+                        <div id="eventRepeatOptions" class="form-group hidden" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <label style="margin-bottom: 10px;">Repeat on:</label>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Monday">
+                                    <span>Monday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Tuesday">
+                                    <span>Tuesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Wednesday">
+                                    <span>Wednesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Thursday">
+                                    <span>Thursday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Friday">
+                                    <span>Friday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Saturday">
+                                    <span>Saturday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Sunday">
+                                    <span>Sunday</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                                <label for="event_repeat_weeks">Number of weeks to repeat</label>
+                                <input type="number" id="event_repeat_weeks" min="1" max="52" placeholder="4" style="width: 150px;">
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    📝 Example: Select Friday + Saturday with 4 weeks = 8 events total
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📸 Event Image (Max 1) - Main card image</label>
+                        <div class="image-upload-section">
+                            <input type="file" id="eventImageInput" accept="image/*">
+                            <label for="eventImageInput" class="upload-btn">Choose Image</label>
+                            <div class="upload-info">
+                                Max 1 image • JPG, PNG, WebP
+                            </div>
+                            <div id="eventImagePreview" class="image-preview-grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label for="event_price">Price (e.g. €15, Free Entry)</label>
+                            <input type="text" id="event_price" placeholder="Free">
+                        </div>
+                        <div class="form-group">
+                            <label for="event_views">Views</label>
+                            <input type="number" id="event_views" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_registered_date">Registered Date</label>
+                        <input type="date" id="event_registered_date">
+                    </div>
+
+                    <button type="submit" id="eventSubmitBtn">Add Event</button>
+                    <button type="button" id="eventCancelBtn" onclick="cancelEventEdit()" style="display: none; background: #95a5a6;">Cancel</button>
+                </form>
+                </div>
+            </div>
+
+            <!-- All Events Page -->
+            <div id="all-events-page" class="content-page">
+                <div class="page-header">
+                    <h1>All Events</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="eventSearch" placeholder="🔍 Search by event name..." oninput="filterEvents()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="eventCategoryFilter" onchange="filterEvents()">
+                                <option value="">All Categories</option>
+                                <option value="Concerts">Concerts</option>
+                                <option value="Festivals">Festivals</option>
+                                <option value="Markets">Markets</option>
+                                <option value="Tours">Tours</option>
+                            </select>
+                        </div>
+                        <div class="category-filter">
+                            <select id="eventStatusFilter" onchange="filterEvents()">
+                                <option value="all">All Events</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Old/Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="eventFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="eventsList" class="loading">Loading events...</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Tab switching
-        function switchTab(tab) {
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
+        // Page switching for sidebar menu
+        function switchPage(pageName) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.content-page');
+            pages.forEach(page => page.classList.remove('active'));
             
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(tc => tc.classList.remove('active'));
+            // Remove active from all menu items
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
             
-            if (tab === 'venues') {
-                tabs[0].classList.add('active');
-                document.getElementById('venuesTab').classList.add('active');
-            } else if (tab === 'deals') {
-                tabs[1].classList.add('active');
-                document.getElementById('dealsTab').classList.add('active');
+            // Show selected page
+            const targetPage = document.getElementById(pageName + '-page');
+            if (targetPage) {
+                targetPage.classList.add('active');
             }
-        }
-
-        // View tab switching (for bottom section)
-        function switchViewTab(tab) {
-            const panel = document.querySelector('.panel:last-child');
-            const tabs = panel.querySelectorAll('.tab');
-            const tabContents = panel.querySelectorAll('.tab-content');
             
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(tc => tc.classList.remove('active'));
+            // Activate clicked menu item (only if event exists)
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
             
-            if (tab === 'venues') {
-                tabs[0].classList.add('active');
-                document.getElementById('venuesListTab').classList.add('active');
-            } else if (tab === 'deals') {
-                tabs[1].classList.add('active');
-                document.getElementById('dealsListTab').classList.add('active');
-                loadDeals(); // Load deals when tab is opened
+            // Load data when switching to list pages
+            if (pageName === 'all-venues') {
+                loadVenues();
+            } else if (pageName === 'all-deals') {
+                loadDeals();
+            } else if (pageName === 'all-events') {
+                loadEvents();
             }
         }
 
@@ -793,6 +1169,8 @@
         let uploadedImages = [];
         let editingDeal = null;
         let uploadedDealImage = null;
+        let allVenues = []; // Store all venues for filtering
+        let allDeals = []; // Store all deals for filtering
 
         function updateSubCategories() {
             const category = document.getElementById('category').value;
@@ -822,6 +1200,24 @@
         document.addEventListener('DOMContentLoaded', () => { 
             loadVenues();
             loadVenuesForDealDropdown();
+            
+            // Set registered dates to today
+            const today = new Date().toISOString().split('T')[0];
+            
+            const venueRegisteredDate = document.getElementById('registered_date');
+            if (venueRegisteredDate) {
+                venueRegisteredDate.value = today;
+            }
+            
+            const dealRegisteredDate = document.getElementById('deal_registered_date');
+            if (dealRegisteredDate) {
+                dealRegisteredDate.value = today;
+            }
+            
+            const eventRegisteredDate = document.getElementById('event_registered_date');
+            if (eventRegisteredDate) {
+                eventRegisteredDate.value = today;
+            }
         });
 
         document.getElementById('imageInput').addEventListener('change', async (e) => {
@@ -1012,6 +1408,9 @@
                 renderImagePreviews();
                 cancelEdit();
                 loadVenues();
+                
+                // Navigate to dashboard
+                switchPage('dashboard');
             } catch (error) {
                 showError('Error: ' + error.message);
             }
@@ -1023,11 +1422,29 @@
             try {
                 const { data, error } = await supabaseClient.from('venues').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
+                
+                allVenues = data; // Store data for filtering
+                
                 if (data.length === 0) {
                     listDiv.innerHTML = '<p style="text-align:center;color:#999;">No venues yet!</p>';
                     return;
                 }
-                listDiv.innerHTML = data.map(v => `
+                
+                renderVenues(data); // Use renderVenues instead
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function renderVenues(venues) {
+            const listDiv = document.getElementById('venuesList');
+            
+            if (venues.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No venues match your search.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = venues.map(v => `
                     <div class="venue-item">
                         <div class="venue-info">
                             <h3>${v.name}</h3>
@@ -1048,9 +1465,31 @@
                         </div>
                     </div>
                 `).join('');
-            } catch (error) {
-                showError('Error: ' + error.message);
+        }
+
+        function filterVenues() {
+            const searchTerm = document.getElementById('venueSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            let filtered = allVenues;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(v => v.name.toLowerCase().includes(searchTerm));
             }
+            
+            if (categoryFilter) {
+                filtered = filtered.filter(v => v.category === categoryFilter);
+            }
+            
+            const resultsDiv = document.getElementById('filterResults');
+            if (searchTerm || categoryFilter) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.textContent = `Showing ${filtered.length} of ${allVenues.length} venues`;
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            
+            renderVenues(filtered);
         }
 
         async function editVenue(id) {
@@ -1059,9 +1498,16 @@
                 if (error) throw error;
                 
                 editingVenue = id;
-                document.getElementById('formTitle').textContent = '✏️ Edit Venue';
+                document.getElementById('formTitle').textContent = 'Edit Venue';
                 document.getElementById('submitBtn').textContent = 'Update Venue';
                 document.getElementById('cancelBtn').style.display = 'inline-block';
+                
+                // Switch to add-venue page
+                const pages = document.querySelectorAll('.content-page');
+                pages.forEach(page => page.classList.remove('active'));
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.getElementById('add-venue-page').classList.add('active');
                 
                 document.getElementById('name').value = data.name || '';
                 document.getElementById('category').value = data.category || '';
@@ -1164,7 +1610,7 @@
 
         function cancelEdit() {
             editingVenue = null;
-            document.getElementById('formTitle').textContent = '➕ Add New Venue';
+            document.getElementById('formTitle').textContent = 'Add New Venue';
             document.getElementById('submitBtn').textContent = 'Add Venue';
             document.getElementById('cancelBtn').style.display = 'none';
             document.getElementById('venueForm').reset();
@@ -1218,9 +1664,11 @@
 
         function cancelDealEdit() {
             document.getElementById('dealForm').reset();
-            document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+            document.getElementById('dealFormTitle').textContent = 'Add New Deal';
             document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
             document.getElementById('dealCancelBtn').style.display = 'none';
+            uploadedDealImage = null;
+            renderDealImagePreview();
         }
 
         document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
@@ -1293,6 +1741,9 @@
                 document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
                 document.getElementById('dealCancelBtn').style.display = 'none';
                 loadDeals();
+                
+                // Navigate to dashboard
+                switchPage('dashboard');
             } catch (error) {
                 showError('Error creating deal: ' + error.message);
             }
@@ -1329,12 +1780,29 @@
                     
                 if (error) throw error;
                 
+                allDeals = data; // Store data for filtering
+                
                 if (data.length === 0) {
                     listDiv.innerHTML = '<p style="text-align:center;color:#999;">No deals yet! Create your first deal using the form above.</p>';
                     return;
                 }
                 
-                listDiv.innerHTML = data.map(deal => `
+                renderDeals(data); // Use renderDeals instead
+            } catch (error) {
+                showError('Error loading deals: ' + error.message);
+                listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading deals. Check console for details.</p>';
+            }
+        }
+
+        function renderDeals(deals) {
+            const listDiv = document.getElementById('dealsList');
+            
+            if (deals.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No deals match your filters.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = deals.map(deal => `
                     <div class="venue-item">
                         <div class="venue-info">
                             <h3>${deal.name}</h3>
@@ -1346,14 +1814,98 @@
                             ${deal.image_url ? '<p><strong>Image:</strong> 📸</p>' : ''}
                         </div>
                         <div class="venue-actions">
+                            ${!deal.active ? `<button class="reactivate" onclick="reactivateDeal(${deal.id})">🔄 Reactivate</button>` : ''}
                             <button class="edit" onclick="editDeal(${deal.id})">Edit</button>
                             <button class="delete" onclick="deleteDeal(${deal.id}, '${deal.name.replace(/'/g, "\\'")}')" >Delete</button>
                         </div>
                     </div>
                 `).join('');
+        }
+
+        function filterDeals() {
+            const searchTerm = document.getElementById('dealSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('dealCategoryFilter').value;
+            const statusFilter = document.getElementById('dealStatusFilter').value;
+            
+            let filtered = allDeals;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(d => d.name.toLowerCase().includes(searchTerm));
+            }
+            
+            if (categoryFilter) {
+                filtered = filtered.filter(d => d.category === categoryFilter);
+            }
+            
+            if (statusFilter === 'active') {
+                filtered = filtered.filter(d => d.active === true);
+            } else if (statusFilter === 'inactive') {
+                filtered = filtered.filter(d => d.active === false);
+            }
+            
+            const resultsDiv = document.getElementById('dealFilterResults');
+            if (searchTerm || categoryFilter || statusFilter !== 'all') {
+                resultsDiv.style.display = 'block';
+                resultsDiv.textContent = `Showing ${filtered.length} of ${allDeals.length} deals`;
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            
+            renderDeals(filtered);
+        }
+
+        async function reactivateDeal(id) {
+            try {
+                const { data, error } = await supabaseClient.from('deals').select('*').eq('id', id).single();
+                if (error) throw error;
+                
+                editingDeal = id;
+                document.getElementById('dealFormTitle').textContent = 'Reactivate Deal - Set New Date';
+                document.getElementById('dealSubmitBtn').textContent = 'Reactivate Deal';
+                document.getElementById('dealCancelBtn').style.display = 'inline-block';
+                
+                switchPage('add-deal');
+                
+                document.getElementById('deal_name').value = data.name || '';
+                document.getElementById('deal_category').value = data.category || '';
+                document.getElementById('deal_description').value = data.description || '';
+                document.getElementById('deal_phone').value = data.phone || '';
+                document.getElementById('deal_venue_link').value = data.venue_id || '';
+                document.getElementById('deal_date').value = '';
+                document.getElementById('deal_start_time').value = data.start_time || '12:00';
+                document.getElementById('deal_end_time').value = data.end_time || '12:00';
+                document.getElementById('deal_price').value = data.price || '';
+                document.getElementById('deal_price_range').value = data.price_range || '';
+                document.getElementById('deal_views').value = 0;
+                document.getElementById('deal_registered_date').value = '';
+                
+                uploadedDealImage = data.image_url || null;
+                renderDealImagePreview();
+                
+                if (data.is_recurring) {
+                    document.getElementById('deal_repeat').checked = true;
+                    toggleRepeatOptions();
+                    
+                    if (data.recurring_day) {
+                        const days = data.recurring_day.split(',');
+                        days.forEach(day => {
+                            const dayCheckbox = document.querySelector(`input[name="repeat_days"][value="${day.trim()}"]`);
+                            if (dayCheckbox) dayCheckbox.checked = true;
+                        });
+                    }
+                    
+                    if (data.recurring_weeks) {
+                        document.getElementById('repeat_weeks').value = data.recurring_weeks;
+                    }
+                } else {
+                    document.getElementById('deal_repeat').checked = false;
+                    toggleRepeatOptions();
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showSuccess('Set a new date and click "Reactivate Deal" to make this deal active again!');
             } catch (error) {
-                showError('Error loading deals: ' + error.message);
-                listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading deals. Check console for details.</p>';
+                showError('Error loading deal: ' + error.message);
             }
         }
 
@@ -1373,17 +1925,21 @@
 
         // Edit deal (placeholder for now)
         async function editDeal(id) {
-    try {
+        try {
         const { data, error } = await supabaseClient.from('deals').select('*').eq('id', id).single();
         if (error) throw error;
         
         editingDeal = id;
-        document.getElementById('dealFormTitle').textContent = '✏️ Edit Deal';
+        document.getElementById('dealFormTitle').textContent = 'Edit Deal';
         document.getElementById('dealSubmitBtn').textContent = 'Update Deal';
         document.getElementById('dealCancelBtn').style.display = 'inline-block';
         
-        // Switch to deals tab
-        switchTab('deals');
+        // Switch to add-deal page
+        const pages = document.querySelectorAll('.content-page');
+        pages.forEach(page => page.classList.remove('active'));
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.getElementById('add-deal-page').classList.add('active');
         
         // Fill form with deal data
         document.getElementById('deal_name').value = data.name || '';
@@ -1451,6 +2007,314 @@
                 console.error('Error loading venues for dropdown:', error);
             }
         }
+
+        // ===== EVENTS JAVASCRIPT =====
+        let editingEvent = null;
+        let uploadedEventImage = null;
+        let allEvents = [];
+
+        setTimeout(() => {
+            const eventImageInput = document.getElementById('eventImageInput');
+            if (eventImageInput) {
+                eventImageInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        showError('Please select an image file');
+                        return;
+                    }
+                    await uploadEventImage(file);
+                });
+            }
+        }, 1000);
+
+        async function uploadEventImage(file) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `event-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const { data, error } = await supabaseClient.storage.from('venue-images').upload(fileName, file);
+                if (error) throw error;
+                const { data: { publicUrl } } = supabaseClient.storage.from('venue-images').getPublicUrl(fileName);
+                uploadedEventImage = publicUrl;
+                renderEventImagePreview();
+                showSuccess('Image uploaded!');
+            } catch (error) {
+                showError('Upload failed: ' + error.message);
+            }
+        }
+
+        function renderEventImagePreview() {
+            const container = document.getElementById('eventImagePreview');
+            if (!container) return;
+            if (!uploadedEventImage) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = `<div class="image-preview-item main-image"><img src="${uploadedEventImage}" alt="Event image"><div class="main-badge">MAIN</div><button type="button" class="remove-image" onclick="removeEventImage()">×</button></div>`;
+        }
+
+        function removeEventImage() {
+            uploadedEventImage = null;
+            renderEventImagePreview();
+            const input = document.getElementById('eventImageInput');
+            if (input) input.value = '';
+        }
+
+        function toggleEventRepeatOptions() {
+            const checkbox = document.getElementById('event_repeat');
+            const repeatOptions = document.getElementById('eventRepeatOptions');
+            if (checkbox && repeatOptions) {
+                if (checkbox.checked) {
+                    repeatOptions.classList.remove('hidden');
+                } else {
+                    repeatOptions.classList.add('hidden');
+                }
+            }
+        }
+
+        function cancelEventEdit() {
+            editingEvent = null;
+            const form = document.getElementById('eventForm');
+            if (form) form.reset();
+            const title = document.getElementById('eventFormTitle');
+            if (title) title.textContent = 'Add New Event';
+            const submitBtn = document.getElementById('eventSubmitBtn');
+            if (submitBtn) submitBtn.textContent = 'Add Event';
+            const cancelBtn = document.getElementById('eventCancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            uploadedEventImage = null;
+            renderEventImagePreview();
+        }
+
+        setTimeout(() => {
+            const eventForm = document.getElementById('eventForm');
+            if (eventForm) {
+                eventForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const repeatDaysCheckboxes = document.querySelectorAll('input[name="event_repeat_days"]:checked');
+                    const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
+                    const repeatWeeks = parseInt(document.getElementById('event_repeat_weeks').value) || 0;
+                    const eventData = {
+                        name: document.getElementById('event_name').value,
+                        category: document.getElementById('event_category').value,
+                        description: document.getElementById('event_description').value,
+                        phone: document.getElementById('event_phone').value,
+                        website: document.getElementById('event_website').value || null,
+                        event_date: document.getElementById('event_date').value,
+                        start_time: document.getElementById('event_start_time').value || null,
+                        end_time: document.getElementById('event_end_time').value || null,
+                        is_recurring: document.getElementById('event_repeat').checked,
+                        recurring_day: (document.getElementById('event_repeat').checked && repeatDays.length > 0) ? repeatDays.join(',') : null,
+                        recurring_weeks: (document.getElementById('event_repeat').checked && repeatWeeks > 0) ? repeatWeeks : null,
+                        price: document.getElementById('event_price').value,
+                        image_url: uploadedEventImage,
+                        views: parseInt(document.getElementById('event_views').value) || 0,
+                        registered_date: document.getElementById('event_registered_date').value || null,
+                        active: true
+                    };
+                    try {
+                        if (editingEvent) {
+                            const { error } = await supabaseClient.from('events').update(eventData).eq('id', editingEvent);
+                            if (error) throw error;
+                            showSuccess('Event updated successfully!');
+                        } else {
+                            const { error } = await supabaseClient.from('events').insert([eventData]);
+                            if (error) throw error;
+                            showSuccess('Event created successfully!');
+                        }
+                        cancelEventEdit();
+                        loadEvents();
+                        
+                        // Navigate to dashboard
+                        switchPage('dashboard');
+                    } catch (error) {
+                        showError('Error: ' + error.message);
+                    }
+                });
+            }
+        }, 1000);
+
+        async function loadEvents() {
+            const listDiv = document.getElementById('eventsList');
+            if (!listDiv) return;
+            listDiv.innerHTML = '<div class="loading">Loading events...</div>';
+            try {
+                const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
+                if (error) throw error;
+                allEvents = data;
+                if (data.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;color:#999;">No events yet!</p>';
+                    return;
+                }
+                renderEvents(data);
+            } catch (error) {
+                showError('Error loading events: ' + error.message);
+                listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading events.</p>';
+            }
+        }
+
+        function renderEvents(events) {
+            const listDiv = document.getElementById('eventsList');
+            if (!listDiv) return;
+            if (events.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No events match your filters.</p>';
+                return;
+            }
+            listDiv.innerHTML = events.map(event => `
+                <div class="venue-item">
+                    <div class="venue-info">
+                        <h3>${event.name}</h3>
+                        <p><strong>Category:</strong> ${event.category || 'N/A'}</p>
+                        ${event.website ? `<p><strong>Website:</strong> <a href="${event.website}" target="_blank">${event.website}</a></p>` : ''}
+                        <p><strong>Date:</strong> ${event.event_date} ${event.start_time ? `(${event.start_time} - ${event.end_time})` : ''}</p>
+                        ${event.is_recurring ? `<p><strong>Recurring:</strong> ${event.recurring_day} (${event.recurring_weeks} weeks)</p>` : ''}
+                        <p><strong>Price:</strong> ${event.price || 'Free'} | <strong>Status:</strong> ${event.active ? '✅ Active' : '❌ Inactive'}</p>
+                        ${event.image_url ? '<p><strong>Image:</strong> 📸</p>' : ''}
+                    </div>
+                    <div class="venue-actions">
+                        ${!event.active ? `<button class="reactivate" onclick="reactivateEvent(${event.id})">🔄 Reactivate</button>` : ''}
+                        <button class="edit" onclick="editEvent(${event.id})">Edit</button>
+                        <button class="delete" onclick="deleteEvent(${event.id}, '${event.name.replace(/'/g, "\\'")}')" >Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('eventSearch')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('eventCategoryFilter')?.value || '';
+            const statusFilter = document.getElementById('eventStatusFilter')?.value || 'all';
+            let filtered = allEvents;
+            if (searchTerm) filtered = filtered.filter(e => e.name.toLowerCase().includes(searchTerm));
+            if (categoryFilter) filtered = filtered.filter(e => e.category === categoryFilter);
+            if (statusFilter === 'active') filtered = filtered.filter(e => e.active === true);
+            else if (statusFilter === 'inactive') filtered = filtered.filter(e => e.active === false);
+            const resultsDiv = document.getElementById('eventFilterResults');
+            if (resultsDiv) {
+                if (searchTerm || categoryFilter || statusFilter !== 'all') {
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.textContent = `Showing ${filtered.length} of ${allEvents.length} events`;
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+            }
+            renderEvents(filtered);
+        }
+
+        async function editEvent(id) {
+            try {
+                const { data, error } = await supabaseClient.from('events').select('*').eq('id', id).single();
+                if (error) throw error;
+                editingEvent = id;
+                document.getElementById('eventFormTitle').textContent = 'Edit Event';
+                document.getElementById('eventSubmitBtn').textContent = 'Update Event';
+                document.getElementById('eventCancelBtn').style.display = 'inline-block';
+                
+                // Switch to add-event page
+                const pages = document.querySelectorAll('.content-page');
+                pages.forEach(page => page.classList.remove('active'));
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.getElementById('add-event-page').classList.add('active');
+                
+                document.getElementById('event_name').value = data.name || '';
+                document.getElementById('event_category').value = data.category || '';
+                document.getElementById('event_description').value = data.description || '';
+                document.getElementById('event_phone').value = data.phone || '';
+                document.getElementById('event_website').value = data.website || '';
+                document.getElementById('event_date').value = data.event_date || '';
+                document.getElementById('event_start_time').value = data.start_time || '20:00';
+                document.getElementById('event_end_time').value = data.end_time || '23:00';
+                document.getElementById('event_price').value = data.price || '';
+                document.getElementById('event_views').value = data.views || 0;
+                document.getElementById('event_registered_date').value = data.registered_date || '';
+                uploadedEventImage = data.image_url || null;
+                renderEventImagePreview();
+                if (data.is_recurring) {
+                    document.getElementById('event_repeat').checked = true;
+                    toggleEventRepeatOptions();
+                    if (data.recurring_day) {
+                        const days = data.recurring_day.split(',');
+                        days.forEach(day => {
+                            const dayCheckbox = document.querySelector(`input[name="event_repeat_days"][value="${day.trim()}"]`);
+                            if (dayCheckbox) dayCheckbox.checked = true;
+                        });
+                    }
+                    if (data.recurring_weeks) document.getElementById('event_repeat_weeks').value = data.recurring_weeks;
+                } else {
+                    document.getElementById('event_repeat').checked = false;
+                    toggleEventRepeatOptions();
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                showError('Error loading event: ' + error.message);
+            }
+        }
+
+        async function reactivateEvent(id) {
+            try {
+                const { data, error } = await supabaseClient.from('events').select('*').eq('id', id).single();
+                if (error) throw error;
+                editingEvent = id;
+                document.getElementById('eventFormTitle').textContent = 'Reactivate Event - Set New Date';
+                document.getElementById('eventSubmitBtn').textContent = 'Reactivate Event';
+                document.getElementById('eventCancelBtn').style.display = 'inline-block';
+                
+                // Switch to add-event page
+                const pages = document.querySelectorAll('.content-page');
+                pages.forEach(page => page.classList.remove('active'));
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.getElementById('add-event-page').classList.add('active');
+                
+                document.getElementById('event_name').value = data.name || '';
+                document.getElementById('event_category').value = data.category || '';
+                document.getElementById('event_description').value = data.description || '';
+                document.getElementById('event_phone').value = data.phone || '';
+                document.getElementById('event_website').value = data.website || '';
+                document.getElementById('event_date').value = '';
+                document.getElementById('event_start_time').value = data.start_time || '20:00';
+                document.getElementById('event_end_time').value = data.end_time || '23:00';
+                document.getElementById('event_price').value = data.price || '';
+                document.getElementById('event_views').value = 0;
+                document.getElementById('event_registered_date').value = '';
+                uploadedEventImage = data.image_url || null;
+                renderEventImagePreview();
+                if (data.is_recurring) {
+                    document.getElementById('event_repeat').checked = true;
+                    toggleEventRepeatOptions();
+                    if (data.recurring_day) {
+                        const days = data.recurring_day.split(',');
+                        days.forEach(day => {
+                            const dayCheckbox = document.querySelector(`input[name="event_repeat_days"][value="${day.trim()}"]`);
+                            if (dayCheckbox) dayCheckbox.checked = true;
+                        });
+                    }
+                    if (data.recurring_weeks) document.getElementById('event_repeat_weeks').value = data.recurring_weeks;
+                } else {
+                    document.getElementById('event_repeat').checked = false;
+                    toggleEventRepeatOptions();
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showSuccess('Set a new date and click "Reactivate Event"!');
+            } catch (error) {
+                showError('Error loading event: ' + error.message);
+            }
+        }
+
+        async function deleteEvent(id, name) {
+            if (!confirm(`Delete event "${name}"?`)) return;
+            try {
+                const { error } = await supabaseClient.from('events').delete().eq('id', id);
+                if (error) throw error;
+                showSuccess('Event deleted!');
+                loadEvents();
+            } catch (error) {
+                showError('Error deleting event: ' + error.message);
+            }
+        }
+
+
     </script>
 </body>
 </html>

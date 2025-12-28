@@ -24,6 +24,7 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPW';
 import NewPasswordScreen from './src/screens/NewPW';
 import AllDoneScreen from './src/screens/AllDone';
+import EventDetailsScreen from './src/screens/Events/EventDetailsScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -290,7 +291,9 @@ export default function App() {
       case 'venues':
         return <VenuesPage onNavigate={handleMenuItemPress} />;
       case 'venuedetails':
-  return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} />;
+        return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} />;
+      case 'eventdetails':
+        return <EventDetailsScreen route={{ params: authParams }} onNavigate={handleMenuItemPress} />;
       case 'signin':
         return <SignInScreen onNavigate={handleMenuItemPress} />;
       case 'signup':

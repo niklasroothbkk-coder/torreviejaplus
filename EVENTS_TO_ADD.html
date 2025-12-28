@@ -1,0 +1,197 @@
+<!-- =============================================== -->
+<!-- COPY THIS AND PASTE IT RIGHT AFTER "All Deals Page" closes (after its </div></div>) -->
+<!-- Search for: <div id="all-deals-page" class="content-page"> and find where it ENDS -->
+<!-- Then paste ALL OF THIS code right after that -->
+<!-- =============================================== -->
+
+            <!-- Add Event Page -->
+            <div id="add-event-page" class="content-page">
+                <div class="page-header">
+                    <h1 id="eventFormTitle">Add New Event & Happening</h1>
+                </div>
+                <div class="panel">
+                <form id="eventForm">
+                    <input type="hidden" id="eventId">
+                    
+                    <div class="form-group">
+                        <label for="event_name">Event Name *</label>
+                        <input type="text" id="event_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_category">Event Category *</label>
+                        <select id="event_category" required>
+                            <option value="">Select category...</option>
+                            <option value="Live Music">Live Music</option>
+                            <option value="Sports Events">Sports Events</option>
+                            <option value="Festivals">Festivals</option>
+                            <option value="Markets">Markets</option>
+                            <option value="Cultural Events">Cultural Events</option>
+                            <option value="Nightlife">Nightlife</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_description">Description *</label>
+                        <textarea id="event_description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_phone">Phone</label>
+                        <input type="text" id="event_phone" placeholder="+34 XXX XXX XXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_venue_link">Link to Venue (for contact/hours/rating) *</label>
+                        <select id="event_venue_link" required>
+                            <option value="">Select venue...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📅 Event Schedule Start Day</label>
+                        
+                        <div class="form-row" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label for="event_date">Date *</label>
+                                <input type="date" id="event_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="event_start_time">Start Time</label>
+                                <input type="time" id="event_start_time" value="20:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="event_end_time">End Time</label>
+                                <input type="time" id="event_end_time" value="23:00">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>
+                                <input type="checkbox" id="event_repeat" onchange="toggleEventRepeatOptions()" style="width: auto; margin-right: 8px;">
+                                <span>🔁 Repeat (show for entire month or specific days)</span>
+                            </label>
+                        </div>
+
+                        <div id="eventRepeatOptions" class="form-group hidden" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <label style="margin-bottom: 10px;">Repeat on:</label>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Monday">
+                                    <span>Monday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Tuesday">
+                                    <span>Tuesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Wednesday">
+                                    <span>Wednesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Thursday">
+                                    <span>Thursday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Friday">
+                                    <span>Friday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Saturday">
+                                    <span>Saturday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="event_repeat_days" value="Sunday">
+                                    <span>Sunday</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                                <label for="event_repeat_weeks">Number of weeks to repeat</label>
+                                <input type="number" id="event_repeat_weeks" min="1" max="52" placeholder="4" style="width: 150px;">
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    📝 Example: Select Friday + Saturday with 4 weeks = 8 events total
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📸 Event Image (Max 1) - Main card image</label>
+                        <div class="image-upload-section">
+                            <input type="file" id="eventImageInput" accept="image/*">
+                            <label for="eventImageInput" class="upload-btn">Choose Image</label>
+                            <div class="upload-info">
+                                Max 1 image • JPG, PNG, WebP
+                            </div>
+                            <div id="eventImagePreview" class="image-preview-grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label for="event_price_range">Price Range</label>
+                            <select id="event_price_range">
+                                <option value="">Select price...</option>
+                                <option value="Free">Free</option>
+                                <option value="€">€ (Budget)</option>
+                                <option value="€€">€€ (Moderate)</option>
+                                <option value="€€€">€€€ (Upscale)</option>
+                                <option value="€€€€">€€€€ (Luxury)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="event_price">Price (e.g. €15, Free Entry)</label>
+                            <input type="text" id="event_price" placeholder="Free">
+                        </div>
+                        <div class="form-group">
+                            <label for="event_views">Views</label>
+                            <input type="number" id="event_views" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_registered_date">Registered Date</label>
+                        <input type="date" id="event_registered_date">
+                    </div>
+
+                    <button type="submit" id="eventSubmitBtn">Add Event</button>
+                    <button type="button" id="eventCancelBtn" onclick="cancelEventEdit()" style="display: none; background: #95a5a6;">Cancel</button>
+                </form>
+                </div>
+            </div>
+
+            <!-- All Events Page -->
+            <div id="all-events-page" class="content-page">
+                <div class="page-header">
+                    <h1>All Events & Happenings</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="eventSearch" placeholder="🔍 Search by event name..." oninput="filterEvents()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="eventCategoryFilter" onchange="filterEvents()">
+                                <option value="">All Categories</option>
+                                <option value="Live Music">Live Music</option>
+                                <option value="Sports Events">Sports Events</option>
+                                <option value="Festivals">Festivals</option>
+                                <option value="Markets">Markets</option>
+                                <option value="Cultural Events">Cultural Events</option>
+                                <option value="Nightlife">Nightlife</option>
+                            </select>
+                        </div>
+                        <div class="category-filter">
+                            <select id="eventStatusFilter" onchange="filterEvents()">
+                                <option value="all">All Events</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Old/Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="eventFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="eventsList" class="loading">Loading events...</div>
+                </div>
+            </div>
