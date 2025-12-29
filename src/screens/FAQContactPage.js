@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   menuButtonWrapper: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     left: 20,
     zIndex: 1000,
   },
@@ -433,20 +433,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   scrollContent: {
-    paddingTop: 110,
+    paddingTop: 140,
   },
   pageTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 15,
-    marginTop: 10,
+    marginLeft: 10,
   },
   section: {
     marginBottom: 25,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 15,
@@ -471,17 +471,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   faqQuestion: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
     flex: 1,
     marginRight: 10,
   },
   faqAnswer: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#333',
     marginTop: 10,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   messageCard: {
     backgroundColor: '#FFFFFF',
@@ -496,16 +496,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   messageIntro: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     marginBottom: 15,
-    lineHeight: 15,
+    lineHeight: 22,
   },
   messageInput: {
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
     padding: 12,
-    fontSize: 11,
+    fontSize: 16,
     color: '#000',
     marginBottom: 15,
     borderWidth: 1,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
   },
@@ -541,10 +541,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   contactIntro: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#333',
     marginBottom: 20,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   contactItem: {
     flexDirection: 'row',
@@ -564,12 +564,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactLabel: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#999',
     marginBottom: 3,
   },
   contactValue: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },

@@ -4,36 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-const walkthroughData = [
-  {
-    id: 1,
-    image: require('../../assets/backgrounds/walkthrough1.png'),
-    title: 'Explore it all in Torrevieja',
-    description: 'Discover amazing destinations, plan trips easily, and start exploring today!',
-  },
-  {
-    id: 2,
-    image: require('../../assets/backgrounds/walkthrough2.png'),
-    title: 'Walkthrough 2 Title',
-    description: 'Add your description for walkthrough 2 here.',
-  },
-  {
-    id: 3,
-    image: require('../../assets/backgrounds/walkthrough3.png'),
-    title: 'Walkthrough 3 Title',
-    description: 'Add your description for walkthrough 3 here.',
-  },
-  {
-    id: 4,
-    image: require('../../assets/backgrounds/walkthrough4.png'),
-    title: 'Walkthrough 4 Title',
-    description: 'Add your description for walkthrough 4 here.',
-  },
-];
-
 export default function WalkthroughScreen({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const isLastScreen = currentIndex === walkthroughData.length - 1;
+  const totalScreens = 4; // We have 4 walkthrough screens
+  const isLastScreen = currentIndex === totalScreens - 1;
 
   // Auto-advance timer is DISABLED - manual navigation only
   // useEffect(() => {
@@ -51,7 +25,7 @@ export default function WalkthroughScreen({ onComplete }) {
   // }, [currentIndex]);
 
   const handleNext = () => {
-    if (currentIndex < walkthroughData.length - 1) {
+    if (currentIndex < totalScreens - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -72,13 +46,19 @@ export default function WalkthroughScreen({ onComplete }) {
     onComplete();
   };
 
-  const currentScreen = walkthroughData[currentIndex];
+  // Images for each screen
+  const walkthroughImages = [
+    require('../../assets/backgrounds/walkthrough1.png'),
+    require('../../assets/backgrounds/walkthrough2.png'),
+    require('../../assets/backgrounds/walkthrough3.png'),
+    require('../../assets/backgrounds/walkthrough4.png'),
+  ];
 
   return (
     <View style={styles.container}>
       {/* Background Image */}
       <Image 
-        source={currentScreen.image}
+        source={walkthroughImages[currentIndex]}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -90,16 +70,16 @@ export default function WalkthroughScreen({ onComplete }) {
         <View style={styles.firstWalkthroughTitle}>
           <Text style={styles.firstWalkthroughTitleText}>Explore the Best</Text>
           <Text style={styles.firstWalkthroughTitleText}>of Torrevieja</Text>
-          <Text style={styles.firstWalkthroughSubtext}>The #1 Travelguide  - all you need</Text>
+          <Text style={styles.firstWalkthroughSubtext}>TorreviejaPlusis your #1 Travelguide</Text>
         </View>
       )}
 
       {/* Title for second walkthrough */}
       {currentIndex === 1 && (
         <View style={styles.firstWalkthroughTitle}>
-          <Text style={styles.firstWalkthroughTitleText}>Find all the</Text>
-          <Text style={styles.firstWalkthroughTitleText}>Best Deals</Text>
-          <Text style={styles.firstWalkthroughSubtext}>Torrevieja has to offer </Text>
+          <Text style={styles.firstWalkthroughTitleText}>Find all the Best</Text>
+          <Text style={styles.firstWalkthroughTitleText}>Deals in Torrevieja</Text>
+          <Text style={styles.firstWalkthroughSubtext}>All from Restaurant deals to Happe Hours </Text>
         </View>
       )}
 
@@ -108,7 +88,7 @@ export default function WalkthroughScreen({ onComplete }) {
         <View style={styles.firstWalkthroughTitle}>
           <Text style={styles.firstWalkthroughTitleText}>What Happens</Text>
           <Text style={styles.firstWalkthroughTitleText}>in Torrevieja</Text>
-          <Text style={styles.firstWalkthroughSubtext}>We list the best happenings & events</Text>
+          <Text style={styles.firstWalkthroughSubtext}>Here you find what you not want to miss</Text>
         </View>
       )}
 
@@ -117,7 +97,7 @@ export default function WalkthroughScreen({ onComplete }) {
         <View style={styles.firstWalkthroughTitle}>
           <Text style={styles.firstWalkthroughTitleText}>Share taxi from</Text>
           <Text style={styles.firstWalkthroughTitleText}>or to the Airport</Text>
-          <Text style={styles.firstWalkthroughSubtext}>An easy way share a ride and save</Text>
+          <Text style={styles.firstWalkthroughSubtext}>An easy way share a ride and save €€€</Text>
         </View>
       )}
 
@@ -144,7 +124,7 @@ export default function WalkthroughScreen({ onComplete }) {
 
           {/* Dots Indicator */}
           <View style={styles.dotsContainer}>
-            {walkthroughData.map((_, index) => (
+            {[0, 1, 2, 3].map((index) => (
               <View
                 key={index}
                 style={[
@@ -189,27 +169,6 @@ const styles = StyleSheet.create({
     marginTop: -40,
     zIndex: 200,
   },
-  verticalTextContainer: {
-    position: 'absolute',
-    right: 20,
-    top: '20%',
-    bottom: '20%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  verticalText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 3,
-    transform: [{ rotate: '90deg' }],
-    width: height * 0.6,
-    textAlign: 'center',
-  },
   contentContainer: {
     position: 'absolute',
     bottom: 40,
@@ -224,29 +183,15 @@ const styles = StyleSheet.create({
     zIndex: 140,
   },
   firstWalkthroughTitleText: {
-    fontSize: 24,
+    fontSize: 34,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    lineHeight: 25,
+    lineHeight: 36,
   },
   firstWalkthroughSubtext: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#FFFFFF',
     marginTop: 8,
-    opacity: 0.9,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
-    lineHeight: 38,
-  },
-  description: {
-    fontSize: 14,
-    color: '#fff',
-    marginBottom: 40,
-    lineHeight: 20,
     opacity: 0.9,
   },
   bottomRow: {
@@ -257,7 +202,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '500',
   },
   dotsContainer: {
@@ -303,7 +248,7 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 1,
   },

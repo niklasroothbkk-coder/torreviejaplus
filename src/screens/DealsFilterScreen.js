@@ -3,17 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, PanRespond
 import { Ionicons } from '@expo/vector-icons';
 
 export default function DealsFilterScreen({ onClose, onApply }) {
-  const [selectedCategory, setSelectedCategory] = useState('Happy Hour');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedPrices, setSelectedPrices] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
-    'Happy Hour',
+    'All',
+    'Happy Hours',
     'Watersport Deals',
     'Restaurant Deals',
     'Sport Deals',
-    'Tour Deals',
     'Pub & Bar Deals',
+    'Other Deals & Promotions',
   ];
 
   const prices = ['€', '€€', '€€€', '€€€€'];

@@ -148,6 +148,23 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid #c3c4c7;
+            position: relative;
+        }
+        .status-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .status-active {
+            background: #00a32a;
+        }
+        .status-inactive {
+            background: #d63638;
         }
         .venue-info h3 { color: #333; margin-bottom: 5px; text-align: left; }
         .venue-info p { color: #666; margin: 3px 0; font-size: 14px; text-align: left; } 
@@ -412,9 +429,12 @@
                         <option value="Restaurants">Restaurants</option>
                         <option value="Sports Bars & Pubs">Sports Bars & Pubs</option>
                         <option value="Massage & Spa">Massage & Spa</option>
-                        <option value="Sports Activities">Sports Activities</option>
-                        <option value="Markets & Attractions">Markets & Attractions</option>
                         <option value="Healthcare & Emergency">Healthcare & Emergency</option>
+                        <option value="Nightclubs">Nightclubs</option>
+                        <option value="Post Offices & Banks">Post Offices & Banks</option>
+                        <option value="Car & Bike Rentals">Car & Bike Rentals</option>
+                        <option value="Shopping Centres">Shopping Centres</option>
+                        <option value="Beaches">Beaches</option>
                     </select>
                 </div>
 
@@ -565,50 +585,50 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="location">Full Address *</label>
-                        <input type="text" id="location" required placeholder="e.g. Soi 18/3 poonsuk RD, Hua Hin.">
+                        <input type="text" id="location" required placeholder="Type here...">
                     </div>
                     <div class="form-group">
                         <label for="location_short">Short Location *</label>
-                        <input type="text" id="location_short" required placeholder="e.g. Soi 18/3">
+                        <input type="text" id="location_short" required placeholder="Type here...">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="phone">Phone</label>
-                        <input type="text" id="phone" placeholder="+66 81 880 7119">
+                        <input type="text" id="phone" placeholder="Type here...">
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="info@venue.com">
+                        <input type="email" id="email" placeholder="Type here...">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="whatsapp">WhatsApp</label>
-                        <input type="text" id="whatsapp" placeholder="+66 81 880 7119">
+                        <input type="text" id="whatsapp" placeholder="Type here...">
                     </div>
                     <div class="form-group">
                         <label for="line">Line</label>
-                        <input type="text" id="line" placeholder="Line ID">
+                        <input type="text" id="line" placeholder="Type here...">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="website">Website</label>
-                    <input type="url" id="website" placeholder="https://venue.com">
+                    <input type="url" id="website" placeholder="Type here...">
                 </div>
 
                 <div class="form-group">
                     <label>📱 Social Media</label>
                     <div class="form-row">
-                        <input type="url" id="facebook" placeholder="Facebook URL">
-                        <input type="url" id="instagram" placeholder="Instagram URL">
+                        <input type="url" id="facebook" placeholder="Type here...">
+                        <input type="url" id="instagram" placeholder="Type here...">
                     </div>
                     <div class="form-row" style="margin-top: 10px;">
-                        <input type="url" id="tiktok" placeholder="TikTok URL">
-                        <input type="url" id="xtwitter" placeholder="X/Twitter URL">
+                        <input type="url" id="tiktok" placeholder="Type here...">
+                        <input type="url" id="xtwitter" placeholder="Type here...">
                     </div>
                 </div>
 
@@ -616,31 +636,31 @@
                     <label>⏰ Opening Hours</label>
                     <div class="hours-row">
                         <label>Monday:</label>
-                        <input type="text" id="monday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="monday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Tuesday:</label>
-                        <input type="text" id="tuesday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="tuesday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Wednesday:</label>
-                        <input type="text" id="wednesday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="wednesday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Thursday:</label>
-                        <input type="text" id="thursday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="thursday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Friday:</label>
-                        <input type="text" id="friday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="friday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Saturday:</label>
-                        <input type="text" id="saturday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="saturday_hours" placeholder="Type here...">
                     </div>
                     <div class="hours-row">
                         <label>Sunday:</label>
-                        <input type="text" id="sunday_hours" placeholder="09:00 - 22:00">
+                        <input type="text" id="sunday_hours" placeholder="Type here...">
                     </div>
                 </div>
 
@@ -689,11 +709,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="rating">Rating (0-5)</label>
-                        <input type="number" id="rating" step="0.1" min="0" max="5" placeholder="4.5">
+                        <input type="number" id="rating" step="0.1" min="0" max="5" placeholder="Type here...">
                     </div>
                     <div class="form-group">
                         <label for="review_count">Review Count</label>
-                        <input type="number" id="review_count" placeholder="40">
+                        <input type="number" id="review_count" placeholder="Type here...">
                     </div>
                 </div>
 
@@ -743,12 +763,12 @@
                         <label for="deal_category">Deal / Promotion Category *</label>
                         <select id="deal_category" required>
                             <option value="">Select category...</option>
-                            <option value="Happy Hour">Happy Hour</option>
+                            <option value="Happy Hours">Happy Hours</option>
                             <option value="Watersport Deals">Watersport Deals</option>
                             <option value="Restaurant Deals">Restaurant Deals</option>
                             <option value="Sport Deals">Sport Deals</option>
-                            <option value="Tour Deals">Tour Deals</option>
                             <option value="Pub & Bar Deals">Pub & Bar Deals</option>
+                            <option value="Other Deals & Promotions">Other Deals & Promotions</option>
                         </select>
                     </div>
 
@@ -759,7 +779,7 @@
 
                     <div class="form-group">
                         <label for="deal_phone">Phone</label>
-                        <input type="text" id="deal_phone" placeholder="+66 81 880 7119">
+                        <input type="text" id="deal_phone" placeholder="Type here...">
                     </div>
 
                     <div class="form-group">
@@ -906,9 +926,19 @@
                                 <option value="Restaurants">Restaurants</option>
                                 <option value="Sports Bars & Pubs">Sports Bars & Pubs</option>
                                 <option value="Massage & Spa">Massage & Spa</option>
-                                <option value="Sports Activities">Sports Activities</option>
-                                <option value="Markets & Attractions">Markets & Attractions</option>
                                 <option value="Healthcare & Emergency">Healthcare & Emergency</option>
+                                <option value="Nightclubs">Nightclubs</option>
+                                <option value="Post Offices & Banks">Post Offices & Banks</option>
+                                <option value="Car & Bike Rentals">Car & Bike Rentals</option>
+                                <option value="Shopping Centres">Shopping Centres</option>
+                                <option value="Beaches">Beaches</option>
+                            </select>
+                        </div>
+                        <div class="category-filter">
+                            <select id="venueStatusFilter" onchange="filterVenues()">
+                                <option value="all">All Venues</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Inactive</option>
                             </select>
                         </div>
                     </div>
@@ -930,12 +960,12 @@
                         <div class="category-filter">
                             <select id="dealCategoryFilter" onchange="filterDeals()">
                                 <option value="">All Categories</option>
-                                <option value="Happy Hour">Happy Hour</option>
+                                <option value="Happy Hours">Happy Hours</option>
                                 <option value="Watersport Deals">Watersport Deals</option>
                                 <option value="Restaurant Deals">Restaurant Deals</option>
                                 <option value="Sport Deals">Sport Deals</option>
-                                <option value="Tour Deals">Tour Deals</option>
                                 <option value="Pub & Bar Deals">Pub & Bar Deals</option>
+                                <option value="Other Deals & Promotions">Other Deals & Promotions</option>
                             </select>
                         </div>
                         <div class="category-filter">
@@ -969,10 +999,11 @@
                         <label for="event_category">Events / Happenings Category *</label>
                         <select id="event_category" required>
                             <option value="">Select category...</option>
-                            <option value="Concerts">Concerts</option>
-                            <option value="Festivals">Festivals</option>
-                            <option value="Markets">Markets</option>
-                            <option value="Tours">Tours</option>
+                            <option value="Concerts & Festivals">Concerts & Festivals</option>
+                            <option value="Sports Events">Sports Events</option>
+                            <option value="Markets & Attractions">Markets & Attractions</option>
+                            <option value="Tours & Trips">Tours & Trips</option>
+                            <option value="Other Events & Happenings">Other Events & Happenings</option>
                         </select>
                     </div>
 
@@ -983,12 +1014,12 @@
 
                     <div class="form-group">
                         <label for="event_phone">Phone</label>
-                        <input type="text" id="event_phone" placeholder="+34 XXX XXX XXX">
+                        <input type="text" id="event_phone" placeholder="Type here...">
                     </div>
 
                     <div class="form-group">
                         <label for="event_website">Website / Link</label>
-                        <input type="url" id="event_website" placeholder="https://example.com">
+                        <input type="url" id="event_website" placeholder="Type here...">
                     </div>
 
                     <div class="form-group">
@@ -1107,10 +1138,11 @@
                         <div class="category-filter">
                             <select id="eventCategoryFilter" onchange="filterEvents()">
                                 <option value="">All Categories</option>
-                                <option value="Concerts">Concerts</option>
-                                <option value="Festivals">Festivals</option>
-                                <option value="Markets">Markets</option>
-                                <option value="Tours">Tours</option>
+                                <option value="Concerts & Festivals">Concerts & Festivals</option>
+                                <option value="Sports Events">Sports Events</option>
+                                <option value="Markets & Attractions">Markets & Attractions</option>
+                                <option value="Tours & Trips">Tours & Trips</option>
+                                <option value="Other Events & Happenings">Other Events & Happenings</option>
                             </select>
                         </div>
                         <div class="category-filter">
@@ -1390,7 +1422,8 @@
                 opening_hours: openingHours,
                 features: features,
                 registered_date: document.getElementById('registered_date').value || null,
-                images: uploadedImages
+                images: uploadedImages,
+                active: true
             };
 
             try {
@@ -1409,8 +1442,8 @@
                 cancelEdit();
                 loadVenues();
                 
-                // Navigate to dashboard
-                switchPage('dashboard');
+                // Navigate to All Venues
+                switchPage('all-venues');
             } catch (error) {
                 showError('Error: ' + error.message);
             }
@@ -1446,6 +1479,7 @@
             
             listDiv.innerHTML = venues.map(v => `
                     <div class="venue-item">
+                        <div class="status-indicator ${v.active !== false ? 'status-active' : 'status-inactive'}" title="${v.active !== false ? 'Active' : 'Inactive'}"></div>
                         <div class="venue-info">
                             <h3>${v.name}</h3>
                             <p><strong>Category:</strong> ${v.category || 'N/A'}</p>
@@ -1460,6 +1494,10 @@
                             ${v.images && v.images.length > 0 ? `<p><strong>Images:</strong> ${v.images.length} 📸</p>` : ''}
                         </div>
                         <div class="venue-actions">
+                            ${v.active !== false ? 
+                                `<button class="reactivate" onclick="pauseVenue(${v.id}, '${v.name.replace(/'/g, "\\'")}')">⏸️ Pause</button>` : 
+                                `<button class="reactivate" onclick="unpauseVenue(${v.id}, '${v.name.replace(/'/g, "\\'")}')">▶️ Unpause</button>`
+                            }
                             <button class="edit" onclick="editVenue(${v.id})">Edit</button>
                             <button class="delete" onclick="deleteVenue(${v.id}, '${v.name.replace(/'/g, "\\'")}')">Delete</button>
                         </div>
@@ -1470,6 +1508,7 @@
         function filterVenues() {
             const searchTerm = document.getElementById('venueSearch').value.toLowerCase();
             const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('venueStatusFilter').value;
             
             let filtered = allVenues;
             
@@ -1481,8 +1520,14 @@
                 filtered = filtered.filter(v => v.category === categoryFilter);
             }
             
+            if (statusFilter === 'active') {
+                filtered = filtered.filter(v => v.active !== false); // Treat undefined as active
+            } else if (statusFilter === 'inactive') {
+                filtered = filtered.filter(v => v.active === false);
+            }
+            
             const resultsDiv = document.getElementById('filterResults');
-            if (searchTerm || categoryFilter) {
+            if (searchTerm || categoryFilter || statusFilter !== 'all') {
                 resultsDiv.style.display = 'block';
                 resultsDiv.textContent = `Showing ${filtered.length} of ${allVenues.length} venues`;
             } else {
@@ -1636,6 +1681,30 @@
             }
         }
 
+        async function pauseVenue(id, name) {
+            if (!confirm(`Pause "${name}"? It will be hidden from the app.`)) return;
+            try {
+                const { error } = await supabaseClient.from('venues').update({ active: false }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Venue paused!');
+                loadVenues();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function unpauseVenue(id, name) {
+            if (!confirm(`Unpause "${name}"? It will be visible in the app again.`)) return;
+            try {
+                const { error } = await supabaseClient.from('venues').update({ active: true }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Venue unpaused!');
+                loadVenues();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
         function showSuccess(msg) {
             const div = document.getElementById('successMessage');
             div.textContent = msg;
@@ -1742,8 +1811,8 @@
                 document.getElementById('dealCancelBtn').style.display = 'none';
                 loadDeals();
                 
-                // Navigate to dashboard
-                switchPage('dashboard');
+                // Navigate to All Deals
+                switchPage('all-deals');
             } catch (error) {
                 showError('Error creating deal: ' + error.message);
             }
@@ -1804,6 +1873,7 @@
             
             listDiv.innerHTML = deals.map(deal => `
                     <div class="venue-item">
+                        <div class="status-indicator ${deal.active ? 'status-active' : 'status-inactive'}" title="${deal.active ? 'Active' : 'Inactive'}"></div>
                         <div class="venue-info">
                             <h3>${deal.name}</h3>
                             <p><strong>Category:</strong> ${deal.category || 'N/A'}</p>
@@ -1815,6 +1885,10 @@
                         </div>
                         <div class="venue-actions">
                             ${!deal.active ? `<button class="reactivate" onclick="reactivateDeal(${deal.id})">🔄 Reactivate</button>` : ''}
+                            ${deal.active ? 
+                                `<button class="reactivate" onclick="pauseDeal(${deal.id}, '${deal.name.replace(/'/g, "\\'")}')">⏸️ Pause</button>` : 
+                                `<button class="reactivate" onclick="unpauseDeal(${deal.id}, '${deal.name.replace(/'/g, "\\'")}')">▶️ Unpause</button>`
+                            }
                             <button class="edit" onclick="editDeal(${deal.id})">Edit</button>
                             <button class="delete" onclick="deleteDeal(${deal.id}, '${deal.name.replace(/'/g, "\\'")}')" >Delete</button>
                         </div>
@@ -1877,7 +1951,9 @@
                 document.getElementById('deal_price').value = data.price || '';
                 document.getElementById('deal_price_range').value = data.price_range || '';
                 document.getElementById('deal_views').value = 0;
-                document.getElementById('deal_registered_date').value = '';
+                
+                // Set registered_date to today when reactivating
+                document.getElementById('deal_registered_date').value = new Date().toISOString().split('T')[0];
                 
                 uploadedDealImage = data.image_url || null;
                 renderDealImagePreview();
@@ -1923,6 +1999,30 @@
             }
         }
 
+        async function pauseDeal(id, name) {
+            if (!confirm(`Pause "${name}"? It will be hidden from the app.`)) return;
+            try {
+                const { error } = await supabaseClient.from('deals').update({ active: false }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Deal paused!');
+                loadDeals();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function unpauseDeal(id, name) {
+            if (!confirm(`Unpause "${name}"? It will be visible in the app again.`)) return;
+            try {
+                const { error } = await supabaseClient.from('deals').update({ active: true }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Deal unpaused!');
+                loadDeals();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
         // Edit deal (placeholder for now)
         async function editDeal(id) {
         try {
@@ -1953,7 +2053,10 @@
         document.getElementById('deal_price').value = data.price || '';
         document.getElementById('deal_price_range').value = data.price_range || '';
         document.getElementById('deal_views').value = data.views || 0;
-        document.getElementById('deal_registered_date').value = data.registered_date || '';
+        
+        // Set registered_date - use existing or today's date
+        const dealRegisteredDate = data.registered_date || new Date().toISOString().split('T')[0];
+        document.getElementById('deal_registered_date').value = dealRegisteredDate;
         
         // Set image
         uploadedDealImage = data.image_url || null;
@@ -2109,7 +2212,7 @@
                         price: document.getElementById('event_price').value,
                         image_url: uploadedEventImage,
                         views: parseInt(document.getElementById('event_views').value) || 0,
-                        registered_date: document.getElementById('event_registered_date').value || null,
+                        registered_date: editingEvent ? (document.getElementById('event_registered_date').value || null) : (document.getElementById('event_registered_date').value || new Date().toISOString().split('T')[0]),
                         active: true
                     };
                     try {
@@ -2125,8 +2228,8 @@
                         cancelEventEdit();
                         loadEvents();
                         
-                        // Navigate to dashboard
-                        switchPage('dashboard');
+                        // Navigate to All Events
+                        switchPage('all-events');
                     } catch (error) {
                         showError('Error: ' + error.message);
                     }
@@ -2162,6 +2265,7 @@
             }
             listDiv.innerHTML = events.map(event => `
                 <div class="venue-item">
+                    <div class="status-indicator ${event.active ? 'status-active' : 'status-inactive'}" title="${event.active ? 'Active' : 'Inactive'}"></div>
                     <div class="venue-info">
                         <h3>${event.name}</h3>
                         <p><strong>Category:</strong> ${event.category || 'N/A'}</p>
@@ -2173,6 +2277,10 @@
                     </div>
                     <div class="venue-actions">
                         ${!event.active ? `<button class="reactivate" onclick="reactivateEvent(${event.id})">🔄 Reactivate</button>` : ''}
+                        ${event.active ? 
+                            `<button class="reactivate" onclick="pauseEvent(${event.id}, '${event.name.replace(/'/g, "\\'")}')">⏸️ Pause</button>` : 
+                            `<button class="reactivate" onclick="unpauseEvent(${event.id}, '${event.name.replace(/'/g, "\\'")}')">▶️ Unpause</button>`
+                        }
                         <button class="edit" onclick="editEvent(${event.id})">Edit</button>
                         <button class="delete" onclick="deleteEvent(${event.id}, '${event.name.replace(/'/g, "\\'")}')" >Delete</button>
                     </div>
@@ -2311,6 +2419,30 @@
                 loadEvents();
             } catch (error) {
                 showError('Error deleting event: ' + error.message);
+            }
+        }
+
+        async function pauseEvent(id, name) {
+            if (!confirm(`Pause "${name}"? It will be hidden from the app.`)) return;
+            try {
+                const { error } = await supabaseClient.from('events').update({ active: false }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Event paused!');
+                loadEvents();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function unpauseEvent(id, name) {
+            if (!confirm(`Unpause "${name}"? It will be visible in the app again.`)) return;
+            try {
+                const { error } = await supabaseClient.from('events').update({ active: true }).eq('id', id);
+                if (error) throw error;
+                showSuccess('Event unpaused!');
+                loadEvents();
+            } catch (error) {
+                showError('Error: ' + error.message);
             }
         }
 

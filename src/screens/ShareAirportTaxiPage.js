@@ -415,18 +415,18 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   scrollContent: {
-    paddingTop: 110,
+    paddingTop: 140,
   },
   pageTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 15,
-    marginTop: 10,
+    marginLeft: 10,
   },
   menuButtonWrapper: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     left: 20,
     zIndex: 1000,
   },
@@ -460,9 +460,9 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 16,
     color: '#333',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   addRideButton: {
     backgroundColor: '#21bad9',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   addRideButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
   },
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 15,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   emptySubText: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#999',
     marginTop: 5,
   },
@@ -545,12 +545,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rideDate: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
   rideTime: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -573,12 +573,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   destinationLabel: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#666',
   },
   destinationText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   seatsText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#21bad9',
   },
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   contactText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#333',
   },
   actionButtonsContainer: {
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   modalTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginRight: 10,
@@ -929,7 +929,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   emptyChatSubText: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#999',
     marginTop: 5,
   },
@@ -940,18 +940,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chatMessageSender: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#21bad9',
     marginBottom: 5,
   },
   chatMessageText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#333',
     marginBottom: 5,
   },
   chatMessageTime: {
-    fontSize: 7,
+    fontSize: 14,
     color: '#999',
   },
   chatInputContainer: {
@@ -965,7 +965,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
     maxHeight: 100,
     borderWidth: 1,

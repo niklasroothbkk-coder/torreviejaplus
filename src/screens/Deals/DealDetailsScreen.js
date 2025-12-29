@@ -170,7 +170,7 @@ export default function DealDetailsScreen({ onNavigate, dealId }) {
       <Image source={require('../../../assets/backgrounds/BG_ALL.png')} style={styles.backgroundImage} />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('deals')}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('testdeals')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 

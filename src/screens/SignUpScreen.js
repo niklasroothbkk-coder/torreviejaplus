@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 10,
   },
   backButton: {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
   },
   passwordContainer: {
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     paddingRight: 50,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
   },
   eyeIcon: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   phonePrefix: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#0077B6',
     marginRight: 8,
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   phoneInput: {
     flex: 1,
     paddingVertical: 14,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
   },
   checkboxContainer: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderColor: '#0077B6',
   },
   checkboxLabel: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   createButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
   },
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
   },
   dividerText: {
-    fontSize: 11,
+    fontSize: 16,
     color: '#666',
     marginHorizontal: 16,
     fontWeight: '500',

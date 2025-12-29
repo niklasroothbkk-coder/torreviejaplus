@@ -13,7 +13,9 @@ export default function EventsPage({ onNavigate }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
   const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({ category: 'All' });
 
   useEffect(() => {
     fetchEvents();
@@ -35,12 +37,15 @@ export default function EventsPage({ onNavigate }) {
         rating: 4.5,
         title: event.name,
         venue: event.category,
-        date: formatEventDate(event.event_date, event.start_time, event.end_time),
-        price: event.price || 'FREE',
+        category: event.category,
+        eventDate: event.event_date,
+        startTime: event.start_time,
+        endTime: event.end_time,
         image: event.image_url ? { uri: event.image_url } : require('../../assets/events/market-photo.png'),
       }));
 
       setEvents(transformedEvents);
+      setFilteredEvents(transformedEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
@@ -48,19 +53,20 @@ export default function EventsPage({ onNavigate }) {
     }
   };
 
-  const formatEventDate = (date, startTime, endTime) => {
-    if (!date) return 'TBA';
-    
-    const eventDate = new Date(date);
-    const formattedDate = eventDate.toISOString().split('T')[0];
-    
-    if (startTime && endTime) {
-      return `${formattedDate} (${startTime.substring(0, 5)} - ${endTime.substring(0, 5)})`;
-    } else if (startTime) {
-      return `${formattedDate} (${startTime.substring(0, 5)})`;
+  const formatDate = (dateString) => {
+    if (!dateString) return 'TBA';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+
+  const formatTime = (startTime, endTime) => {
+    if (!startTime) return '';
+    const start = startTime.substring(0, 5);
+    if (endTime) {
+      const end = endTime.substring(0, 5);
+      return `${start} - ${end}`;
     }
-    
-    return formattedDate;
+    return start;
   };
 
   const openMenu = () => {
@@ -95,6 +101,19 @@ export default function EventsPage({ onNavigate }) {
       duration: 300,
       useNativeDriver: true,
     }).start(() => setShowFilter(false));
+  };
+
+  const applyFilters = (filters) => {
+    setActiveFilters(filters);
+    
+    let filtered = events;
+    
+    if (filters.category && filters.category !== 'All') {
+      filtered = filtered.filter(event => event.category === filters.category);
+    }
+    
+    setFilteredEvents(filtered);
+    closeFilter();
   };
 
   return (
@@ -143,7 +162,7 @@ export default function EventsPage({ onNavigate }) {
         ) : (
           <>
             <View style={styles.grid}>
-              {events.map((event, index) => (
+              {filteredEvents.map((event, index) => (
                 <TouchableOpacity
   key={event.id}
   style={[
@@ -171,15 +190,23 @@ export default function EventsPage({ onNavigate }) {
                       <Text style={styles.venueText}>{event.venue}</Text>
                     </View>
                     
-                    <Text style={styles.dateText}>{event.date}</Text>
+                    <View style={styles.dateRow}>
+                      <Ionicons name="calendar-outline" size={14} color="#0077B6" />
+                      <Text style={styles.dateText}>{formatDate(event.eventDate)}</Text>
+                    </View>
                     
-                    <Text style={styles.priceText}>Price: {event.price}</Text>
+                    {event.startTime && (
+                      <View style={styles.timeRow}>
+                        <Ionicons name="time-outline" size={14} color="#0077B6" />
+                        <Text style={styles.timeText}>{formatTime(event.startTime, event.endTime)}</Text>
+                      </View>
+                    )}
                   </View>
                 </TouchableOpacity>
               ))}
             </View>
             
-            {events.length > 6 && (
+            {filteredEvents.length > 6 && (
               <TouchableOpacity style={styles.showMoreButton}>
                 <Text style={styles.showMoreButtonText}>Show more</Text>
               </TouchableOpacity>
@@ -332,10 +359,7 @@ export default function EventsPage({ onNavigate }) {
             <View style={styles.filterHandle} />
             <EventsFilterScreen
               onClose={closeFilter}
-              onApply={(filters) => {
-                console.log('Applied filters:', filters);
-                closeFilter();
-              }}
+              onApply={applyFilters}
             />
             </Animated.View>
           
@@ -503,15 +527,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 3,
+  },
   dateText: {
     fontSize: 14,
-    color: '#999',
-    marginBottom: 4,
+    color: '#666',
   },
-  priceText: {
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  timeText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#00A8E1',
+    color: '#666',
   },
   showMoreButton: {
     backgroundColor: '#0077b6',
@@ -628,7 +661,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterBottomSheet: {
-    height: '70%',
+    height: '55%',
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

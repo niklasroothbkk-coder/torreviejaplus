@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   formLabel: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -454,18 +454,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
     padding: 12,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
     borderWidth: 1,
     borderColor: '#E0E0E0',
     justifyContent: 'center',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
   },
   datePlaceholder: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#999',
   },
   timePickerRow: {
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dropdownText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
   },
   dropdownMenu: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   dropdownItemText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
   dropdownItemTextActive: {
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
   },
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   calendarMonthText: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   calendarDayHeaderText: {
     width: `${100/7}%`,
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '600',
     color: '#666',
   },
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   calendarDayText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#333',
   },
   calendarDayTextSelected: {

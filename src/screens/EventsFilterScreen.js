@@ -8,10 +8,11 @@ export default function EventsFilterScreen({ onClose, onApply }) {
 
   const categories = [
     'All',
-    'Concerts',
-    'Festivals',
-    'Markets',
-    'Tours',
+    'Concerts & Festivals',
+    'Sports Events',
+    'Markets & Attractions',
+    'Tours & Trips',
+    'Other Events & Happenings',
   ];
 
   const handleApply = () => {

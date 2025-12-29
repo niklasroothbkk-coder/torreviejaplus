@@ -13,7 +13,9 @@ export default function DealsPage({ onNavigate }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
   const [deals, setDeals] = useState([]);
+  const [filteredDeals, setFilteredDeals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({ category: 'All' });
 
   const openMenu = () => {
     setMenuOpen(true);
@@ -47,6 +49,19 @@ export default function DealsPage({ onNavigate }) {
       duration: 300,
       useNativeDriver: true,
     }).start(() => setShowFilter(false));
+  };
+
+  const applyFilters = (filters) => {
+    setActiveFilters(filters);
+    
+    let filtered = deals;
+    
+    if (filters.category && filters.category !== 'All') {
+      filtered = filtered.filter(deal => deal.category === filters.category);
+    }
+    
+    setFilteredDeals(filtered);
+    closeFilter();
   };
 
   // Fetch deals from Supabase
@@ -95,6 +110,7 @@ export default function DealsPage({ onNavigate }) {
       });
       
       setDeals(mappedDeals);
+      setFilteredDeals(mappedDeals);
     } catch (error) {
       console.error('Error fetching deals:', error);
     } finally {
@@ -154,16 +170,16 @@ export default function DealsPage({ onNavigate }) {
             <ActivityIndicator size="large" color="#0077B6" />
             <Text style={styles.loadingText}>Loading deals...</Text>
           </View>
-        ) : deals.length === 0 ? (
+        ) : filteredDeals.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="pricetag-outline" size={64} color="#999" />
-            <Text style={styles.emptyTitle}>No Deals Yet</Text>
-            <Text style={styles.emptyText}>Check back soon for exciting deals and promotions!</Text>
+            <Text style={styles.emptyTitle}>{deals.length === 0 ? 'No Deals Yet' : 'No Matching Deals'}</Text>
+            <Text style={styles.emptyText}>{deals.length === 0 ? 'Check back soon for exciting deals and promotions!' : 'Try adjusting your filters'}</Text>
           </View>
         ) : (
           <>
             <View style={styles.grid}>
-              {deals.map((deal, index) => (
+              {filteredDeals.map((deal, index) => (
             <TouchableOpacity 
               key={deal.id} 
               style={[
@@ -349,10 +365,7 @@ export default function DealsPage({ onNavigate }) {
             <View style={styles.filterHandle} />
             <DealsFilterScreen 
               onClose={closeFilter}
-              onApply={(filters) => {
-                console.log('Applied filters:', filters);
-                closeFilter();
-              }}
+              onApply={applyFilters}
             />
           </Animated.View>
           
@@ -676,7 +689,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterBottomSheet: {
-    height: '50%',
+    height: '60%',
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

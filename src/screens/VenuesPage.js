@@ -75,11 +75,11 @@ export default function VenuesPage({ onNavigate }) {
     try {
       setLoading(true);
       console.log('Fetching venues from Supabase...');
-      console.log('URL:', 'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&order=created_at.desc');
+      console.log('URL:', 'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&active=eq.true&order=created_at.desc');
       
-      // Use direct fetch instead of Supabase client
+      // Use direct fetch instead of Supabase client - ONLY fetch active venues
       const response = await fetch(
-        'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&order=created_at.desc',
+        'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?select=*&active=eq.true&order=created_at.desc',
         {
           method: 'GET',
           headers: {
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterBottomSheet: {
-    height: '70%',
+    height: '65%',
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
