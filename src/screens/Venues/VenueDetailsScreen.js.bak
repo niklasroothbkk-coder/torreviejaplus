@@ -3,11 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
 import CustomAlert from '../../components/CustomAlert';
-import { addFavorite, removeFavorite, isFavorite as checkIsFavorite } from '../../services/favoritesService';
 
 const { width } = Dimensions.get('window');
 
-export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) {
+export default function VenueDetailsScreen({ onNavigate, venueId }) {
   const [reviewText, setReviewText] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -34,30 +33,9 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const viewsIncrementedRef = React.useRef(false);
 
-  // Check favorite status
-  const checkFavoriteStatus = async () => {
-    const favorited = await checkIsFavorite('venue', venueId);
-    setIsFavorite(favorited);
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      if (isFavorite) {
-        await removeFavorite('venue', venueId);
-        setIsFavorite(false);
-      } else {
-        await addFavorite('venue', venueId);
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-    }
-  };
-
   useEffect(() => {
     fetchVenueData();
     fetchReviews();
-    checkFavoriteStatus();
     
     // Only increment views once per venue visit
     if (!viewsIncrementedRef.current) {
@@ -351,13 +329,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
       <Image source={require('../../../assets/backgrounds/BG_ALL.png')} style={styles.backgroundImage} />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => {
-          if (authParams?.returnTo === 'favorites' && authParams?.favoriteTab) {
-            onNavigate('favorites', { favoriteTab: authParams.favoriteTab });
-          } else {
-            onNavigate(authParams?.returnTo || 'venues');
-          }
-        }}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('venues')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 
@@ -395,7 +367,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
 
           <TouchableOpacity
             style={styles.headerButtonFavorite}
-            onPress={toggleFavorite}
+            onPress={() => setIsFavorite(!isFavorite)}
           >
             <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
           </TouchableOpacity>

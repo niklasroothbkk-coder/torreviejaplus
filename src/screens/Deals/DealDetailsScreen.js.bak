@@ -3,11 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
 import CustomAlert from '../../components/CustomAlert';
-import { addFavorite, removeFavorite, isFavorite as checkIsFavorite } from "../../services/favoritesService";
 
 const { width } = Dimensions.get('window');
 
-export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
+export default function DealDetailsScreen({ onNavigate, dealId }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [dealData, setDealData] = useState(null);
@@ -26,30 +25,8 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
   const [chatMessages, setChatMessages] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const checkFavoriteStatus = async () => {
-    if (dealId) {
-      const favorited = await checkIsFavorite('deal', dealId);
-      setIsFavorite(favorited);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      if (isFavorite) {
-        await removeFavorite('deal', dealId);
-        setIsFavorite(false);
-      } else {
-        await addFavorite('deal', dealId);
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-    }
-  };
-
   useEffect(() => {
     fetchDealData();
-    checkFavoriteStatus();
   }, [dealId]);
 
   const fetchDealData = async () => {
@@ -193,13 +170,7 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
       <Image source={require('../../../assets/backgrounds/BG_ALL.png')} style={styles.backgroundImage} />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => {
-          if (authParams?.returnTo === 'favorites' && authParams?.favoriteTab) {
-            onNavigate('favorites', { favoriteTab: authParams.favoriteTab });
-          } else {
-            onNavigate(authParams?.returnTo || 'testdeals');
-          }
-        }}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('testdeals')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 
@@ -237,7 +208,7 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
 
           <TouchableOpacity
             style={styles.headerButtonFavorite}
-            onPress={toggleFavorite}
+            onPress={() => setIsFavorite(!isFavorite)}
           >
             <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
           </TouchableOpacity>

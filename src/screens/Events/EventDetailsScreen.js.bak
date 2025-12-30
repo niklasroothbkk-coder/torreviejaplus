@@ -2,41 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
-import { addFavorite, removeFavorite, isFavorite as checkIsFavorite } from '../../services/favoritesService';
+
 const { width } = Dimensions.get('window');
 
 export default function EventDetailsScreen({ route, onNavigate }) {
-  const { eventId, returnTo } = route?.params || {};
+  const { eventId } = route?.params || {};
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkFavoriteStatus = async () => {
-    if (eventId) {
-      const favorited = await checkIsFavorite('event', eventId);
-      setIsFavorite(favorited);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      if (isFavorite) {
-        await removeFavorite('event', eventId);
-        setIsFavorite(false);
-      } else {
-        await addFavorite('event', eventId);
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-    }
-  };
-
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
-      checkFavoriteStatus();
     }
   }, [eventId]);
 
@@ -95,13 +73,7 @@ export default function EventDetailsScreen({ route, onNavigate }) {
       <Image source={require('../../../assets/backgrounds/BG_ALL.png')} style={styles.backgroundImage} />
       
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => {
-          if (returnTo === 'favorites' && route?.params?.favoriteTab) {
-            onNavigate('favorites', { favoriteTab: route.params.favoriteTab });
-          } else {
-            onNavigate(returnTo || 'events');
-          }
-        }}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => onNavigate('events')}>
           <Ionicons name="arrow-back" size={24} color="#0077B6" />
         </TouchableOpacity>
 
@@ -139,7 +111,7 @@ export default function EventDetailsScreen({ route, onNavigate }) {
 
           <TouchableOpacity
             style={styles.headerButtonFavorite}
-            onPress={toggleFavorite}
+            onPress={() => setIsFavorite(!isFavorite)}
           >
             <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
           </TouchableOpacity>

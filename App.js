@@ -318,7 +318,7 @@ export default function App() {
       case 'testdeals':
         return <DealsPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'dealdetails':
-        return <DealDetailsScreen onNavigate={handleMenuItemPress} dealId={authParams?.dealId} />;
+        return <DealDetailsScreen onNavigate={handleMenuItemPress} dealId={authParams?.dealId} authParams={authParams} />;
       case 'winetastingdetails':
         return <WineTastingDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'fridaymarketdetails':
@@ -334,9 +334,9 @@ export default function App() {
       case 'venues':
         return <VenuesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'favorites':
-        return <FavoritesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+        return <FavoritesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} initialTab={authParams?.favoriteTab} />;
       case 'venuedetails':
-        return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} />;
+        return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} authParams={authParams} />;
       case 'eventdetails':
         return <EventDetailsScreen route={{ params: authParams }} onNavigate={handleMenuItemPress} />;
       case 'signin':
