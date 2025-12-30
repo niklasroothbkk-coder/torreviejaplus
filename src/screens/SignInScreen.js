@@ -7,13 +7,19 @@ import CustomAlert from '../components/CustomAlert';
 export default function SignInScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertAction, setAlertAction] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Prevent double-click
 
   const handleEmailSignIn = async () => {
+    // Prevent double-click
+    if (isLoading) {
+      console.log('⚠️ Already signing in, ignoring...');
+      return;
+    }
+
     if (!email || !password) {
       setAlertTitle('Error');
       setAlertMessage('Please enter email and password');
@@ -21,19 +27,30 @@ export default function SignInScreen({ onNavigate }) {
       return;
     }
 
-    // Call Supabase Sign In
-    const result = await signInWithEmail(email, password, keepSignedIn);
+    setIsLoading(true);
+    console.log('🔑 Signing in...');
+
+    // Call Supabase Sign In - session is ALWAYS persistent
+    const result = await signInWithEmail(email, password, true);
     
     if (result.success) {
+      console.log('✅ Sign in successful!');
       setAlertTitle('Success');
       setAlertMessage('Logged in successfully!');
-      setAlertAction(() => () => onNavigate('userprofile'));
       setShowAlert(true);
+      
+      // Auto-close alert after 3 seconds and navigate
+      setTimeout(() => {
+        setShowAlert(false);
+        onNavigate('userprofile');
+      }, 3000);
     } else {
       setAlertTitle('Error');
       setAlertMessage(result.error);
       setShowAlert(true);
     }
+    
+    setIsLoading(false);
   };
 
   const handleFacebookLogin = () => {
@@ -113,26 +130,13 @@ export default function SignInScreen({ onNavigate }) {
             <Text style={styles.forgotPasswordText}>Forgot password</Text>
           </TouchableOpacity>
 
-          {/* Keep me signed in checkbox */}
-          <TouchableOpacity 
-            style={styles.checkboxContainer}
-            onPress={() => setKeepSignedIn(!keepSignedIn)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, keepSignedIn && styles.checkboxChecked]}>
-              {keepSignedIn && (
-                <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-              )}
-            </View>
-            <Text style={styles.checkboxLabel}>Keep me signed in</Text>
-          </TouchableOpacity>
-
           {/* Sign In Button */}
           <TouchableOpacity 
-            style={styles.signInButton} 
+            style={[styles.signInButton, isLoading && styles.signInButtonDisabled]} 
             onPress={handleEmailSignIn}
+            disabled={isLoading}
           >
-            <Text style={styles.signInButtonText}>Sign In</Text>
+            <Text style={styles.signInButtonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -257,30 +261,6 @@ const styles = StyleSheet.create({
     color: '#0077B6',
     fontWeight: '600',
   },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 24,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#0077B6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#0077B6',
-    borderColor: '#0077B6',
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
   signInButton: {
     backgroundColor: '#0077B6',
     borderRadius: 25,
@@ -291,6 +271,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  signInButtonDisabled: {
+    backgroundColor: '#99C9E0',
+    opacity: 0.7,
   },
   signInButtonText: {
     fontSize: 16,

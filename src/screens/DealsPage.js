@@ -6,10 +6,7 @@ import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
-export default function DealsPage({ onNavigate }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(-width * 0.75));
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function DealsPage({ onNavigate, onOpenMenu }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
   const [deals, setDeals] = useState([]);
@@ -17,21 +14,49 @@ export default function DealsPage({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState({ category: 'All' });
 
-  const openMenu = () => {
-    setMenuOpen(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+  useEffect(() => {
+    fetchDeals();
+  }, []);
 
-  const closeMenu = () => {
-    Animated.timing(slideAnim, {
-      toValue: -width * 0.75,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => setMenuOpen(false));
+  const fetchDeals = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('deals')
+        .select(`
+          *,
+          venues!deals_venue_id_fkey(name)
+        `)
+        .eq('active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const transformedDeals = data.map(deal => {
+        const venueName = deal.venues?.name || 'Unknown Venue';
+        const dealTitle = deal.name || deal.title || 'No Title';
+        return {
+          id: deal.id,
+          rating: deal.rating || 4.5,
+          title: dealTitle,
+          description: deal.description,
+          venue: venueName,
+          category: deal.category,
+          validUntil: deal.valid_until,
+          startDate: deal.start_date || deal.deal_date,
+          endDate: deal.end_date,
+          discount: deal.discount_text || deal.price || 'SPECIAL',
+          image: deal.image_url ? { uri: deal.image_url } : require('../../assets/backgrounds/BG_ALL.png'),
+        };
+      });
+
+      setDeals(transformedDeals);
+      setFilteredDeals(transformedDeals);
+    } catch (error) {
+      console.error('❌ Error fetching deals:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openFilter = () => {
@@ -64,70 +89,31 @@ export default function DealsPage({ onNavigate }) {
     closeFilter();
   };
 
-  // Fetch deals from Supabase
-  useEffect(() => {
-    fetchDeals();
-  }, []);
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const options = { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
 
-  const fetchDeals = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('deals')
-        .select(`
-          *,
-          venues!deals_venue_id_fkey(name, location_short)
-        `)
-        .eq('active', true)
-        .gte('deal_date', new Date().toISOString().split('T')[0])
-        .order('deal_date', { ascending: true });
-      
-      if (error) throw error;
-      
-      // Map data to match the format expected by the UI
-      const mappedDeals = data.map(deal => {
-        // Format time to HH:MM
-        let timeString = '';
-        if (deal.start_time) {
-          const startTime = deal.start_time.substring(0, 5); // Gets HH:MM from HH:MM:SS
-          timeString = ` (${startTime})`;
-          if (deal.end_time) {
-            const endTime = deal.end_time.substring(0, 5);
-            timeString = ` (${startTime}-${endTime})`;
-          }
-        }
-        
-        return {
-          id: deal.id,
-          rating: 0, // We don't have ratings on deals yet
-          title: deal.name,
-          venue: deal.venues?.name || 'Unknown Venue',
-          date: `${deal.deal_date}${timeString}`,
-          price: deal.price || 'N/A',
-          image: deal.image_url ? { uri: deal.image_url } : require('../../assets/deals/HH.png'),
-          category: deal.category,
-        };
-      });
-      
-      setDeals(mappedDeals);
-      setFilteredDeals(mappedDeals);
-    } catch (error) {
-      console.error('Error fetching deals:', error);
-    } finally {
-      setLoading(false);
+  const formatDateRange = (startDate, endDate) => {
+    if (!startDate && !endDate) return 'Ongoing';
+    if (startDate && endDate) {
+      return `${formatDate(startDate)} - ${formatDate(endDate)}`;
     }
+    if (startDate) return `From ${formatDate(startDate)}`;
+    if (endDate) return `Until ${formatDate(endDate)}`;
+    return 'Ongoing';
   };
 
   return (
     <View style={styles.container}>
-      {/* Background Image */}
       <Image 
         source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
         resizeMode="cover"
       />
       
-      {/* Header Image Background */}
       <View style={styles.headerImageContainer}>
         <Image 
           source={require('../../assets/backgrounds/Header Image Container.png')} 
@@ -135,17 +121,15 @@ export default function DealsPage({ onNavigate }) {
           resizeMode="cover"
         />
         
-        {/* Hamburger Menu Button */}
         <TouchableOpacity 
           style={styles.menuButtonWrapper}
-          onPress={openMenu}
+          onPress={onOpenMenu}
         >
           <View style={styles.menuButtonContainer}>
             <Ionicons name="menu" size={32} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
 
-        {/* Filter Button */}
         <TouchableOpacity 
           style={styles.filterButton}
           onPress={openFilter}
@@ -154,201 +138,66 @@ export default function DealsPage({ onNavigate }) {
           <Text style={styles.filterButtonText}>FILTER</Text>
         </TouchableOpacity>
 
-        {/* Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleText}>Deals & Promotions</Text>
         </View>
       </View>
 
-      {/* Deals Grid */}
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0077B6" />
-            <Text style={styles.loadingText}>Loading deals...</Text>
-          </View>
-        ) : filteredDeals.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="pricetag-outline" size={64} color="#999" />
-            <Text style={styles.emptyTitle}>{deals.length === 0 ? 'No Deals Yet' : 'No Matching Deals'}</Text>
-            <Text style={styles.emptyText}>{deals.length === 0 ? 'Check back soon for exciting deals and promotions!' : 'Try adjusting your filters'}</Text>
-          </View>
+          <ActivityIndicator size="large" color="#0077B6" style={{ marginTop: 40 }} />
         ) : (
           <>
             <View style={styles.grid}>
               {filteredDeals.map((deal, index) => (
-            <TouchableOpacity 
-              key={deal.id} 
-              style={[
-                styles.dealCard,
-                (index === 0 || index === 1) && styles.dealCardFeatured
-              ]}
-              onPress={() => {
-                onNavigate && onNavigate('dealdetails', { dealId: deal.id });
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={styles.imageContainer}>
-                <Image source={deal.image} style={styles.dealImage} />
-                <View style={styles.ratingBadge}>
-                  <Ionicons name="star" size={14} color="#FFD700" />
-                  <Text style={styles.ratingText}>{deal.rating}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.dealInfo}>
-                <Text style={styles.dealTitle}>{deal.title}</Text>
-                
-                <Text style={styles.venueText}>{deal.venue}</Text>
-                
-                <Text style={styles.priceText}>Price: {deal.price}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Show More Button */}
-        <TouchableOpacity style={styles.showMoreButton}>
-          <Text style={styles.showMoreButtonText}>Show more</Text>
-        </TouchableOpacity>
-      </>
-    )}
-      </ScrollView>
-
-      {/* Hamburger Menu Modal */}
-      <Modal
-        visible={menuOpen}
-        transparent={true}
-        animationType="none"
-        onRequestClose={closeMenu}
-      >
-        <View style={styles.menuModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.menuPanel,
-              { transform: [{ translateX: slideAnim }] }
-            ]}
-          >
-            <View style={styles.menuHeader}>
-              <TouchableOpacity onPress={closeMenu} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#000000" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.menuItems}>
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('splash'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Home</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('venues'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Venues & Services</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('events'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Events & Happenings</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.menuItem, styles.activeMenuItem]}
-                onPress={closeMenu}
-              >
-                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Deals & Promotions</Text>
-              </TouchableOpacity>
-
-<TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('faq'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>FAQ & Contact</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('taxi'), 300);
-                }}
-              >
-                <View style={styles.menuItemRow}>
-                  <Text style={styles.menuItemText}>Share Airport Taxi</Text>
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>NEW</Text>
+                <TouchableOpacity
+                  key={deal.id}
+                  style={[
+                    styles.dealCard,
+                    (index === 0 || index === 1) && styles.dealCardFeatured
+                  ]}
+                  onPress={() => {
+                    onNavigate && onNavigate('dealdetails', { dealId: deal.id });
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.imageContainer}>
+                    <Image source={deal.image} style={styles.dealImage} />
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={14} color="#FFD700" />
+                      <Text style={styles.ratingText}>{deal.rating}</Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                  
+                  <View style={styles.dealInfo}>
+                    <Text style={styles.dealTitle} numberOfLines={2}>{deal.title}</Text>
+                    
+                    <View style={styles.venueRow}>
+                      <Ionicons name="location" size={12} color="#00A8E1" />
+                      <Text style={styles.venueText} numberOfLines={1}>{deal.venue}</Text>
+                    </View>
+                    
+                    <View style={styles.dateRow}>
+                      <Ionicons name="calendar-outline" size={12} color="#0077B6" />
+                      <Text style={styles.dateText} numberOfLines={1}>{formatDateRange(deal.startDate, deal.endDate)}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
-
-            {isLoggedIn ? (
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={() => {
-                  setIsLoggedIn(false);
-                  closeMenu();
-                }}
-              >
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('signin'), 300);
-                }}
-              >
-                <Text style={styles.logoutText}>Sign In / Sign Up</Text>
+            
+            {filteredDeals.length > 6 && (
+              <TouchableOpacity style={styles.showMoreButton}>
+                <Text style={styles.showMoreButtonText}>Show more</Text>
               </TouchableOpacity>
             )}
+          </>
+        )}
+      </ScrollView>
 
-            {/* Large Logo at Bottom */}
-            <TouchableOpacity 
-              style={styles.bottomLogoSection}
-              onPress={() => {
-                closeMenu();
-                setTimeout(() => onNavigate && onNavigate('walkthrough'), 300);
-              }}
-            >
-              <Image
-                source={require('../../assets/icons/logo.png')}
-                style={styles.bottomLogo}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </Animated.View>
-
-          <TouchableOpacity 
-            style={styles.overlayTouchable}
-            activeOpacity={1}
-            onPress={closeMenu}
-          />
-        </View>
-      </Modal>
-
-      {/* Filter Modal */}
       <Modal
         visible={showFilter}
         transparent={true}
@@ -363,7 +212,7 @@ export default function DealsPage({ onNavigate }) {
             ]}
           >
             <View style={styles.filterHandle} />
-            <DealsFilterScreen 
+            <DealsFilterScreen
               onClose={closeFilter}
               onApply={applyFilters}
             />
@@ -532,17 +381,17 @@ const styles = StyleSheet.create({
   venueText: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 3,
+    flex: 1,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   dateText: {
-    fontSize: 9,
-    color: '#999',
-    marginBottom: 4,
-  },
-  priceText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#00A8E1',
+    color: '#666',
+    flex: 1,
   },
   showMoreButton: {
     backgroundColor: '#0077b6',
@@ -563,124 +412,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 100,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 100,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 10,
-  },
-  menuModalOverlay: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  menuPanel: {
-    width: width * 0.75,
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    paddingTop: 50,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-  overlayTouchable: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    width: width * 0.25,
-    height: '100%',
-  },
-  menuHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 40,
-  },
-  backButton: {
-    marginBottom: 0,
-  },
-  menuItems: {
-    paddingHorizontal: 20,
-  },
-  menuItem: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
-  menuItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  menuItemText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  newBadge: {
-    backgroundColor: '#d12028',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginLeft: 10,
-  },
-  newBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  activeMenuItem: {
-    backgroundColor: '#0077B6',
-    borderRadius: 10,
-  },
-  activeMenuItemText: {
-    color: '#FFFFFF',
-  },
-  logoutButton: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-    marginTop: 40,
-    marginLeft: 20,
-  },
-  logoutText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: '500',
-  },
-  bottomLogoSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 70,
-    paddingVertical: 20,
-    paddingBottom: 40,
-  },
-  bottomLogo: {
-    width: 480,
-    height: 160,
-  },
   filterModalContainer: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -689,7 +420,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterBottomSheet: {
-    height: '60%',
+    height: '55%',
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

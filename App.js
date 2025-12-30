@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCurrentUser, signOut } from './src/services/authService';
+import { supabase } from './src/config/supabaseClient';
 import EventsPage from './src/screens/EventsPage';
 import ProfileScreen from './src/screens/ProfilScreenLogin';
 import UserProfileScreen from './src/screens/UserProfileScreen';
@@ -17,6 +20,7 @@ import BoatDayDetailsScreen from './src/screens/Events/BoatDayDetailsScreen';
 import NightClubDetailsScreen from './src/screens/Events/NightClubDetailsScreen';
 import HappyHourEventDetailsScreen from './src/screens/Events/HappyHourEventDetailsScreen';
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
+import FavoritesPage from './src/screens/FavoritesPage';
 import VenuesPage from './src/screens/VenuesPage';
 import VenueDetailsScreen from './src/screens/Venues/VenueDetailsScreen';
 import SignInScreen from './src/screens/SignInScreen';
@@ -31,15 +35,109 @@ const { width } = Dimensions.get('window');
 export default function App() {
   const [showSplash, setShowSplash] = React.useState(true);
   const [showWalkthrough, setShowWalkthrough] = React.useState(false);
-  const [currentScreen, setCurrentScreen] = React.useState('events');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(-width * 0.75));
-  const [shouldOpenMenu, setShouldOpenMenu] = useState(false);
-  const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState(false);
-  const [rides, setRides] = useState([]);
-  const [authParams, setAuthParams] = useState({});
+  const [currentScreen, setCurrentScreen] = React.useState(''); // Start empty, not 'events'
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [slideAnim] = React.useState(new Animated.Value(-width * 0.75));
+  const [shouldOpenMenu, setShouldOpenMenu] = React.useState(false);
+  const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = React.useState(false);
+  const [rides, setRides] = React.useState([]);
+  const [authParams, setAuthParams] = React.useState({});
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [isCheckingSession, setIsCheckingSession] = React.useState(true);
+
+  // Use ref to prevent state reset
+  const authInitialized = React.useRef(false);
+  const isLoggingOut = React.useRef(false);
+
+  // IMMEDIATELY load login state from AsyncStorage on mount
+  React.useEffect(() => {
+    const loadLoginState = async () => {
+      const stored = await AsyncStorage.getItem('isLoggedIn');
+      console.log('💾 IMMEDIATE load from storage:', stored);
+      if (stored === 'true') {
+        setIsLoggedIn(true);
+      }
+    };
+    loadLoginState();
+  }, []);
+
+  // Check if user is logged in on app start
+  React.useEffect(() => {
+    if (authInitialized.current) {
+      console.log('⚠️ Auth already initialized, skipping...');
+      return;
+    }
+    
+    authInitialized.current = true;
+    console.log('🚀 App started, setting up auth listener...');
+    
+    // INITIAL session check
+    const initializeAuth = async () => {
+      const storedLoginState = await AsyncStorage.getItem('isLoggedIn');
+      console.log('💾 Stored login state:', storedLoginState);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('📱 Initial session check:', session?.user?.email || 'No session');
+      
+      if (session?.user) {
+        console.log('✅ Found existing session on startup');
+        setIsLoggedIn(true);
+        setCurrentUser(session.user);
+        await AsyncStorage.setItem('isLoggedIn', 'true');
+      } else {
+        console.log('⚠️ No existing session on startup');
+        if (storedLoginState !== 'true') {
+          setIsLoggedIn(false);
+          setCurrentUser(null);
+        }
+      }
+      setIsCheckingSession(false);
+    };
+    
+    initializeAuth();
+    
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth event:', event, 'User:', session?.user?.email || 'None', 'Time:', new Date().toLocaleTimeString());
+      
+      if (event === 'SIGNED_OUT') {
+        // Skip if we're already handling logout
+        if (isLoggingOut.current) {
+          console.log('⚠️ SIGNED_OUT event during logout - ignoring to prevent double-processing');
+          return;
+        }
+        
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession?.user) {
+          console.log('⚠️ IGNORING false SIGNED_OUT event - session still valid!');
+          return;
+        }
+        console.log('❌ Setting logged OUT - confirmed no session');
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        await AsyncStorage.setItem('isLoggedIn', 'false');
+        return;
+      }
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          console.log('✅ Setting logged IN - User:', session.user.email, 'Event:', event);
+          setIsLoggedIn(true);
+          setCurrentUser(session.user);
+          await AsyncStorage.setItem('isLoggedIn', 'true');
+        }
+      }
+    });
+
+    return () => {
+      console.log('🧹 Cleaning up auth listener');
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   const openMenu = () => {
+    console.log('📝 Opening menu, isLoggedIn:', isLoggedIn, 'User:', currentUser?.email, 'showSplash:', showSplash, 'currentScreen:', currentScreen);
     setMenuOpen(true);
     Animated.timing(slideAnim, {
       toValue: 0,
@@ -57,30 +155,86 @@ export default function App() {
   };
 
   const handleMenuItemPress = (screen, params = {}) => {
-    closeMenu();
+    console.log('📍 Navigating to:', screen, 'Current isLoggedIn:', isLoggedIn);
+    
+    // FORCE CHECK AUTH when navigating to userprofile OR splash (in case we just logged in)
+    if (screen === 'userprofile' || screen === 'splash') {
+      console.log('🔄 Force-checking auth state...');
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          console.log('✅ Force-check: User IS logged in:', session.user.email);
+          setIsLoggedIn(true);
+          setCurrentUser(session.user);
+          AsyncStorage.setItem('isLoggedIn', 'true');
+        } else {
+          console.log('⚠️ Force-check: No session found');
+        }
+      });
+    }
+    
+    // Close menu for all screens EXCEPT splash
+    if (screen !== 'splash') {
+      closeMenu();
+    }
+    
     setTimeout(() => {
       if (screen === 'splash') {
         setShowSplash(true);
         setShowWalkthrough(false);
+        setCurrentScreen(''); // Clear currentScreen when on splash!
+        // Open menu immediately when navigating to splash
+        setTimeout(() => {
+          openMenu();
+        }, 100);
       } else if (screen === 'walkthrough') {
         setShowSplash(false);
         setShowWalkthrough(true);
+        closeMenu();
       } else {
         setShowSplash(false);
         setShowWalkthrough(false);
         setCurrentScreen(screen);
         setAuthParams(params);
       }
-    }, 300);
+    }, screen === 'splash' ? 0 : 300);
   };
 
-  // Handle splash completion - go to walkthrough
+  const handleLogout = async () => {
+    if (isLoggingOut.current) {
+      console.log('⚠️ Already logging out, ignoring...');
+      return;
+    }
+    
+    isLoggingOut.current = true;
+    console.log('🚪 Logging out...');
+    
+    try {
+      // Update UI immediately BEFORE Supabase signOut
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      await AsyncStorage.setItem('isLoggedIn', 'false');
+      
+      // Then sign out from Supabase (this triggers SIGNED_OUT event)
+      await signOut();
+      
+      closeMenu();
+      console.log('✅ Logout complete');
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+    } finally {
+      // Reset flag after short delay
+      setTimeout(() => {
+        isLoggingOut.current = false;
+        console.log('🔄 Logout flag reset');
+      }, 500);
+    }
+  };
+
   const handleSplashComplete = () => {
     setShowSplash(false);
     setShowWalkthrough(true);
   };
 
-  // Handle walkthrough completion - go to main app
   const handleWalkthroughComplete = () => {
     setShowWalkthrough(false);
     setShowSplash(true);
@@ -92,7 +246,6 @@ export default function App() {
     setRides([newRide, ...rides]);
   };
 
-  // Open menu when splash is shown after walkthrough skip
   React.useEffect(() => {
     if (showSplash && shouldOpenMenu) {
       setTimeout(() => {
@@ -102,7 +255,6 @@ export default function App() {
     }
   }, [showSplash, shouldOpenMenu]);
 
-  // Auto-advance from splash to walkthrough after 3 seconds (only on first load, not after skip)
   React.useEffect(() => {
     if (showSplash && !shouldOpenMenu && !hasCompletedWalkthrough) {
       const timer = setTimeout(() => {
@@ -112,168 +264,59 @@ export default function App() {
     }
   }, [showSplash, shouldOpenMenu, hasCompletedWalkthrough]);
 
-  // Show splash screen first
-  if (showSplash) {
-    return (
-      <View style={styles.splashContainer}>
-        {/* Background Image */}
-        <Image 
-          source={require('./assets/backgrounds/SplashBG.png')} 
-          style={styles.splashBackgroundImage}
-          resizeMode="cover"
-        />
-        
-        {/* Hamburger Menu Button */}
-        <TouchableOpacity 
-          style={styles.menuButtonWrapper}
-          onPress={openMenu}
-        >
-          <View style={styles.menuButtonContainer}>
-            <Ionicons name="menu" size={32} color="#FFFFFF" />
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.splashContent}>
-          <Image
-            source={require('./assets/icons/logo.png')}
-            style={styles.splashLogo}
-            resizeMode="contain"
+  // Render the current screen content
+  const renderMainContent = () => {
+    console.log('🎨 renderMainContent - showSplash:', showSplash, 'currentScreen:', currentScreen);
+    if (showSplash) {
+      return (
+        <View style={styles.splashContainer}>
+          <Image 
+            source={require('./assets/backgrounds/SplashBG.png')} 
+            style={styles.splashBackgroundImage}
+            resizeMode="cover"
           />
-        </View>
+          
+          <TouchableOpacity 
+            style={styles.menuButtonWrapper}
+            onPress={openMenu}
+          >
+            <View style={styles.menuButtonContainer}>
+              <Ionicons name="menu" size={32} color="#FFFFFF" />
+            </View>
+          </TouchableOpacity>
 
-        {/* Slide-in Menu Modal */}
-        <Modal
-          visible={menuOpen}
-          transparent={true}
-          animationType="none"
-          onRequestClose={closeMenu}
-        >
-          <View style={styles.modalOverlay}>
-            {/* Slide-in Menu from LEFT */}
-            <Animated.View 
-              style={[
-                styles.menuPanel,
-                { transform: [{ translateX: slideAnim }] }
-              ]}
-            >
-              <View style={styles.menuHeader}>
-                <TouchableOpacity onPress={closeMenu} style={styles.backButton}>
-                  <Ionicons name="arrow-back" size={24} color="#000000" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Menu Items */}
-              <View style={styles.menuItems}>
-                <TouchableOpacity 
-                  style={[styles.menuItem, styles.activeMenuItem]}
-                  onPress={() => handleMenuItemPress('splash')}
-                >
-                  <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Home</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => handleMenuItemPress('venues')}
-                >
-                  <Text style={styles.menuItemText}>Venues & Services</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => handleMenuItemPress('events')}
-                >
-                  <Text style={styles.menuItemText}>Events & Happenings</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => handleMenuItemPress('testdeals')}
-                >
-                  <Text style={styles.menuItemText}>Deals & Promotions</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => handleMenuItemPress('faq')}
-                >
-                  <Text style={styles.menuItemText}>FAQ & Contact</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => handleMenuItemPress('taxi')}
-                >
-                  <View style={styles.menuItemRow}>
-                    <Text style={styles.menuItemText}>Share Airport Taxi</Text>
-                    <View style={styles.newBadge}>
-                      <Text style={styles.newBadgeText}>NEW</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* Sign In / Sign Up */}
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={() => handleMenuItemPress('signin')}
-              >
-                <Text style={styles.logoutText}>Sign In / Sign Up</Text>
-              </TouchableOpacity>
-
-              {/* Large Logo at Bottom */}
-              <TouchableOpacity 
-                style={styles.bottomLogoSection}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => {
-                    setShowSplash(false);
-                    setShowWalkthrough(true);
-                  }, 300);
-                }}
-              >
-                <Image
-                  source={require('./assets/icons/logo.png')}
-                  style={styles.bottomLogo}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* Clickable overlay to close menu */}
-            <TouchableOpacity 
-              style={styles.overlayTouchable}
-              activeOpacity={1}
-              onPress={closeMenu}
+          <View style={styles.splashContent}>
+            <Image
+              source={require('./assets/icons/logo.png')}
+              style={styles.splashLogo}
+              resizeMode="contain"
             />
           </View>
-        </Modal>
-      </View>
-    );
-  }
+        </View>
+      );
+    }
 
-  // Show walkthrough after splash
-  if (showWalkthrough) {
-    return <WalkthroughScreen onComplete={handleWalkthroughComplete} />;
-  }
+    if (showWalkthrough) {
+      return <WalkthroughScreen onComplete={handleWalkthroughComplete} />;
+    }
 
-  const renderScreen = () => {
     switch(currentScreen) {
       case 'events':
-        return <EventsPage onNavigate={handleMenuItemPress} />;
+        return <EventsPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'create':
-        return <CreateEventScreen onNavigate={handleMenuItemPress} />;
+        return <CreateEventScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'profile':
-        return <ProfileScreen onNavigate={handleMenuItemPress} />;
+        return <ProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'userprofile':
-        return <UserProfileScreen onNavigate={handleMenuItemPress} />;
+        return <UserProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'faq':
-        return <FAQContactPage onNavigate={handleMenuItemPress} />;
+        return <FAQContactPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'taxi':
-        return <ShareAirportTaxiPage onNavigate={handleMenuItemPress} rides={rides} />;
+        return <ShareAirportTaxiPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} rides={rides} />;
       case 'addride':
-        return <AddRidePage onNavigate={handleMenuItemPress} onAddRide={handleAddRide} />;
+        return <AddRidePage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} onAddRide={handleAddRide} />;
       case 'testdeals':
-        return <DealsPage onNavigate={handleMenuItemPress} />;
+        return <DealsPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'dealdetails':
         return <DealDetailsScreen onNavigate={handleMenuItemPress} dealId={authParams?.dealId} />;
       case 'winetastingdetails':
@@ -289,7 +332,9 @@ export default function App() {
       case 'happyhoureventdetails':
         return <HappyHourEventDetailsScreen onNavigate={handleMenuItemPress} />;
       case 'venues':
-        return <VenuesPage onNavigate={handleMenuItemPress} />;
+        return <VenuesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'favorites':
+        return <FavoritesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venuedetails':
         return <VenueDetailsScreen onNavigate={handleMenuItemPress} venueId={authParams?.venueId} />;
       case 'eventdetails':
@@ -309,9 +354,133 @@ export default function App() {
     }
   };
 
+  // GLOBAL MENU - wraps entire app
   return (
     <View style={styles.container}>
-      {renderScreen()}
+      {renderMainContent()}
+
+      {/* GLOBAL Slide-in Menu Modal */}
+      <Modal
+        visible={menuOpen}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closeMenu}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.menuPanel,
+              { transform: [{ translateX: slideAnim }] }
+            ]}
+          >
+            <View style={styles.menuHeader}>
+              <TouchableOpacity onPress={closeMenu} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.menuItems}>
+              <TouchableOpacity 
+                style={[styles.menuItem, showSplash && !currentScreen && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('splash')}
+              >
+                <Text style={[styles.menuItemText, showSplash && !currentScreen && styles.activeMenuItemText]}>Home</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.menuItem, !showSplash && currentScreen === 'venues' && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('venues')}
+              >
+                <Text style={[styles.menuItemText, !showSplash && currentScreen === 'venues' && styles.activeMenuItemText]}>Venues & Services</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.menuItem, !showSplash && currentScreen === 'events' && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('events')}
+              >
+                <Text style={[styles.menuItemText, !showSplash && currentScreen === 'events' && styles.activeMenuItemText]}>Events & Happenings</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.menuItem, currentScreen === 'testdeals' && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('testdeals')}
+              >
+                <Text style={[styles.menuItemText, currentScreen === 'testdeals' && styles.activeMenuItemText]}>Deals & Promotions</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.menuItem, currentScreen === 'faq' && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('faq')}
+              >
+                <Text style={[styles.menuItemText, currentScreen === 'faq' && styles.activeMenuItemText]}>FAQ & Contact</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.menuItem, currentScreen === 'taxi' && styles.activeMenuItem]}
+                onPress={() => handleMenuItemPress('taxi')}
+              >
+                <View style={styles.menuItemRow}>
+                  <Text style={[styles.menuItemText, currentScreen === 'taxi' && styles.activeMenuItemText]}>Share Airport Taxi</Text>
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>NEW</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {isLoggedIn ? (
+              <TouchableOpacity 
+                key="profile-logged-in"
+                style={styles.logoutButton}
+                onPress={() => handleMenuItemPress('userprofile')}
+              >
+                <Text style={styles.logoutText}>My Profile</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                key="profile-logged-out"
+                style={styles.logoutButton}
+                onPress={() => handleMenuItemPress('signin')}
+              >
+                <Text style={styles.logoutText}>Sign In / Sign Up</Text>
+              </TouchableOpacity>
+            )}
+
+            {isLoggedIn && (
+              <TouchableOpacity 
+                key="logout-button"
+                style={styles.logoutButtonSecondary}
+                onPress={handleLogout}
+              >
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity 
+              style={styles.bottomLogoSection}
+              onPress={() => {
+                closeMenu();
+                setTimeout(() => {
+                  setShowSplash(false);
+                  setShowWalkthrough(true);
+                }, 300);
+              }}
+            >
+              <Image
+                source={require('./assets/icons/logo.png')}
+                style={styles.bottomLogo}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </Animated.View>
+
+          <TouchableOpacity 
+            style={styles.overlayTouchable}
+            activeOpacity={1}
+            onPress={closeMenu}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -356,21 +525,6 @@ const styles = StyleSheet.create({
     width: 400,
     height: 300,
     marginBottom: 60,
-  },
-  sloganContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  sloganText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-    textAlign: 'center',
-    lineHeight: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 3,
   },
   modalOverlay: {
     flex: 1,
@@ -444,6 +598,13 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginLeft: 20,
   },
+  logoutButtonSecondary: {
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    marginTop: 8,
+    marginLeft: 20,
+  },
   logoutText: {
     fontSize: 16,
     color: '#000000',
@@ -452,13 +613,13 @@ const styles = StyleSheet.create({
   bottomLogoSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 70,
+    paddingTop: 20,
     paddingVertical: 20,
     paddingBottom: 40,
   },
   bottomLogo: {
-    width: 480,
-    height: 160,
+    width: 360,
+    height: 120,
   },
   container: {
     flex: 1,

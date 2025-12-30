@@ -5,7 +5,7 @@ import { getCurrentUser, updatePassword, signOut } from '../services/authService
 import { supabase } from '../config/supabaseClient';
 import CustomAlert from '../components/CustomAlert';
 
-export default function UserProfileScreen({ onNavigate }) {
+export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
   const [user, setUser] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -121,15 +121,19 @@ export default function UserProfileScreen({ onNavigate }) {
         resizeMode="cover"
       />
       
+      {/* Hamburger Menu Button - Same position as other screens */}
+      <TouchableOpacity 
+        style={styles.menuButtonWrapper}
+        onPress={onOpenMenu}
+      >
+        <View style={styles.menuButtonContainer}>
+          <Ionicons name="menu" size={32} color="#FFFFFF" />
+        </View>
+      </TouchableOpacity>
+      
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('events')}>
-          <Ionicons name="arrow-back" size={24} color="#0077B6" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#0077B6" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView 
@@ -243,7 +247,7 @@ export default function UserProfileScreen({ onNavigate }) {
               
               {/* New Password Input */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>New Password</Text>
+                <Text style={styles.label}>New Password (min 6 characters)</Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
@@ -273,7 +277,7 @@ export default function UserProfileScreen({ onNavigate }) {
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
-                    placeholder="Confirm new password"
+                    placeholder="Must match the password above"
                     placeholderTextColor="#999"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -317,37 +321,9 @@ export default function UserProfileScreen({ onNavigate }) {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - New order: Profile, Favorites, Messages, Settings */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => onNavigate('events')}
-        >
-          <Ionicons name="home-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => {
-            setAlertTitle('Coming Soon');
-            setAlertMessage('Favorites feature coming soon!');
-            setShowAlert(true);
-          }}
-        >
-          <Ionicons name="create-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => {
-            setAlertTitle('Coming Soon');
-            setAlertMessage('Favorites feature coming soon!');
-            setShowAlert(true);
-          }}
-        >
-          <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-
+        {/* Profile (Active) */}
         <TouchableOpacity 
           style={[styles.navButton, styles.navButtonActive]}
         >
@@ -355,6 +331,38 @@ export default function UserProfileScreen({ onNavigate }) {
             <Ionicons name="person" size={20} color="#0077B6" />
             <Text style={styles.activeNavText}>Profile</Text>
           </View>
+        </TouchableOpacity>
+
+        {/* Favorites */}
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => onNavigate('favorites')}
+        >
+          <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Messages/Chat */}
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => {
+            setAlertTitle('Coming Soon');
+            setAlertMessage('Messages feature coming soon!');
+            setShowAlert(true);
+          }}
+        >
+          <Ionicons name="chatbubble-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Settings (instead of Home) */}
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => {
+            setAlertTitle('Coming Soon');
+            setAlertMessage('Settings feature coming soon!');
+            setShowAlert(true);
+          }}
+        >
+          <Ionicons name="settings-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -384,34 +392,36 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  header: {
-    flexDirection: 'row',
+  menuButtonWrapper: {
+    position: 'absolute',
+    top: 65,
+    left: 20,
+    zIndex: 1000,
+  },
+  menuButtonContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#0077B6',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  header: {
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingTop: 65,
     paddingBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
-  },
-  logoutButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -591,6 +601,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#666',
   },
+  passwordHint: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
   updateButton: {
     backgroundColor: '#0077B6',
     borderRadius: 8,
@@ -633,7 +649,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   navButtonActive: {
-    transform: [{ translateY: -10 }],
+    // Removed translateY transform - keep button at normal height
   },
   activeNavButton: {
     backgroundColor: '#FFFFFF',

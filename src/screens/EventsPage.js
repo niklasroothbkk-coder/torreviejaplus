@@ -6,10 +6,7 @@ import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
-export default function EventsPage({ onNavigate }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(-width * 0.75));
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function EventsPage({ onNavigate, onOpenMenu }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
   const [events, setEvents] = useState([]);
@@ -69,23 +66,6 @@ export default function EventsPage({ onNavigate }) {
     return start;
   };
 
-  const openMenu = () => {
-    setMenuOpen(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const closeMenu = () => {
-    Animated.timing(slideAnim, {
-      toValue: -width * 0.75,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => setMenuOpen(false));
-  };
-
   const openFilter = () => {
     setShowFilter(true);
     Animated.timing(filterSlideAnim, {
@@ -133,7 +113,7 @@ export default function EventsPage({ onNavigate }) {
         
         <TouchableOpacity 
           style={styles.menuButtonWrapper}
-          onPress={openMenu}
+          onPress={onOpenMenu}
         >
           <View style={styles.menuButtonContainer}>
             <Ionicons name="menu" size={32} color="#FFFFFF" />
@@ -164,16 +144,16 @@ export default function EventsPage({ onNavigate }) {
             <View style={styles.grid}>
               {filteredEvents.map((event, index) => (
                 <TouchableOpacity
-  key={event.id}
-  style={[
-    styles.eventCard,
-    (index === 0 || index === 1) && styles.eventCardFeatured
-  ]}
-  onPress={() => {
-    onNavigate && onNavigate('eventdetails', { eventId: event.id });
-  }}
-  activeOpacity={0.7}
->
+                  key={event.id}
+                  style={[
+                    styles.eventCard,
+                    (index === 0 || index === 1) && styles.eventCardFeatured
+                  ]}
+                  onPress={() => {
+                    onNavigate && onNavigate('eventdetails', { eventId: event.id });
+                  }}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.imageContainer}>
                     <Image source={event.image} style={styles.eventImage} />
                     <View style={styles.ratingBadge}>
@@ -216,134 +196,6 @@ export default function EventsPage({ onNavigate }) {
       </ScrollView>
 
       <Modal
-        visible={menuOpen}
-        transparent={true}
-        animationType="none"
-        onRequestClose={closeMenu}
-      >
-        <View style={styles.menuModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.menuPanel,
-              { transform: [{ translateX: slideAnim }] }
-            ]}
-          >
-            <View style={styles.menuHeader}>
-              <TouchableOpacity onPress={closeMenu} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#000000" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.menuItems}>
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('splash'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Home</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('venues'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Venues & Services</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.menuItem, styles.activeMenuItem]}
-                onPress={closeMenu}
-              >
-                <Text style={[styles.menuItemText, styles.activeMenuItemText]}>Events & Happenings</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('testdeals'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>Deals & Promotions</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('faq'), 300);
-                }}
-              >
-                <Text style={styles.menuItemText}>FAQ & Contact</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('taxi'), 300);
-                }}
-              >
-                <View style={styles.menuItemRow}>
-                  <Text style={styles.menuItemText}>Share Airport Taxi</Text>
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>NEW</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {isLoggedIn ? (
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={() => {
-                  setIsLoggedIn(false);
-                  closeMenu();
-                }}
-              >
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={() => {
-                  closeMenu();
-                  setTimeout(() => onNavigate && onNavigate('signin'), 300);
-                }}
-              >
-                <Text style={styles.logoutText}>Sign In / Sign Up</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity 
-              style={styles.bottomLogoSection}
-              onPress={() => {
-                closeMenu();
-                setTimeout(() => onNavigate && onNavigate('walkthrough'), 300);
-              }}
-            >
-              <Image
-                source={require('../../assets/icons/logo.png')}
-                style={styles.bottomLogo}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </Animated.View>
-
-          <TouchableOpacity 
-            style={styles.overlayTouchable}
-            activeOpacity={1}
-            onPress={closeMenu}
-          />
-        </View>
-      </Modal>
-
-      <Modal
         visible={showFilter}
         transparent={true}
         animationType="none"
@@ -361,7 +213,7 @@ export default function EventsPage({ onNavigate }) {
               onClose={closeFilter}
               onApply={applyFilters}
             />
-            </Animated.View>
+          </Animated.View>
           
           <TouchableOpacity 
             style={styles.filterOverlay}
@@ -564,94 +416,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  menuModalOverlay: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  menuPanel: {
-    width: width * 0.75,
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    paddingTop: 50,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-  overlayTouchable: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    width: width * 0.25,
-    height: '100%',
-  },
-  menuHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 40,
-  },
-  backButton: {
-    marginBottom: 0,
-  },
-  menuItems: {
-    paddingHorizontal: 20,
-  },
-  menuItem: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
-  menuItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  menuItemText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  newBadge: {
-    backgroundColor: '#d12028',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginLeft: 10,
-  },
-  newBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  activeMenuItem: {
-    backgroundColor: '#0077B6',
-    borderRadius: 10,
-  },
-  activeMenuItemText: {
-    color: '#FFFFFF',
-  },
-  logoutButton: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-    marginTop: 40,
-    marginLeft: 20,
-  },
-  logoutText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: '500',
-  },
-  bottomLogoSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 70,
-    paddingVertical: 20,
-    paddingBottom: 40,
-  },
-  bottomLogo: {
-    width: 480,
-    height: 160,
   },
   filterModalContainer: {
     flex: 1,

@@ -68,11 +68,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   message: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666666',
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   okButton: {
     backgroundColor: '#0077B6',

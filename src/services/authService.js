@@ -89,10 +89,31 @@ export const updatePassword = async (newPassword) => {
 // Get Current User
 export const getCurrentUser = async () => {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return { success: true, user };
+    // First try to get the session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.log('❌ Session error:', sessionError.message);
+      throw sessionError;
+    }
+    
+    if (!session) {
+      console.log('⚠️ No active session found');
+      return { success: false, error: 'No active session' };
+    }
+    
+    console.log('✅ Session found, expires at:', new Date(session.expires_at * 1000).toLocaleString());
+    
+    // Session exists, return the user from the session
+    if (session.user) {
+      console.log('✅ User from session:', session.user.email);
+      return { success: true, user: session.user };
+    }
+    
+    console.log('⚠️ Session exists but no user');
+    return { success: false, error: 'No user in session' };
   } catch (error) {
+    console.log('❌ getCurrentUser error:', error.message);
     return { success: false, error: error.message };
   }
 };
