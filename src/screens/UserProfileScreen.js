@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentUser, updatePassword, signOut } from '../services/authService';
+import { supabase } from '../config/supabaseClient';
 import CustomAlert from '../components/CustomAlert';
 
 export default function UserProfileScreen({ onNavigate }) {
@@ -10,11 +11,15 @@ export default function UserProfileScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertAction, setAlertAction] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
@@ -31,15 +36,39 @@ export default function UserProfileScreen({ onNavigate }) {
   };
 
   const handleUpdateProfile = async () => {
-    setAlertTitle('Success');
-    setAlertMessage('Profile updated successfully!');
-    setShowAlert(true);
+    try {
+      // Update user metadata in Supabase
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          first_name: name.split(' ')[0] || '',
+          last_name: name.split(' ').slice(1).join(' ') || '',
+          phone: phone,
+        }
+      });
+
+      if (error) throw error;
+
+      setAlertTitle('Success');
+      setAlertMessage('Profile updated successfully!');
+      setShowAlert(true);
+    } catch (error) {
+      setAlertTitle('Error');
+      setAlertMessage('Failed to update profile: ' + error.message);
+      setShowAlert(true);
+    }
   };
 
   const handleChangePassword = async () => {
-    if (!newPassword) {
+    if (!newPassword || !confirmPassword) {
       setAlertTitle('Error');
-      setAlertMessage('Please enter a new password');
+      setAlertMessage('Please enter and confirm your new password');
+      setShowAlert(true);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setAlertTitle('Error');
+      setAlertMessage('Passwords do not match!');
       setShowAlert(true);
       return;
     }
@@ -57,6 +86,8 @@ export default function UserProfileScreen({ onNavigate }) {
       setAlertMessage('Password changed successfully!');
       setShowAlert(true);
       setNewPassword('');
+      setConfirmPassword('');
+      setShowChangePassword(false);
     } else {
       setAlertTitle('Error');
       setAlertMessage(result.error);
@@ -128,12 +159,13 @@ export default function UserProfileScreen({ onNavigate }) {
             <Text style={styles.label}>Name</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, !isEditing && styles.inputDisabled]}
                 placeholder="Enter name"
                 placeholderTextColor="#999"
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
+                editable={isEditing}
               />
               <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
             </View>
@@ -144,14 +176,14 @@ export default function UserProfileScreen({ onNavigate }) {
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, !isEditing && styles.inputDisabled]}
                 placeholder="Enter email"
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                editable={false}
+                editable={isEditing}
               />
               <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
             </View>
@@ -162,58 +194,126 @@ export default function UserProfileScreen({ onNavigate }) {
             <Text style={styles.label}>Phone</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, !isEditing && styles.inputDisabled]}
                 placeholder="Enter phone"
                 placeholderTextColor="#999"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
+                editable={isEditing}
               />
               <Ionicons name="call-outline" size={20} color="#999" style={styles.inputIcon} />
             </View>
           </View>
 
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter new password"
-                placeholderTextColor="#999"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity 
-                style={styles.inputIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={20} 
-                  color="#999" 
-                />
-              </TouchableOpacity>
-            </View>
-            {newPassword.length > 0 && (
-              <TouchableOpacity 
-                style={styles.changePasswordButton}
-                onPress={handleChangePassword}
-              >
-                <Text style={styles.changePasswordText}>Change Password</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          {/* Edit/Save Button */}
+          {!isEditing ? (
+            <TouchableOpacity 
+              style={styles.editButton} 
+              onPress={() => setIsEditing(true)}
+            >
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={styles.updateButton} 
+              onPress={() => {
+                handleUpdateProfile();
+                setIsEditing(false);
+              }}
+            >
+              <Text style={styles.updateButtonText}>Save Changes</Text>
+            </TouchableOpacity>
+          )}
 
-          {/* Update Button */}
-          <TouchableOpacity 
-            style={styles.updateButton} 
-            onPress={handleUpdateProfile}
-          >
-            <Text style={styles.updateButtonText}>Changes Update</Text>
-          </TouchableOpacity>
+          {/* Change Password Button */}
+          {!showChangePassword && (
+            <TouchableOpacity 
+              style={styles.changePasswordButton} 
+              onPress={() => setShowChangePassword(true)}
+            >
+              <Text style={styles.changePasswordButtonText}>Change Password</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Change Password Section */}
+          {showChangePassword && (
+            <View style={styles.passwordSection}>
+              <Text style={styles.passwordSectionTitle}>Change Password</Text>
+              
+              {/* New Password Input */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>New Password</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter new password"
+                    placeholderTextColor="#999"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity 
+                    style={styles.inputIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons 
+                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                      size={20} 
+                      color="#999" 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Confirm Password Input */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Confirm New Password</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm new password"
+                    placeholderTextColor="#999"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity 
+                    style={styles.inputIcon}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Ionicons 
+                      name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
+                      size={20} 
+                      color="#999" 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Password Buttons */}
+              <View style={styles.passwordButtonContainer}>
+                <TouchableOpacity 
+                  style={styles.savePasswordButton}
+                  onPress={handleChangePassword}
+                >
+                  <Text style={styles.savePasswordButtonText}>Save Password</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.cancelPasswordButton}
+                  onPress={() => {
+                    setShowChangePassword(false);
+                    setNewPassword('');
+                    setConfirmPassword('');
+                  }}
+                >
+                  <Text style={styles.cancelPasswordButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -289,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 20,
   },
   backButton: {
@@ -355,7 +455,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   profileName: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 8,
@@ -384,7 +484,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -398,26 +498,102 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     paddingRight: 45,
-    fontSize: 12,
+    fontSize: 16,
     color: '#000',
+  },
+  inputDisabled: {
+    color: '#999',
   },
   inputIcon: {
     position: 'absolute',
     right: 16,
     top: 14,
   },
-  changePasswordButton: {
+  editButton: {
+    backgroundColor: '#0077B6',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
     marginTop: 8,
-    alignSelf: 'flex-end',
+    shadowColor: '#0077B6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  changePasswordText: {
-    fontSize: 11,
-    color: '#0077B6',
-    fontWeight: '600',
+  editButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  changePasswordButton: {
+    backgroundColor: '#0077B6',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 12,
+    shadowColor: '#0077B6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  changePasswordButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  passwordSection: {
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  passwordSectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+  },
+  passwordButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  savePasswordButton: {
+    flex: 1,
+    backgroundColor: '#0077B6',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: '#0077B6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  savePasswordButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  cancelPasswordButton: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  cancelPasswordButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#666',
   },
   updateButton: {
     backgroundColor: '#0077B6',
-    borderRadius: 25,
+    borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
@@ -428,7 +604,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   updateButtonText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
   },
@@ -474,7 +650,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   activeNavText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#0077B6',
   },

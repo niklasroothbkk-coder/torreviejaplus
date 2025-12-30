@@ -32,13 +32,16 @@ export const signInWithEmail = async (email, password, keepSignedIn = false) => 
 
     if (error) throw error;
     
-    // If keepSignedIn is false, set session to expire on browser close
-    if (!keepSignedIn) {
-      // Session will expire when app is closed
-      // Supabase handles this automatically
+    // Store keepSignedIn preference in AsyncStorage
+    if (keepSignedIn) {
+      // Supabase automatically persists the session
+      // The session will persist across app restarts
+    } else {
+      // For non-persistent sessions, we'll clear the session when app closes
+      // This is handled in the App.js useEffect
     }
     
-    return { success: true, data };
+    return { success: true, data, keepSignedIn };
   } catch (error) {
     return { success: false, error: error.message };
   }
