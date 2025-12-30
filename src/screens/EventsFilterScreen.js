@@ -12,7 +12,7 @@ export default function EventsFilterScreen({ onClose, onApply }) {
     'Sports Events',
     'Markets & Attractions',
     'Tours & Trips',
-    'Other Events & Happenings',
+    'Other Events',
   ];
 
   const handleApply = () => {
