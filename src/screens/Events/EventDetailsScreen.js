@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabaseClient';
+import CustomAlert from '../../components/CustomAlert';
 import { addFavorite, removeFavorite, isFavorite as checkIsFavorite } from '../../services/favoritesService';
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,11 @@ export default function EventDetailsScreen({ route, onNavigate }) {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // CustomAlert states
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
 
   const checkFavoriteStatus = async () => {
     if (eventId) {
@@ -21,6 +27,18 @@ export default function EventDetailsScreen({ route, onNavigate }) {
 
   const toggleFavorite = async () => {
     try {
+      // Check if user is logged in FIRST
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Show login required popup
+        setAlertTitle('Login Required');
+        setAlertMessage('Please sign in to add favorites');
+        setShowAlert(true);
+        return;
+      }
+      
+      // User is logged in, proceed
       if (isFavorite) {
         await removeFavorite('event', eventId);
         setIsFavorite(false);
@@ -29,6 +47,7 @@ export default function EventDetailsScreen({ route, onNavigate }) {
         setIsFavorite(true);
       }
     } catch (error) {
+      // Only log error, DON'T show to user
       console.error('Error toggling favorite:', error);
     }
   };
@@ -213,6 +232,13 @@ export default function EventDetailsScreen({ route, onNavigate }) {
           )}
         </View>
       </ScrollView>
+
+      <CustomAlert
+        visible={showAlert}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setShowAlert(false)}
+      />
     </View>
   );
 }

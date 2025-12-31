@@ -35,6 +35,18 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
 
   const toggleFavorite = async () => {
     try {
+      // Check if user is logged in FIRST
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Show login required popup
+        setAlertTitle('Login Required');
+        setAlertMessage('Please sign in to add favorites');
+        setShowAlert(true);
+        return;
+      }
+      
+      // User is logged in, proceed
       if (isFavorite) {
         await removeFavorite('deal', dealId);
         setIsFavorite(false);
@@ -43,6 +55,7 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
         setIsFavorite(true);
       }
     } catch (error) {
+      // Only log error, DON'T show to user
       console.error('Error toggling favorite:', error);
     }
   };
@@ -539,7 +552,7 @@ const styles = StyleSheet.create({
   },
   metaItem: {
   flexDirection: 'row',
-  alignItems: 'center',  // ÄNDRA från 'flex-start' till 'center'
+  alignItems: 'center',
   gap: 4,
   flex: 1,
   maxWidth: '100%',

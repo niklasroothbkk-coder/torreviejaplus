@@ -42,6 +42,18 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
 
   const toggleFavorite = async () => {
     try {
+      // Check if user is logged in FIRST
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Show login required popup
+        setAlertTitle('Login Required');
+        setAlertMessage('Please sign in to add favorites');
+        setShowAlert(true);
+        return;
+      }
+      
+      // User is logged in, proceed
       if (isFavorite) {
         await removeFavorite('venue', venueId);
         setIsFavorite(false);
@@ -50,6 +62,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
         setIsFavorite(true);
       }
     } catch (error) {
+      // Only log error, DON'T show to user
       console.error('Error toggling favorite:', error);
     }
   };
