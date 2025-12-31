@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCurrentUser, signOut } from './src/services/authService';
 import { supabase } from './src/config/supabaseClient';
 import EventsPage from './src/screens/EventsPage';
-import ProfileScreen from './src/screens/ProfilScreenLogin';
+// OLD LOGIN SCREEN REMOVED - using SignInScreen instead
 import UserProfileScreen from './src/screens/UserProfileScreen';
 import CreateEventScreen from './src/screens/CreateEventScreen';
 import FAQContactPage from './src/screens/FAQContactPage';
@@ -29,6 +30,8 @@ import ForgotPasswordScreen from './src/screens/ForgotPW';
 import NewPasswordScreen from './src/screens/NewPW';
 import AllDoneScreen from './src/screens/AllDone';
 import EventDetailsScreen from './src/screens/Events/EventDetailsScreen';
+import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
+import MessagesPage from './src/screens/MessagesPage';
 
 const { width } = Dimensions.get('window');
 
@@ -217,7 +220,9 @@ export default function App() {
       // Then sign out from Supabase (this triggers SIGNED_OUT event)
       await signOut();
       
-      closeMenu();
+      // Navigate to splash (HOME)
+      handleMenuItemPress('splash');
+      
       console.log('✅ Logout complete');
     } catch (error) {
       console.error('❌ Logout error:', error);
@@ -306,7 +311,7 @@ export default function App() {
       case 'create':
         return <CreateEventScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'profile':
-        return <ProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+        return <UserProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'userprofile':
         return <UserProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'faq':
@@ -349,6 +354,10 @@ export default function App() {
         return <NewPasswordScreen onNavigate={handleMenuItemPress} />;
       case 'alldone':
         return <AllDoneScreen onNavigate={handleMenuItemPress} />;
+      case 'notifications':
+        return <NotificationSettingsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'messages':
+        return <MessagesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       default:
         return <EventsPage onNavigate={handleMenuItemPress} />;
     }
@@ -356,8 +365,9 @@ export default function App() {
 
   // GLOBAL MENU - wraps entire app
   return (
-    <View style={styles.container}>
-      {renderMainContent()}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {renderMainContent()}
 
       {/* GLOBAL Slide-in Menu Modal */}
       <Modal
@@ -482,6 +492,7 @@ export default function App() {
         </View>
       </Modal>
     </View>
+    </GestureHandlerRootView>
   );
 }
 

@@ -6,6 +6,57 @@ import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
+// Helper function to calculate next occurrence for recurring deals
+const getNextOccurrence = (deal) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+  
+  // If deal is recurring
+  if (deal.is_recurring && deal.recurring_days) {
+    const eventDate = new Date(deal.start_date || deal.deal_date);
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const recurringDays = deal.recurring_days.split(',').map(d => d.trim());
+    
+    // Find next occurrence within next 60 days
+    for (let i = 0; i < 60; i++) {
+      const checkDate = new Date(now);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dayName = daysOfWeek[checkDate.getDay()];
+      
+      if (recurringDays.includes(dayName)) {
+        return checkDate.toISOString().split('T')[0];
+      }
+    }
+  }
+  
+  return null;
+};
+
+// Filter deals that are still valid
+const filterValidDeals = (deals) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+  
+  return deals.filter(deal => {
+    // If recurring, check if it has future occurrences
+    if (deal.is_recurring && deal.recurring_days) {
+      const nextOccurrence = getNextOccurrence(deal);
+      return nextOccurrence !== null;
+    }
+    
+    // For non-recurring deals, check end_date or valid_until
+    const endDate = deal.end_date || deal.valid_until;
+    if (endDate) {
+      const dealEndDate = new Date(endDate);
+      dealEndDate.setHours(23, 59, 59, 999); // End of that day
+      return dealEndDate >= now;
+    }
+    
+    // If no end date specified, keep it
+    return true;
+  });
+};
+
 export default function DealsPage({ onNavigate, onOpenMenu }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
@@ -32,9 +83,22 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
 
       if (error) throw error;
 
-      const transformedDeals = data.map(deal => {
+      // Filter out expired deals and calculate next occurrence for recurring ones
+      const validDeals = filterValidDeals(data);
+
+      const transformedDeals = validDeals.map(deal => {
         const venueName = deal.venues?.name || 'Unknown Venue';
         const dealTitle = deal.name || deal.title || 'No Title';
+        
+        // Calculate display date for recurring deals
+        let displayStartDate = deal.start_date || deal.deal_date;
+        if (deal.is_recurring && deal.recurring_days) {
+          const nextOccurrence = getNextOccurrence(deal);
+          if (nextOccurrence) {
+            displayStartDate = nextOccurrence;
+          }
+        }
+        
         return {
           id: deal.id,
           rating: deal.rating || 4.5,
@@ -43,8 +107,10 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
           venue: venueName,
           category: deal.category,
           validUntil: deal.valid_until,
-          startDate: deal.start_date || deal.deal_date,
+          startDate: displayStartDate,
           endDate: deal.end_date,
+          isRecurring: deal.is_recurring,
+          recurringDays: deal.recurring_days,
           discount: deal.discount_text || deal.price || 'SPECIAL',
           image: deal.image_url ? { uri: deal.image_url } : require('../../assets/backgrounds/BG_ALL.png'),
         };
@@ -96,13 +162,18 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
     return date.toLocaleDateString('en-US', options);
   };
 
-  const formatDateRange = (startDate, endDate) => {
-    if (!startDate && !endDate) return 'Ongoing';
-    if (startDate && endDate) {
-      return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  const formatDateRange = (deal) => {
+    // For recurring deals, show next occurrence
+    if (deal.isRecurring && deal.recurringDays) {
+      return `Next: ${formatDate(deal.startDate)}`;
     }
-    if (startDate) return `From ${formatDate(startDate)}`;
-    if (endDate) return `Until ${formatDate(endDate)}`;
+    
+    // For regular deals with date range
+    if (deal.startDate && deal.endDate) {
+      return `${formatDate(deal.startDate)} - ${formatDate(deal.endDate)}`;
+    }
+    if (deal.startDate) return `From ${formatDate(deal.startDate)}`;
+    if (deal.endDate) return `Until ${formatDate(deal.endDate)}`;
     return 'Ongoing';
   };
 
@@ -182,7 +253,7 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
                     
                     <View style={styles.dateRow}>
                       <Ionicons name="calendar-outline" size={12} color="#0077B6" />
-                      <Text style={styles.dateText} numberOfLines={1}>{formatDateRange(deal.startDate, deal.endDate)}</Text>
+                      <Text style={styles.dateText} numberOfLines={1}>{formatDateRange(deal)}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>

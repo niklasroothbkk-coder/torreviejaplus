@@ -12,6 +12,7 @@ export default function SignInScreen({ onNavigate }) {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertAction, setAlertAction] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Prevent double-click
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleEmailSignIn = async () => {
     // Prevent double-click
@@ -39,11 +40,11 @@ export default function SignInScreen({ onNavigate }) {
       setAlertMessage('Logged in successfully!');
       setShowAlert(true);
       
-      // Auto-close alert after 3 seconds and navigate
+      // Auto-close alert after 1.5 seconds and navigate
       setTimeout(() => {
         setShowAlert(false);
-        onNavigate('userprofile');
-      }, 3000);
+        onNavigate('profile');
+      }, 1500);
     } else {
       setAlertTitle('Error');
       setAlertMessage(result.error);
@@ -114,15 +115,28 @@ export default function SignInScreen({ onNavigate }) {
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Password"
-              placeholderTextColor="#999"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter Password"
+                placeholderTextColor="#999"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                textContentType="password"
+              />
+              <TouchableOpacity 
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#999" 
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Forgot Password */}
@@ -218,7 +232,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -239,7 +253,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -251,6 +265,23 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: '#000',
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingRight: 50,
+    fontSize: 16,
+    color: '#000',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 14,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
@@ -288,11 +319,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signUpText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
   signUpLink: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#0077B6',
     fontWeight: '700',
   },
@@ -307,7 +338,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
   },
   dividerText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     marginHorizontal: 16,
     fontWeight: '500',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 
-export default function CustomAlert({ visible, title, message, onClose }) {
+export default function CustomAlert({ visible, title, message, onClose, onConfirm, showCancel = false }) {
   return (
     <Modal
       visible={visible}
@@ -20,14 +20,34 @@ export default function CustomAlert({ visible, title, message, onClose }) {
           {/* Message */}
           <Text style={styles.message}>{message}</Text>
           
-          {/* OK Button */}
-          <TouchableOpacity 
-            style={styles.okButton}
-            onPress={onClose}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.okButtonText}>ok</Text>
-          </TouchableOpacity>
+          {/* Buttons */}
+          {showCancel ? (
+            <View style={styles.buttonRow}>
+              <TouchableOpacity 
+                style={styles.cancelButton}
+                onPress={onClose}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.confirmButton}
+                onPress={onConfirm}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.confirmButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={styles.okButton}
+              onPress={onClose}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.okButtonText}>ok</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Modal>
@@ -83,6 +103,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   okButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 25,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  confirmButton: {
+    flex: 1,
+    backgroundColor: '#d12028',
+    borderRadius: 25,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',

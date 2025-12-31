@@ -6,6 +6,56 @@ import { supabase } from '../config/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
+// Helper function to calculate next occurrence for recurring events
+const getNextOccurrence = (event) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+  
+  // If event is recurring
+  if (event.is_recurring && event.recurring_days) {
+    const eventDate = new Date(event.event_date);
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const recurringDays = event.recurring_days.split(',').map(d => d.trim());
+    
+    // Find next occurrence within next 60 days
+    for (let i = 0; i < 60; i++) {
+      const checkDate = new Date(now);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dayName = daysOfWeek[checkDate.getDay()];
+      
+      if (recurringDays.includes(dayName)) {
+        return checkDate.toISOString().split('T')[0];
+      }
+    }
+  }
+  
+  return null;
+};
+
+// Filter events that are still valid
+const filterValidEvents = (events) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+  
+  return events.filter(event => {
+    // If recurring, check if it has future occurrences
+    if (event.is_recurring && event.recurring_days) {
+      const nextOccurrence = getNextOccurrence(event);
+      return nextOccurrence !== null;
+    }
+    
+    // For non-recurring events, check event_date
+    if (event.event_date) {
+      const eventDate = new Date(event.event_date);
+      eventDate.setHours(23, 59, 59, 999); // End of that day
+      return eventDate >= now;
+    }
+    
+    // If no date specified, keep it
+    return true;
+  });
+};
+
 export default function EventsPage({ onNavigate, onOpenMenu }) {
   const [showFilter, setShowFilter] = useState(false);
   const [filterSlideAnim] = useState(new Animated.Value(-Dimensions.get('window').height));
@@ -29,17 +79,33 @@ export default function EventsPage({ onNavigate, onOpenMenu }) {
 
       if (error) throw error;
 
-      const transformedEvents = data.map(event => ({
-        id: event.id,
-        rating: 4.5,
-        title: event.name,
-        venue: event.category,
-        category: event.category,
-        eventDate: event.event_date,
-        startTime: event.start_time,
-        endTime: event.end_time,
-        image: event.image_url ? { uri: event.image_url } : require('../../assets/events/market-photo.png'),
-      }));
+      // Filter out expired events and calculate next occurrence for recurring ones
+      const validEvents = filterValidEvents(data);
+
+      const transformedEvents = validEvents.map(event => {
+        // Calculate display date for recurring events
+        let displayDate = event.event_date;
+        if (event.is_recurring && event.recurring_days) {
+          const nextOccurrence = getNextOccurrence(event);
+          if (nextOccurrence) {
+            displayDate = nextOccurrence;
+          }
+        }
+        
+        return {
+          id: event.id,
+          rating: 4.5,
+          title: event.name,
+          venue: event.category,
+          category: event.category,
+          eventDate: displayDate,
+          startTime: event.start_time,
+          endTime: event.end_time,
+          isRecurring: event.is_recurring,
+          recurringDays: event.recurring_days,
+          image: event.image_url ? { uri: event.image_url } : require('../../assets/events/market-photo.png'),
+        };
+      });
 
       setEvents(transformedEvents);
       setFilteredEvents(transformedEvents);
@@ -160,6 +226,11 @@ export default function EventsPage({ onNavigate, onOpenMenu }) {
                       <Ionicons name="star" size={14} color="#FFD700" />
                       <Text style={styles.ratingText}>{event.rating}</Text>
                     </View>
+                    {event.isRecurring && (
+                      <View style={styles.recurringBadge}>
+                        <Ionicons name="repeat" size={12} color="#FFFFFF" />
+                      </View>
+                    )}
                   </View>
                   
                   <View style={styles.eventInfo}>
@@ -172,7 +243,9 @@ export default function EventsPage({ onNavigate, onOpenMenu }) {
                     
                     <View style={styles.dateRow}>
                       <Ionicons name="calendar-outline" size={14} color="#0077B6" />
-                      <Text style={styles.dateText}>{formatDate(event.eventDate)}</Text>
+                      <Text style={styles.dateText}>
+                        {event.isRecurring ? `Next: ${formatDate(event.eventDate)}` : formatDate(event.eventDate)}
+                      </Text>
                     </View>
                     
                     {event.startTime && (
@@ -353,6 +426,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
+  },
+  recurringBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#0077B6',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   ratingText: {
     fontSize: 16,

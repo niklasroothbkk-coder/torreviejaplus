@@ -260,7 +260,7 @@ export default function FavoritesPage({ onNavigate, onOpenMenu, initialTab }) {
         {activeTab === 'deals' && renderDeals()}
       </ScrollView>
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton} onPress={() => onNavigate('userprofile')}>
+        <TouchableOpacity style={styles.navButton} onPress={() => onNavigate('profile')}>
           <Ionicons name="person-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navButton, styles.navButtonActive]}>
@@ -269,11 +269,11 @@ export default function FavoritesPage({ onNavigate, onOpenMenu, initialTab }) {
             <Text style={styles.activeNavText}>Favorites</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
+        <TouchableOpacity style={styles.navButton} onPress={() => onNavigate('messages')}>
           <Ionicons name="chatbubble-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="settings-outline" size={24} color="#FFFFFF" />
+        <TouchableOpacity style={styles.navButton} onPress={() => onNavigate('notifications')}>
+          <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>

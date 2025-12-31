@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
 export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ridesFromApp }) {
+  const [activeChatRide, setActiveChatRide] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState({});
 
   const rides = ridesFromApp && ridesFromApp.length > 0 ? ridesFromApp : [
     {
       id: 1,
-      date: '2025-12-01',
+      date: '2026-01-10',
       time: '14:30',
       destination: 'Torrevieja Center',
       availableSeats: 2,
@@ -23,7 +24,7 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
     },
     {
       id: 2,
-      date: '2025-12-02',
+      date: '2026-01-11',
       time: '10:15',
       destination: 'La Mata Beach',
       availableSeats: 0,
@@ -35,7 +36,7 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
     },
     {
       id: 3,
-      date: '2025-12-03',
+      date: '2026-01-12',
       time: '18:45',
       destination: 'Playa Flamenca',
       availableSeats: 1,
@@ -49,10 +50,28 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
 
   const handleJoinRide = (ride) => {
     if (ride.isFull) {
-      Alert.alert('Ride Full', 'This ride is already full.');
       return;
     }
-    Alert.alert('Join Ride', `Would you like to join ${ride.name}'s ride to ${ride.destination}?`);
+    // Toggle chat - if already open, close it, otherwise open it
+    setActiveChatRide(activeChatRide === ride.id ? null : ride.id);
+  };
+
+  const handleSendMessage = (rideId) => {
+    if (!chatMessage.trim()) return;
+
+    const newMessage = {
+      id: Date.now(),
+      text: chatMessage,
+      sender: 'You',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setChatMessages(prev => ({
+      ...prev,
+      [rideId]: [...(prev[rideId] || []), newMessage]
+    }));
+
+    setChatMessage('');
   };
 
   const handleAddRide = () => {
@@ -60,7 +79,11 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
       <Image 
         source={require('../../assets/backgrounds/BG_ALL.png')} 
         style={styles.backgroundImage}
@@ -95,7 +118,7 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={24} color="#0077B6" />
           <Text style={styles.infoText}>
-            Share taxi rides to/from Alicante Airport and save money!
+            Share a taxi to or from Alicante Airport and save money while helping the environment.
           </Text>
         </View>
 
@@ -150,17 +173,70 @@ export default function ShareAirportTaxiPage({ onNavigate, onOpenMenu, rides: ri
 
               {!ride.isFull && (
                 <TouchableOpacity 
-                  style={styles.joinButton}
+                  style={[styles.joinButton, activeChatRide === ride.id && styles.joinButtonActive]}
                   onPress={() => handleJoinRide(ride)}
                 >
-                  <Text style={styles.joinButtonText}>Join Ride</Text>
+                  <Ionicons 
+                    name={activeChatRide === ride.id ? "chatbubble" : "chatbubble-outline"} 
+                    size={20} 
+                    color="#FFFFFF" 
+                  />
+                  <Text style={styles.joinButtonText}>
+                    {activeChatRide === ride.id ? 'Close Chat' : 'Join Ride'}
+                  </Text>
                 </TouchableOpacity>
+              )}
+
+              {/* Chat Section */}
+              {activeChatRide === ride.id && (
+                <View style={styles.chatSection}>
+                  <View style={styles.chatHeader}>
+                    <Ionicons name="chatbubbles" size={20} color="#0077B6" />
+                    <Text style={styles.chatHeaderText}>Chat with {ride.name}</Text>
+                  </View>
+
+                  <View style={styles.chatMessages}>
+                    {chatMessages[ride.id] && chatMessages[ride.id].length > 0 ? (
+                      chatMessages[ride.id].map((msg) => (
+                        <View key={msg.id} style={styles.messageRow}>
+                          <View style={styles.messageBubble}>
+                            <Text style={styles.messageSender}>{msg.sender}</Text>
+                            <Text style={styles.messageText}>{msg.text}</Text>
+                            <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                          </View>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyChat}>
+                        <Ionicons name="chatbubble-outline" size={32} color="#CCC" />
+                        <Text style={styles.emptyChatText}>Start the conversation!</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.chatInputContainer}>
+                    <TextInput
+                      style={styles.chatInput}
+                      placeholder="Type your message..."
+                      placeholderTextColor="#999"
+                      value={chatMessage}
+                      onChangeText={setChatMessage}
+                      multiline
+                    />
+                    <TouchableOpacity 
+                      style={styles.sendButton}
+                      onPress={() => handleSendMessage(ride.id)}
+                    >
+                      <Ionicons name="send" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               )}
             </View>
           ))}
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -250,10 +326,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   addRideButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: 'bold',
     marginLeft: 8,
   },
@@ -356,10 +434,112 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  joinButtonActive: {
+    backgroundColor: '#666',
   },
   joinButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  chatSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  chatHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0077B6',
+  },
+  chatMessages: {
+    minHeight: 150,
+    maxHeight: 300,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  emptyChat: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyChatText: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 8,
+  },
+  messageRow: {
+    marginBottom: 12,
+  },
+  messageBubble: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    maxWidth: '80%',
+    alignSelf: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  messageSender: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#0077B6',
+    marginBottom: 4,
+  },
+  messageText: {
+    fontSize: 14,
+    color: '#000',
+    marginBottom: 4,
+  },
+  messageTime: {
+    fontSize: 11,
+    color: '#999',
+    alignSelf: 'flex-end',
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 16,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  sendButton: {
+    backgroundColor: '#0077B6',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });

@@ -4,14 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import CountryPicker from 'react-native-country-picker-modal';
 import { signUpWithEmail } from '../services/authService';
 import CustomAlert from '../components/CustomAlert';
+import { supabase } from '../config/supabaseClient';
 
 export default function SignUpScreen({ onNavigate }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [countryCode, setCountryCode] = useState('TH');
-  const [callingCode, setCallingCode] = useState('66');
+  const [countryCode, setCountryCode] = useState('ES');
+  const [callingCode, setCallingCode] = useState('34');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [rememberPassword, setRememberPassword] = useState(false);
@@ -20,7 +21,6 @@ export default function SignUpScreen({ onNavigate }) {
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertAction, setAlertAction] = useState(null);
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !phoneNumber || !password || !confirmPassword) {
@@ -51,10 +51,28 @@ export default function SignUpScreen({ onNavigate }) {
     const result = await signUpWithEmail(email, password, firstName, lastName, fullPhoneNumber);
     
     if (result.success) {
-      setAlertTitle('Success');
-      setAlertMessage('Account created successfully! Please sign in.');
-      setAlertAction(() => () => onNavigate('signin'));
-      setShowAlert(true);
+      // After successful signup, sign in the user automatically
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (signInError) {
+        setAlertTitle('Success');
+        setAlertMessage('Account created successfully! Please sign in.');
+        setShowAlert(true);
+      } else {
+        // Successfully signed in - navigate to profile
+        setAlertTitle('Success');
+        setAlertMessage('Account created successfully! Welcome!');
+        setShowAlert(true);
+        
+        // Navigate to profile after short delay
+        setTimeout(() => {
+          setShowAlert(false);
+          onNavigate('profile');
+        }, 1500);
+      }
     } else {
       setAlertTitle('Error');
       setAlertMessage(result.error);
@@ -177,6 +195,7 @@ export default function SignUpScreen({ onNavigate }) {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
+                textContentType="newPassword"
               />
               <TouchableOpacity 
                 style={styles.eyeIcon}
@@ -202,6 +221,7 @@ export default function SignUpScreen({ onNavigate }) {
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
                 autoCapitalize="none"
+                textContentType="newPassword"
               />
               <TouchableOpacity 
                 style={styles.eyeIcon}
@@ -264,10 +284,6 @@ export default function SignUpScreen({ onNavigate }) {
         message={alertMessage}
         onClose={() => {
           setShowAlert(false);
-          if (alertAction) {
-            alertAction();
-            setAlertAction(null);
-          }
         }}
       />
     </View>
@@ -305,7 +321,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -326,7 +342,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -398,7 +414,7 @@ const styles = StyleSheet.create({
     borderColor: '#0077B6',
   },
   checkboxLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontWeight: '500',
   },
@@ -429,7 +445,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
   },
   dividerText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     marginHorizontal: 16,
     fontWeight: '500',

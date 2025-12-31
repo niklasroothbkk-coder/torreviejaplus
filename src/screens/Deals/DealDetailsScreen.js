@@ -239,7 +239,11 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
             style={styles.headerButtonFavorite}
             onPress={toggleFavorite}
           >
-            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color="#FFFFFF" />
+            <Ionicons 
+              name={isFavorite ? "heart" : "heart-outline"} 
+              size={28} 
+              color={isFavorite ? "#d12028" : "#FFFFFF"} 
+            />
           </TouchableOpacity>
         </View>
       </View>

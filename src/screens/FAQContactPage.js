@@ -85,7 +85,7 @@ export default function FAQContactPage({ onNavigate, onOpenMenu }) {
         </TouchableOpacity>
 
         <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>FAQ & Contact</Text>
+          <Text style={styles.titleText}>Frequently Asked Questions</Text>
         </View>
       </View>
 
@@ -94,8 +94,6 @@ export default function FAQContactPage({ onNavigate, onOpenMenu }) {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
-          
           {faqData.map((faq) => (
             <TouchableOpacity
               key={faq.id}

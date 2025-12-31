@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert, ActionSheetIOS, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCurrentUser, updatePassword, signOut } from '../services/authService';
 import { supabase } from '../config/supabaseClient';
 import CustomAlert from '../components/CustomAlert';
@@ -10,6 +12,8 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [imageRefresh, setImageRefresh] = useState(0);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +21,6 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertAction, setAlertAction] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
 
@@ -29,9 +32,158 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
     const result = await getCurrentUser();
     if (result.success && result.user) {
       setUser(result.user);
-      setEmail(result.user.email);
-      setName(result.user.user_metadata?.first_name + ' ' + result.user.user_metadata?.last_name || '');
+      setEmail(result.user.email || '');
+      
+      const firstName = result.user.user_metadata?.first_name || '';
+      const lastName = result.user.user_metadata?.last_name || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+      setName(fullName);
+      
       setPhone(result.user.user_metadata?.phone || '');
+      const avatarUrl = result.user.user_metadata?.avatar_url || null;
+      console.log('📸 Loading avatar URL:', avatarUrl);
+      setProfileImage(avatarUrl);
+    }
+  };
+
+  const handleImagePicker = async () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library'],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            await takePhoto();
+          } else if (buttonIndex === 2) {
+            await pickImage();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Profile Photo',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: takePhoto },
+          { text: 'Choose from Library', onPress: pickImage },
+        ]
+      );
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      setAlertTitle('Permission Required');
+      setAlertMessage('Camera permission is required to take photos.');
+      setShowAlert(true);
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      await uploadProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      setAlertTitle('Permission Required');
+      setAlertMessage('Photo library permission is required to choose photos.');
+      setShowAlert(true);
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      await uploadProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadProfileImage = async (imageUri) => {
+    try {
+      // Read the file as base64
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      
+      // Create array buffer from blob
+      const arrayBuffer = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+      });
+      
+      // Upload to Supabase Storage
+      const fileName = `avatar_${user.id}_${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, arrayBuffer, {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        setAlertTitle('Upload Failed');
+        setAlertMessage('Failed to upload image: ' + error.message);
+        setShowAlert(true);
+        return;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const avatarUrl = urlData.publicUrl;
+      console.log('✅ Avatar uploaded! URL:', avatarUrl);
+
+      // Update user metadata with avatar URL
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: avatarUrl }
+      });
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        setAlertTitle('Update Failed');
+        setAlertMessage('Failed to update profile: ' + updateError.message);
+        setShowAlert(true);
+        return;
+      }
+
+      setProfileImage(avatarUrl);
+      
+      // Force image refresh
+      setImageRefresh(prev => prev + 1);
+      
+      // Reload user profile to get updated avatar
+      await loadUserProfile();
+      
+      setAlertTitle('Success');
+      setAlertMessage('Profile photo updated successfully!');
+      setShowAlert(true);
+    } catch (error) {
+      console.error('Error:', error);
+      setAlertTitle('Error');
+      setAlertMessage('An error occurred: ' + error.message);
+      setShowAlert(true);
     }
   };
 
@@ -95,24 +247,6 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
     }
   };
 
-  const handleLogout = async () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-            onNavigate('splash');
-          }
-        }
-      ]
-    );
-  };
-
   return (
     <View style={styles.container}>
       <Image 
@@ -144,12 +278,21 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
         {/* Profile Picture Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {name ? name.charAt(0).toUpperCase() : 'U'}
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.editAvatarButton}>
+            {profileImage ? (
+              <Image 
+                source={{ uri: profileImage }} 
+                style={styles.avatarImage}
+                onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+                onLoad={() => console.log('Image loaded successfully:', profileImage)}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {name ? name.charAt(0).toUpperCase() : 'U'}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity style={styles.editAvatarButton} onPress={handleImagePicker}>
               <Ionicons name="camera" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
@@ -344,25 +487,17 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
         {/* Messages/Chat */}
         <TouchableOpacity 
           style={styles.navButton}
-          onPress={() => {
-            setAlertTitle('Coming Soon');
-            setAlertMessage('Messages feature coming soon!');
-            setShowAlert(true);
-          }}
+          onPress={() => onNavigate('messages')}
         >
           <Ionicons name="chatbubble-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
-        {/* Settings (instead of Home) */}
+        {/* Settings changed to Notifications */}
         <TouchableOpacity 
           style={styles.navButton}
-          onPress={() => {
-            setAlertTitle('Coming Soon');
-            setAlertMessage('Settings feature coming soon!');
-            setShowAlert(true);
-          }}
+          onPress={() => onNavigate('notifications')}
         >
-          <Ionicons name="settings-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -370,13 +505,7 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
         visible={showAlert}
         title={alertTitle}
         message={alertMessage}
-        onClose={() => {
-          setShowAlert(false);
-          if (alertAction) {
-            alertAction();
-            setAlertAction(null);
-          }
-        }}
+        onClose={() => setShowAlert(false)}
       />
     </View>
   );
@@ -445,6 +574,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   avatarText: {
     fontSize: 36,
