@@ -17,7 +17,7 @@ export default function FilterScreen({ onClose, onApply }) {
   const categories = [
     'All',
     'Restaurants',
-    'Sports Bars & Pubs',
+    'Sport Bars',
     'Massage & Spa',
     'Healthcare & Emergency',
     'Nightclubs',
@@ -88,7 +88,7 @@ export default function FilterScreen({ onClose, onApply }) {
     onApply && onApply({
       category: selectedCategory,
       cuisine: selectedCategory === 'Restaurants' ? selectedCuisine : null,
-      pubTypes: selectedCategory === 'Sports Bars & Pubs' ? selectedPubTypes : [],
+      pubTypes: selectedCategory === 'Sport Bars' ? selectedPubTypes : [],
       spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
       healthcareType: selectedCategory === 'Healthcare & Emergency' ? selectedHealthcareType : null,
       prices: selectedPrices,
@@ -102,7 +102,7 @@ export default function FilterScreen({ onClose, onApply }) {
     if (category !== 'Restaurants') {
       setSelectedCuisine('All');
     }
-    if (category !== 'Sports Bars & Pubs') {
+    if (category !== 'Sport Bars') {
       setSelectedPubTypes([]);
     }
     if (category !== 'Massage & Spa') {
@@ -179,7 +179,7 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
-        {selectedCategory === 'Sports Bars & Pubs' && (
+        {selectedCategory === 'Sport Bars' && (
           <>
             <Text style={styles.sectionTitle}>Features</Text>
             <View style={styles.multiSelectContainer}>

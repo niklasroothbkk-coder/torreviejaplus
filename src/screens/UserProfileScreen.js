@@ -323,14 +323,13 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={[styles.input, !isEditing && styles.inputDisabled]}
+                style={[styles.input, styles.inputDisabled]}
                 placeholder="Enter email"
                 placeholderTextColor="#999"
                 value={email}
-                onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                editable={isEditing}
+                editable={false}
               />
               <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
             </View>
