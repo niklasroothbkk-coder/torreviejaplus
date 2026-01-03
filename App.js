@@ -33,6 +33,11 @@ import EventDetailsScreen from './src/screens/Events/EventDetailsScreen';
 import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
 import MessagesPage from './src/screens/MessagesPage';
 
+// Venue Dashboard Screens
+import VenueDashboardScreen from './src/screens/Venues/VenueDashboardScreen';
+import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
+import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
+
 const { width } = Dimensions.get('window');
 
 export default function App() {
@@ -48,10 +53,40 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState(null);
   const [isCheckingSession, setIsCheckingSession] = React.useState(true);
+  const [userType, setUserType] = React.useState(null); // 'visitor' or 'venue'
+  const [venueId, setVenueId] = React.useState(null); // Store venue ID for venue users
 
   // Use ref to prevent state reset
   const authInitialized = React.useRef(false);
   const isLoggingOut = React.useRef(false);
+
+  // Function to fetch user type and venue info from profiles table
+  const fetchUserProfile = async (userId) => {
+    try {
+      console.log('🔍 Fetching profile for userId:', userId);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_type, venue_id, is_active')
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return { user_type: 'visitor', venue_id: null };
+      }
+
+      if (!data || data.length === 0) {
+        console.log('⚠️ No profile found, defaulting to visitor');
+        return { user_type: 'visitor', venue_id: null };
+      }
+
+      console.log('👤 User profile:', data[0]);
+      return data[0];
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return { user_type: 'visitor', venue_id: null };
+    }
+  };
 
   // IMMEDIATELY load login state from AsyncStorage on mount
   React.useEffect(() => {
@@ -88,6 +123,12 @@ export default function App() {
         setIsLoggedIn(true);
         setCurrentUser(session.user);
         await AsyncStorage.setItem('isLoggedIn', 'true');
+        
+        // Fetch user profile to determine type
+        const profile = await fetchUserProfile(session.user.id);
+        setUserType(profile.user_type);
+        setVenueId(profile.venue_id);
+        console.log('🎯 User type set to:', profile.user_type);
       } else {
         console.log('⚠️ No existing session on startup');
         if (storedLoginState !== 'true') {
@@ -119,6 +160,8 @@ export default function App() {
         console.log('❌ Setting logged OUT - confirmed no session');
         setIsLoggedIn(false);
         setCurrentUser(null);
+        setUserType(null);
+        setVenueId(null);
         await AsyncStorage.setItem('isLoggedIn', 'false');
         return;
       }
@@ -129,6 +172,12 @@ export default function App() {
           setIsLoggedIn(true);
           setCurrentUser(session.user);
           await AsyncStorage.setItem('isLoggedIn', 'true');
+          
+          // Fetch user profile to determine type
+          const profile = await fetchUserProfile(session.user.id);
+          setUserType(profile.user_type);
+          setVenueId(profile.venue_id);
+          console.log('🎯 User type set to:', profile.user_type);
         }
       }
     });
@@ -158,17 +207,28 @@ export default function App() {
   };
 
   const handleMenuItemPress = (screen, params = {}) => {
-    console.log('📍 Navigating to:', screen, 'Current isLoggedIn:', isLoggedIn);
+    console.log('📍 Navigating to:', screen, 'Current isLoggedIn:', isLoggedIn, 'User type:', userType);
+    
+    // REDIRECT: If navigating to userprofile and user is venue, go to venue dashboard instead
+    if (screen === 'userprofile' && userType === 'venue') {
+      console.log('🏪 Venue user detected - redirecting to venue dashboard');
+      screen = 'venuedashboard';
+    }
     
     // FORCE CHECK AUTH when navigating to userprofile OR splash (in case we just logged in)
-    if (screen === 'userprofile' || screen === 'splash') {
+    if (screen === 'userprofile' || screen === 'venuedashboard' || screen === 'splash') {
       console.log('🔄 Force-checking auth state...');
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
         if (session?.user) {
           console.log('✅ Force-check: User IS logged in:', session.user.email);
           setIsLoggedIn(true);
           setCurrentUser(session.user);
           AsyncStorage.setItem('isLoggedIn', 'true');
+          
+          // Fetch and update user type
+          const profile = await fetchUserProfile(session.user.id);
+          setUserType(profile.user_type);
+          setVenueId(profile.venue_id);
         } else {
           console.log('⚠️ Force-check: No session found');
         }
@@ -215,6 +275,8 @@ export default function App() {
       // Update UI immediately BEFORE Supabase signOut
       setIsLoggedIn(false);
       setCurrentUser(null);
+      setUserType(null);
+      setVenueId(null);
       await AsyncStorage.setItem('isLoggedIn', 'false');
       
       // Then sign out from Supabase (this triggers SIGNED_OUT event)
@@ -358,6 +420,26 @@ export default function App() {
         return <NotificationSettingsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'messages':
         return <MessagesPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      
+      // Venue Dashboard Routes
+      case 'venuedashboard':
+        return <VenueDashboardScreen 
+          navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('userprofile') }}
+          currentUser={currentUser}
+        />;
+      case 'venuemanagedeals':
+        return <VenueManageDealsScreen 
+          navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('venuedashboard') }}
+          route={{ params: authParams }}
+          currentUser={currentUser}
+        />;
+      case 'venuemanageevents':
+        return <VenueManageEventsScreen 
+          navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('venuedashboard') }}
+          route={{ params: authParams }}
+          currentUser={currentUser}
+        />;
+      
       default:
         return <EventsPage onNavigate={handleMenuItemPress} />;
     }

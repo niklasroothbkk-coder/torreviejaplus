@@ -29,22 +29,33 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
   }, []);
 
   const loadUserProfile = async () => {
-    const result = await getCurrentUser();
-    if (result.success && result.user) {
-      setUser(result.user);
-      setEmail(result.user.email || '');
-      
+  const result = await getCurrentUser();
+  if (result.success && result.user) {
+    setUser(result.user);
+    setEmail(result.user.email || '');
+    
+    // Fetch from profiles table instead of user_metadata
+    const { data: profileData, error } = await supabase
+      .from('profiles')
+      .select('name, user_type')
+      .eq('id', result.user.id);
+    
+    if (profileData && profileData.length > 0) {
+      setName(profileData[0].name || '');
+    } else {
+      // Fallback to user_metadata if profile not found
       const firstName = result.user.user_metadata?.first_name || '';
       const lastName = result.user.user_metadata?.last_name || '';
       const fullName = `${firstName} ${lastName}`.trim();
-      setName(fullName);
-      
-      setPhone(result.user.user_metadata?.phone || '');
-      const avatarUrl = result.user.user_metadata?.avatar_url || null;
-      console.log('📸 Loading avatar URL:', avatarUrl);
-      setProfileImage(avatarUrl);
+      setName(fullName || 'User');
     }
-  };
+    
+    setPhone(result.user.user_metadata?.phone || '');
+    const avatarUrl = result.user.user_metadata?.avatar_url || null;
+    console.log('📸 Loading avatar URL:', avatarUrl);
+    setProfileImage(avatarUrl);
+  }
+};
 
   const handleImagePicker = async () => {
     if (Platform.OS === 'ios') {

@@ -349,6 +349,87 @@
             font-size: 14px;
             margin-bottom: 15px;
         }
+
+        /* Credentials Section Styling */
+        .credentials-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .credentials-section h2 {
+            color: #856404;
+            border-color: #ffc107;
+            margin-bottom: 15px;
+        }
+        .credentials-note {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .credentials-note p {
+            margin: 0;
+            color: #155724;
+            font-size: 13px;
+        }
+
+        /* EDIT MODAL STYLES */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        
+        .edit-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #c3c4c7;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            padding: 0;
+            border: none;
+            font-size: 22px;
+            color: #23282d;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+        }
     </style>
 </head>
 <body>
@@ -389,6 +470,49 @@
                 <span style="color: white;">➕</span>
                 <div>New Event</div>
             </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('visitors')">
+                <span>👥</span>
+                <div>Visitors</div>
+            </div>
+            <div class="menu-item" onclick="switchPage('customers')">
+                <span>🏪</span>
+                <div>Customers (Venues)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT VISITOR MODAL -->
+    <div id="editVisitorModal" class="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Visitor</h2>
+            </div>
+            <div class="form-group">
+                <label for="modal_visitor_name">Name</label>
+                <input type="text" id="modal_visitor_name" placeholder="Enter name...">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="closeVisitorModal()" style="background: #95a5a6;">Cancel</button>
+                <button onclick="saveVisitor()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT CUSTOMER MODAL -->
+    <div id="editCustomerModal" class="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Customer</h2>
+            </div>
+            <div class="form-group">
+                <label for="modal_customer_credits">Credits</label>
+                <input type="number" id="modal_customer_credits" placeholder="Enter credits amount...">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="closeCustomerModal()" style="background: #95a5a6;">Cancel</button>
+                <button onclick="saveCustomer()">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -408,6 +532,9 @@
                 </div>
             </div>
 
+            <!-- (rest of the HTML pages remain EXACTLY the same...) -->
+            <!-- I'll continue from line ~800 where the JavaScript starts -->
+
             <!-- Add Venue Page -->
             <div id="add-venue-page" class="content-page">
                 <div class="page-header">
@@ -417,11 +544,28 @@
                     <form id="venueForm">
                 <input type="hidden" id="venueId">
                 
+                <!-- VENUE LOGIN CREDENTIALS (Only for new venues) -->
+                <div id="venueCredentialsSection" class="credentials-section">
+                    <h2>🔐 Venue Login Credentials</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="venue_email">Email (for login) *</label>
+                            <input type="email" id="venue_email" placeholder="venue@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="venue_password">Password (for login) *</label>
+                            <input type="password" id="venue_password" placeholder="Minimum 6 characters">
+                        </div>
+                    </div>
+                    <div class="credentials-note">
+                        <p><strong>⚠️ IMPORTANT:</strong> These credentials will allow the venue to log into the mobile app and manage their deals/events. <strong>Required for new venues only.</strong> Leave blank when editing existing venues.</p>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label for="name">Venue Name *</label>
                     <input type="text" id="name" required>
                 </div>
-
                 <div class="form-group">
                     <label for="category">Category *</label>
                     <select id="category" required onchange="updateSubCategories()">
@@ -745,7 +889,7 @@
                 </div>
             </div>
 
-            <!-- Add Deal Page -->
+<!-- Add Deal Page -->
             <div id="add-deal-page" class="content-page">
                 <div class="page-header">
                     <h1 id="dealFormTitle">Add New Deal</h1>
@@ -1157,38 +1301,76 @@
                     <div id="eventsList" class="loading">Loading events...</div>
                 </div>
             </div>
+
+            <!-- Visitors Page -->
+            <div id="visitors-page" class="content-page">
+                <div class="page-header">
+                    <h1>👥 Visitors (App Users)</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="visitorSearch" placeholder="🔍 Search by name or email..." oninput="filterVisitors()">
+                        </div>
+                    </div>
+                    <div id="visitorFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="visitorsList" class="loading">Loading visitors...</div>
+                </div>
+            </div>
+
+            <!-- Customers (Venues) Page -->
+            <div id="customers-page" class="content-page">
+                <div class="page-header">
+                    <h1>🏪 Customers (Venue Users)</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="customerSearch" placeholder="🔍 Search by venue name or email..." oninput="filterCustomers()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="customerStatusFilter" onchange="filterCustomers()">
+                                <option value="all">All Customers</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="customerFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="customersList" class="loading">Loading customers...</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // Page switching for sidebar menu
         function switchPage(pageName) {
-            // Hide all pages
             const pages = document.querySelectorAll('.content-page');
             pages.forEach(page => page.classList.remove('active'));
             
-            // Remove active from all menu items
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => item.classList.remove('active'));
             
-            // Show selected page
             const targetPage = document.getElementById(pageName + '-page');
             if (targetPage) {
                 targetPage.classList.add('active');
             }
             
-            // Activate clicked menu item (only if event exists)
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
             
-            // Load data when switching to list pages
             if (pageName === 'all-venues') {
                 loadVenues();
             } else if (pageName === 'all-deals') {
                 loadDeals();
             } else if (pageName === 'all-events') {
                 loadEvents();
+            } else if (pageName === 'visitors') {
+                loadVisitors();
+            } else if (pageName === 'customers') {
+                loadCustomers();
             }
         }
 
@@ -1201,8 +1383,14 @@
         let uploadedImages = [];
         let editingDeal = null;
         let uploadedDealImage = null;
-        let allVenues = []; // Store all venues for filtering
-        let allDeals = []; // Store all deals for filtering
+        let allVenues = [];
+        let allDeals = [];
+        let allVisitors = [];
+        let allCustomers = [];
+        
+        // MODAL VARIABLES
+        let currentEditingVisitorId = null;
+        let currentEditingCustomerId = null;
 
         function updateSubCategories() {
             const category = document.getElementById('category').value;
@@ -1229,7 +1417,6 @@
             }
         }
 
-        // Set registered dates IMMEDIATELY when page loads
         window.addEventListener('load', () => {
             const today = new Date().toISOString().split('T')[0];
             
@@ -1254,7 +1441,7 @@
             loadVenuesForDealDropdown();
         });
 
-        document.getElementById('imageInput').addEventListener('change', async (e) => {
+document.getElementById('imageInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             if (uploadedImages.length + files.length > 6) {
                 showError('Maximum 6 images allowed!');
@@ -1268,7 +1455,6 @@
             renderImagePreviews();
         });
 
-        // Deal image upload handler
         document.getElementById('dealImageInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1398,7 +1584,6 @@
             const venueData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
-                // Only include sub-category fields relevant to the selected category
                 cuisine: selectedCuisines.length > 0 && document.getElementById('category').value === 'Restaurants' ? selectedCuisines : null,
                 pub_types: selectedPubTypes.length > 0 && document.getElementById('category').value === 'Sport Bars' ? selectedPubTypes : null,
                 spa_types: selectedSpaTypes.length > 0 && document.getElementById('category').value === 'Massage & Spa' ? selectedSpaTypes : null,
@@ -1429,22 +1614,68 @@
             };
 
             try {
+                let venueId = editingVenue;
+                
                 if (editingVenue) {
                     const { error } = await supabaseClient.from('venues').update(venueData).eq('id', editingVenue);
                     if (error) throw error;
                     showSuccess('Venue updated!');
                 } else {
-                    const { error } = await supabaseClient.from('venues').insert([venueData]);
-                    if (error) throw error;
-                    showSuccess('Venue added!');
+                    const venueEmail = document.getElementById('venue_email').value;
+                    const venuePassword = document.getElementById('venue_password').value;
+                    
+                    if (!venueEmail || !venuePassword) {
+                        showError('Email and Password are required for new venues!');
+                        return;
+                    }
+                    
+                    if (venuePassword.length < 6) {
+                        showError('Password must be at least 6 characters!');
+                        return;
+                    }
+                    
+                    const { data: newVenue, error: venueError } = await supabaseClient
+                        .from('venues')
+                        .insert([venueData])
+                        .select()
+                        .single();
+                    
+                    if (venueError) throw venueError;
+                    venueId = newVenue.id;
+                    
+                    showSuccess(`Venue created! ID: ${venueId}. 
+                    
+IMPORTANT: You must now create the auth user manually:
+1. Go to Supabase Dashboard → Authentication → Users
+2. Click "Add user"
+3. Email: ${venueEmail}
+4. Password: ${venuePassword}
+5. Check "Auto Confirm User"
+6. Copy the user UUID
+7. Run this SQL:
+
+UPDATE profiles SET 
+  user_type = 'venue',
+  venue_id = ${venueId},
+  is_active = true
+WHERE id = '[PASTE_USER_UUID_HERE]';
+
+UPDATE venues SET 
+  owner_user_id = '[PASTE_USER_UUID_HERE]',
+  credits = 100,
+  subscription_status = 'active',
+  subscription_expires_at = NOW() + INTERVAL '1 year'
+WHERE id = ${venueId};`);
                 }
+                
                 document.getElementById('venueForm').reset();
+                document.getElementById('venue_email').value = '';
+                document.getElementById('venue_password').value = '';
                 uploadedImages = [];
                 renderImagePreviews();
                 cancelEdit();
                 loadVenues();
                 
-                // Navigate to All Venues
                 switchPage('all-venues');
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -1458,14 +1689,14 @@
                 const { data, error } = await supabaseClient.from('venues').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 
-                allVenues = data; // Store data for filtering
+                allVenues = data;
                 
                 if (data.length === 0) {
                     listDiv.innerHTML = '<p style="text-align:center;color:#999;">No venues yet!</p>';
                     return;
                 }
                 
-                renderVenues(data); // Use renderVenues instead
+                renderVenues(data);
             } catch (error) {
                 showError('Error: ' + error.message);
             }
@@ -1523,7 +1754,7 @@
             }
             
             if (statusFilter === 'active') {
-                filtered = filtered.filter(v => v.active !== false); // Treat undefined as active
+                filtered = filtered.filter(v => v.active !== false);
             } else if (statusFilter === 'inactive') {
                 filtered = filtered.filter(v => v.active === false);
             }
@@ -1549,7 +1780,8 @@
                 document.getElementById('submitBtn').textContent = 'Update Venue';
                 document.getElementById('cancelBtn').style.display = 'inline-block';
                 
-                // Switch to add-venue page
+                document.getElementById('venueCredentialsSection').style.display = 'none';
+                
                 const pages = document.querySelectorAll('.content-page');
                 pages.forEach(page => page.classList.remove('active'));
                 const menuItems = document.querySelectorAll('.menu-item');
@@ -1662,6 +1894,10 @@
             document.getElementById('cancelBtn').style.display = 'none';
             document.getElementById('venueForm').reset();
             
+            document.getElementById('venueCredentialsSection').style.display = 'block';
+            document.getElementById('venue_email').value = '';
+            document.getElementById('venue_password').value = '';
+            
             document.querySelectorAll('input[name="cuisine"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('input[name="pub_types"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('input[name="spa_types"]').forEach(cb => cb.checked = false);
@@ -1711,17 +1947,16 @@
             const div = document.getElementById('successMessage');
             div.textContent = msg;
             div.style.display = 'block';
-            setTimeout(() => div.style.display = 'none', 3000);
+            setTimeout(() => div.style.display = 'none', 8000);
         }
 
         function showError(msg) {
             const div = document.getElementById('errorMessage');
             div.textContent = msg;
             div.style.display = 'block';
-            setTimeout(() => div.style.display = 'none', 5000);
+            setTimeout(() => div.style.display = 'none', 8000);
         }
 
-        // Deal form placeholder functions
         function toggleRepeatOptions() {
             const checkbox = document.getElementById('deal_repeat');
             const repeatOptions = document.getElementById('repeatOptions');
@@ -1742,7 +1977,7 @@
             renderDealImagePreview();
         }
 
-        document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
+document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const dealName = document.getElementById('deal_name').value;
@@ -1759,12 +1994,10 @@
             const registeredDate = document.getElementById('deal_registered_date').value || null;
 
             try {
-                // Get selected repeat days
                 const repeatDaysCheckboxes = document.querySelectorAll('input[name="repeat_days"]:checked');
                 const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
                 const repeatWeeks = parseInt(document.getElementById('repeat_weeks').value) || 0;
 
-                // Create single deal with repeat settings
                 const dealData = {
                     name: dealName,
                     category: dealCategory,
@@ -1786,47 +2019,40 @@
                 };
 
                 if (editingDeal) {
-                    // UPDATE existing deal
                     const { error } = await supabaseClient.from('deals').update(dealData).eq('id', editingDeal);
                     if (error) throw error;
                     showSuccess('Deal updated successfully!');
                     
-                    // Reset editing state
                     editingDeal = null;
-                    document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+                    document.getElementById('dealFormTitle').textContent = 'Add New Deal';
                     document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
                     document.getElementById('dealCancelBtn').style.display = 'none';
                 } else {
-                    // INSERT new deal
                     const { error } = await supabaseClient.from('deals').insert([dealData]);
                     if (error) throw error;
                     showSuccess('Deal created successfully!');
                 }
                 
-                // Reset form and editing state
                 editingDeal = null;
                 document.getElementById('dealForm').reset();
                 uploadedDealImage = null;
                 renderDealImagePreview();
-                document.getElementById('dealFormTitle').textContent = '🎁 Add New Deal';
+                document.getElementById('dealFormTitle').textContent = 'Add New Deal';
                 document.getElementById('dealSubmitBtn').textContent = 'Add Deal';
                 document.getElementById('dealCancelBtn').style.display = 'none';
                 loadDeals();
                 
-                // Navigate to All Deals
                 switchPage('all-deals');
             } catch (error) {
                 showError('Error creating deal: ' + error.message);
             }
         });
 
-        // Helper function to get next occurrence of a day of week
         function getNextDayOfWeek(baseDate, dayName, weekOffset) {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const targetDay = days.indexOf(dayName);
             const date = new Date(baseDate);
             
-            // Find the first occurrence of the target day
             const currentDay = date.getDay();
             let daysUntilTarget = targetDay - currentDay;
             if (daysUntilTarget < 0) daysUntilTarget += 7;
@@ -1835,7 +2061,6 @@
             return date;
         }
 
-        // Load deals function
         async function loadDeals() {
             const listDiv = document.getElementById('dealsList');
             listDiv.innerHTML = '<div class="loading">Loading deals...</div>';
@@ -1851,14 +2076,14 @@
                     
                 if (error) throw error;
                 
-                allDeals = data; // Store data for filtering
+                allDeals = data;
                 
                 if (data.length === 0) {
                     listDiv.innerHTML = '<p style="text-align:center;color:#999;">No deals yet! Create your first deal using the form above.</p>';
                     return;
                 }
                 
-                renderDeals(data); // Use renderDeals instead
+                renderDeals(data);
             } catch (error) {
                 showError('Error loading deals: ' + error.message);
                 listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading deals. Check console for details.</p>';
@@ -1954,7 +2179,6 @@
                 document.getElementById('deal_price_range').value = data.price_range || '';
                 document.getElementById('deal_views').value = 0;
                 
-                // Set registered_date to today when reactivating
                 document.getElementById('deal_registered_date').value = new Date().toISOString().split('T')[0];
                 
                 uploadedDealImage = data.image_url || null;
@@ -1987,7 +2211,6 @@
             }
         }
 
-        // Delete deal
         async function deleteDeal(id, name) {
             if (!confirm(`Delete deal "${name}"?`)) return;
             
@@ -2025,7 +2248,6 @@
             }
         }
 
-        // Edit deal
         async function editDeal(id) {
             try {
                 const { data, error } = await supabaseClient.from('deals').select('*').eq('id', id).single();
@@ -2036,14 +2258,12 @@
                 document.getElementById('dealSubmitBtn').textContent = 'Update Deal';
                 document.getElementById('dealCancelBtn').style.display = 'inline-block';
                 
-                // Switch to add-deal page
                 const pages = document.querySelectorAll('.content-page');
                 pages.forEach(page => page.classList.remove('active'));
                 const menuItems = document.querySelectorAll('.menu-item');
                 menuItems.forEach(item => item.classList.remove('active'));
                 document.getElementById('add-deal-page').classList.add('active');
                 
-                // Fill form with deal data
                 document.getElementById('deal_name').value = data.name || '';
                 document.getElementById('deal_category').value = data.category || '';
                 document.getElementById('deal_description').value = data.description || '';
@@ -2088,7 +2308,6 @@
             }
         }
 
-        // Load venues for deal dropdown
         async function loadVenuesForDealDropdown() {
             try {
                 const { data, error } = await supabaseClient.from('venues').select('id, name, location_short').order('name', { ascending: true });
@@ -2434,6 +2653,328 @@
                 if (error) throw error;
                 showSuccess('Event unpaused!');
                 loadEvents();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // ===== VISITORS & CUSTOMERS JAVASCRIPT =====
+        async function loadVisitors() {
+            const listDiv = document.getElementById('visitorsList');
+            listDiv.innerHTML = '<div class="loading">Loading visitors...</div>';
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('id, email, name, created_at, user_type')
+                    .eq('user_type', 'visitor')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allVisitors = data;
+                
+                if (data.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;color:#999;">No visitors yet!</p>';
+                    return;
+                }
+                
+                renderVisitors(data);
+            } catch (error) {
+                showError('Error loading visitors: ' + error.message);
+            }
+        }
+
+        function renderVisitors(visitors) {
+            const listDiv = document.getElementById('visitorsList');
+            
+            if (visitors.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No visitors match your search.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = visitors.map(v => `
+                <div class="venue-item">
+                    <div class="venue-info">
+                        <h3>${v.name || 'No name'}</h3>
+                        <p><strong>Email:</strong> ${v.email}</p>
+                        <p><strong>Registered:</strong> ${new Date(v.created_at).toLocaleDateString('sv-SE')}</p>
+                        <p><strong>Type:</strong> 👥 Visitor</p>
+                    </div>
+                    <div class="venue-actions">
+                        <button class="edit" onclick="editVisitor('${v.id}', '${v.name || ''}')">Edit</button>
+                        <button class="delete" onclick="deleteVisitor('${v.id}', '${(v.name || 'this visitor').replace(/'/g, "\\'")}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterVisitors() {
+            const searchTerm = document.getElementById('visitorSearch').value.toLowerCase();
+            
+            let filtered = allVisitors;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(v => 
+                    (v.name && v.name.toLowerCase().includes(searchTerm)) || 
+                    (v.email && v.email.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            const resultsDiv = document.getElementById('visitorFilterResults');
+            if (searchTerm) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.textContent = `Showing ${filtered.length} of ${allVisitors.length} visitors`;
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            
+            renderVisitors(filtered);
+        }
+
+        async function loadCustomers() {
+            const listDiv = document.getElementById('customersList');
+            listDiv.innerHTML = '<div class="loading">Loading customers...</div>';
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select(`
+                        id,
+                        email,
+                        name,
+                        user_type,
+                        venue_id,
+                        is_active,
+                        created_at,
+                        venues!profiles_venue_id_fkey(id, name, credits, subscription_status, subscription_expires_at)
+                    `)
+                    .eq('user_type', 'venue')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allCustomers = data;
+                
+                if (data.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;color:#999;">No venue customers yet!</p>';
+                    return;
+                }
+                
+                renderCustomers(data);
+            } catch (error) {
+                showError('Error loading customers: ' + error.message);
+            }
+        }
+
+        function renderCustomers(customers) {
+            const listDiv = document.getElementById('customersList');
+            
+            if (customers.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No customers match your filters.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = customers.map(c => `
+                <div class="venue-item">
+                    <div class="status-indicator ${c.is_active ? 'status-active' : 'status-inactive'}" title="${c.is_active ? 'Active' : 'Inactive'}"></div>
+                    <div class="venue-info">
+                        <h3>${c.venues?.name || 'No venue linked'}</h3>
+                        <p><strong>Email:</strong> ${c.email}</p>
+                        <p><strong>Credits:</strong> ${c.venues?.credits || 0}</p>
+                        <p><strong>Subscription:</strong> ${c.venues?.subscription_status || 'inactive'}</p>
+                        ${c.venues?.subscription_expires_at ? `<p><strong>Expires:</strong> ${new Date(c.venues.subscription_expires_at).toLocaleDateString('sv-SE')}</p>` : ''}
+                        <p><strong>Registered:</strong> ${new Date(c.created_at).toLocaleDateString('sv-SE')}</p>
+                        <p><strong>Status:</strong> ${c.is_active ? '✅ Active' : '❌ Inactive'}</p>
+                    </div>
+                    <div class="venue-actions">
+                        ${c.is_active ? 
+                            `<button class="reactivate" onclick="deactivateCustomer('${c.id}', '${c.venues?.name || 'this customer'}')">⏸️ Deactivate</button>` : 
+                            `<button class="reactivate" onclick="activateCustomer('${c.id}', '${c.venues?.name || 'this customer'}')">▶️ Activate</button>`
+                        }
+                        <button class="edit" onclick="editCustomer('${c.id}', ${c.venues?.credits || 0}, ${c.venue_id})">Edit Credits</button>
+                        <button class="delete" onclick="deleteCustomer('${c.id}', '${c.venues?.name || 'this customer'}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCustomers() {
+            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('customerStatusFilter').value;
+            
+            let filtered = allCustomers;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(c => 
+                    (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+                    (c.venues?.name && c.venues.name.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (statusFilter === 'active') {
+                filtered = filtered.filter(c => c.is_active === true);
+            } else if (statusFilter === 'inactive') {
+                filtered = filtered.filter(c => c.is_active === false);
+            }
+            
+            const resultsDiv = document.getElementById('customerFilterResults');
+            if (searchTerm || statusFilter !== 'all') {
+                resultsDiv.style.display = 'block';
+                resultsDiv.textContent = `Showing ${filtered.length} of ${allCustomers.length} customers`;
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            
+            renderCustomers(filtered);
+        }
+
+        async function activateCustomer(profileId, venueName) {
+            if (!confirm(`Activate "${venueName}"?`)) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .update({ is_active: true })
+                    .eq('id', profileId);
+                
+                if (error) throw error;
+                showSuccess('Customer activated!');
+                loadCustomers();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function deactivateCustomer(profileId, venueName) {
+            if (!confirm(`Deactivate "${venueName}"? They won't be able to log in.`)) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .update({ is_active: false })
+                    .eq('id', profileId);
+                
+                if (error) throw error;
+                showSuccess('Customer deactivated!');
+                loadCustomers();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // ===== MODAL FUNCTIONS - NYA FUNKTIONER! =====
+        
+        // VISITOR MODAL FUNCTIONS
+       function editVisitor(visitorId, currentName) {
+    currentEditingVisitorId = visitorId;
+    document.getElementById('modal_visitor_name').value = currentName;
+    document.getElementById('editVisitorModal').classList.add('active');
+}
+        
+        function closeVisitorModal() {
+            document.getElementById('editVisitorModal').classList.remove('active');
+            currentEditingVisitorId = null;
+        }
+        
+        async function saveVisitor() {
+    if (!currentEditingVisitorId) return;
+    
+    const newName = document.getElementById('modal_visitor_name').value;
+    
+    if (!newName) {
+        showError('Name is required!');
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update({ 
+                name: newName
+            })
+            .eq('id', currentEditingVisitorId);
+        
+        if (error) throw error;
+        showSuccess('Visitor updated!');
+        closeVisitorModal();
+        loadVisitors();
+    } catch (error) {
+        showError('Error: ' + error.message);
+    }
+}
+
+        // CUSTOMER MODAL FUNCTIONS
+        function editCustomer(customerId, currentCredits, venueId) {
+            currentEditingCustomerId = customerId;
+            document.getElementById('modal_customer_credits').value = currentCredits;
+            document.getElementById('modal_customer_credits').dataset.venueId = venueId;
+            document.getElementById('editCustomerModal').classList.add('active');
+        }
+        
+        function closeCustomerModal() {
+            document.getElementById('editCustomerModal').classList.remove('active');
+            currentEditingCustomerId = null;
+        }
+        
+        async function saveCustomer() {
+            if (!currentEditingCustomerId) return;
+            
+            const newCredits = parseInt(document.getElementById('modal_customer_credits').value);
+            const venueId = parseInt(document.getElementById('modal_customer_credits').dataset.venueId);
+            
+            if (isNaN(newCredits)) {
+                showError('Please enter a valid number for credits!');
+                return;
+            }
+            
+            if (!venueId) {
+                showError('No venue linked!');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('venues')
+                    .update({ credits: newCredits })
+                    .eq('id', venueId);
+                
+                if (error) throw error;
+                showSuccess('Credits updated!');
+                closeCustomerModal();
+                loadCustomers();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function deleteVisitor(visitorId, visitorName) {
+            if (!confirm(`Delete visitor "${visitorName}"?`)) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .delete()
+                    .eq('id', visitorId);
+                
+                if (error) throw error;
+                showSuccess('Visitor deleted!');
+                loadVisitors();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function deleteCustomer(customerId, venueName) {
+            if (!confirm(`Delete "${venueName}"?`)) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .delete()
+                    .eq('id', customerId);
+                
+                if (error) throw error;
+                showSuccess('Customer deleted!');
+                loadCustomers();
             } catch (error) {
                 showError('Error: ' + error.message);
             }
