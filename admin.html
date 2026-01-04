@@ -2037,42 +2037,56 @@ document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const dealName = document.getElementById('deal_name').value;
-            const dealCategory = document.getElementById('deal_category').value;
-            const dealDescription = document.getElementById('deal_description').value;
-            const dealPhone = document.getElementById('deal_phone').value;
-            const venueId = document.getElementById('deal_venue_link').value;
-            const dealDate = document.getElementById('deal_date').value;
-            const startTime = document.getElementById('deal_start_time').value;
-            const endTime = document.getElementById('deal_end_time').value;
-            const isRepeat = document.getElementById('deal_repeat').checked;
-            const dealPrice = document.getElementById('deal_price').value;
-            const dealViews = parseInt(document.getElementById('deal_views').value) || 0;
-            const registeredDate = document.getElementById('deal_registered_date').value || null;
+const dealCategory = document.getElementById('deal_category').value;
+const dealDescription = document.getElementById('deal_description').value;
+const dealPhone = document.getElementById('deal_phone').value;
+const venueId = document.getElementById('deal_venue_link').value;
+const dealDate = document.getElementById('deal_date').value;
+const startTime = document.getElementById('deal_start_time').value;
+const endTime = document.getElementById('deal_end_time').value;
+const isRepeat = document.getElementById('deal_repeat').checked;
+const dealPrice = document.getElementById('deal_price').value;
+const dealViews = parseInt(document.getElementById('deal_views').value) || 0;
+const registeredDate = document.getElementById('deal_registered_date').value || null;
 
-            try {
-                const repeatDaysCheckboxes = document.querySelectorAll('input[name="repeat_days"]:checked');
-                const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
-                const repeatWeeks = parseInt(document.getElementById('repeat_weeks').value) || 0;
+try {
+    const repeatDaysCheckboxes = document.querySelectorAll('input[name="repeat_days"]:checked');
+    const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
+    const repeatWeeks = parseInt(document.getElementById('repeat_weeks').value) || 0;
 
-                const dealData = {
-                    name: dealName,
-                    category: dealCategory,
-                    description: dealDescription,
-                    phone: dealPhone,
-                    venue_id: parseInt(venueId),
-                    deal_date: dealDate,
-                    start_time: startTime || null,
-                    end_time: endTime || null,
-                    is_recurring: isRepeat,
-                    recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
-                    recurring_weeks: (isRepeat && repeatWeeks > 0) ? repeatWeeks : null,
-                    price: dealPrice,
-                    price_range: document.getElementById('deal_price_range').value || null,
-                    image_url: uploadedDealImage,
-                    views: dealViews,
-                    registered_date: registeredDate,
-                    active: true
-                };
+    // Calculate end_date based on repeat settings
+    let calculatedEndDate;
+    if (isRepeat && repeatWeeks > 0) {
+        // Recurring: end_date = deal_date + (recurring_weeks * 7 days)
+        const startDate = new Date(dealDate);
+        calculatedEndDate = new Date(startDate);
+        calculatedEndDate.setDate(calculatedEndDate.getDate() + (repeatWeeks * 7));
+        calculatedEndDate = calculatedEndDate.toISOString().split('T')[0];
+    } else {
+        // Non-recurring: end_date = same as deal_date
+        calculatedEndDate = dealDate;
+    }
+
+    const dealData = {
+        name: dealName,
+        category: dealCategory,
+        description: dealDescription,
+        phone: dealPhone,
+        venue_id: parseInt(venueId),
+        deal_date: dealDate,
+        end_date: calculatedEndDate,
+        start_time: startTime || null,
+        end_time: endTime || null,
+        is_recurring: isRepeat,
+        recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
+        recurring_weeks: (isRepeat && repeatWeeks > 0) ? repeatWeeks : null,
+        price: dealPrice,
+        price_range: document.getElementById('deal_price_range').value || null,
+        image_url: uploadedDealImage,
+        views: dealViews,
+        registered_date: registeredDate,
+        active: true
+    };
 
                 if (editingDeal) {
                     const { error } = await supabaseClient.from('deals').update(dealData).eq('id', editingDeal);
@@ -2469,18 +2483,35 @@ document.getElementById('dealForm')?.addEventListener('submit', async (e) => {
                     const repeatDaysCheckboxes = document.querySelectorAll('input[name="event_repeat_days"]:checked');
                     const repeatDays = Array.from(repeatDaysCheckboxes).map(cb => cb.value);
                     const repeatWeeks = parseInt(document.getElementById('event_repeat_weeks').value) || 0;
+                    const eventDate = document.getElementById('event_date').value;
+                    const isEventRepeat = document.getElementById('event_repeat').checked;
+                    
+                    // Calculate end_date based on repeat settings
+                    let calculatedEventEndDate;
+                    if (isEventRepeat && repeatWeeks > 0) {
+                        // Recurring: end_date = event_date + (recurring_weeks * 7 days)
+                        const startDate = new Date(eventDate);
+                        calculatedEventEndDate = new Date(startDate);
+                        calculatedEventEndDate.setDate(calculatedEventEndDate.getDate() + (repeatWeeks * 7));
+                        calculatedEventEndDate = calculatedEventEndDate.toISOString().split('T')[0];
+                    } else {
+                        // Non-recurring: end_date = same as event_date
+                        calculatedEventEndDate = eventDate;
+                    }
+
                     const eventData = {
                         name: document.getElementById('event_name').value,
                         category: document.getElementById('event_category').value,
                         description: document.getElementById('event_description').value,
                         phone: document.getElementById('event_phone').value,
                         website: document.getElementById('event_website').value || null,
-                        event_date: document.getElementById('event_date').value,
+                        event_date: eventDate,
+                        end_date: calculatedEventEndDate,
                         start_time: document.getElementById('event_start_time').value || null,
                         end_time: document.getElementById('event_end_time').value || null,
-                        is_recurring: document.getElementById('event_repeat').checked,
-                        recurring_day: (document.getElementById('event_repeat').checked && repeatDays.length > 0) ? repeatDays.join(',') : null,
-                        recurring_weeks: (document.getElementById('event_repeat').checked && repeatWeeks > 0) ? repeatWeeks : null,
+                        is_recurring: isEventRepeat,
+                        recurring_day: (isEventRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
+                        recurring_weeks: (isEventRepeat && repeatWeeks > 0) ? repeatWeeks : null,
                         price: document.getElementById('event_price').value,
                         image_url: uploadedEventImage,
                         views: parseInt(document.getElementById('event_views').value) || 0,

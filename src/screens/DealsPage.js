@@ -9,15 +9,12 @@ const { width } = Dimensions.get('window');
 // Helper function to calculate next occurrence for recurring deals
 const getNextOccurrence = (deal) => {
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Start of today
+  now.setHours(0, 0, 0, 0);
   
-  // If deal is recurring
-  if (deal.is_recurring && deal.recurring_days) {
-    const eventDate = new Date(deal.start_date || deal.deal_date);
+  if (deal.is_recurring && deal.recurring_day) {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const recurringDays = deal.recurring_days.split(',').map(d => d.trim());
+    const recurringDays = deal.recurring_day.split(',').map(d => d.trim());
     
-    // Find next occurrence within next 60 days
     for (let i = 0; i < 60; i++) {
       const checkDate = new Date(now);
       checkDate.setDate(checkDate.getDate() + i);
@@ -35,25 +32,21 @@ const getNextOccurrence = (deal) => {
 // Filter deals that are still valid
 const filterValidDeals = (deals) => {
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Start of today
+  now.setHours(0, 0, 0, 0);
   
   return deals.filter(deal => {
-    // If recurring, check if it has future occurrences
-    if (deal.is_recurring && deal.recurring_days) {
+    if (deal.is_recurring && deal.recurring_day) {
       const nextOccurrence = getNextOccurrence(deal);
       return nextOccurrence !== null;
     }
     
-    // For non-recurring deals, check end_date or valid_until
-    const endDate = deal.end_date || deal.valid_until;
-    if (endDate) {
-      const dealEndDate = new Date(endDate);
-      dealEndDate.setHours(23, 59, 59, 999); // End of that day
+    if (deal.end_date) {
+      const dealEndDate = new Date(deal.end_date);
+      dealEndDate.setHours(23, 59, 59, 999);
       return dealEndDate >= now;
     }
     
-    // If no end date specified, keep it
-    return true;
+    return false;
   });
 };
 
@@ -83,19 +76,20 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
 
       if (error) throw error;
 
-      // Filter out expired deals and calculate next occurrence for recurring ones
       const validDeals = filterValidDeals(data);
 
       const transformedDeals = validDeals.map(deal => {
         const venueName = deal.venues?.name || 'Unknown Venue';
         const dealTitle = deal.name || deal.title || 'No Title';
         
-        // Calculate display date for recurring deals
-        let displayStartDate = deal.start_date || deal.deal_date;
-        if (deal.is_recurring && deal.recurring_days) {
+        let displayStartDate = deal.deal_date;
+        let displayEndDate = deal.end_date;
+        
+        if (deal.is_recurring && deal.recurring_day) {
           const nextOccurrence = getNextOccurrence(deal);
           if (nextOccurrence) {
             displayStartDate = nextOccurrence;
+            displayEndDate = null;
           }
         }
         
@@ -106,11 +100,10 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
           description: deal.description,
           venue: venueName,
           category: deal.category,
-          validUntil: deal.valid_until,
           startDate: displayStartDate,
-          endDate: deal.end_date,
+          endDate: displayEndDate,
           isRecurring: deal.is_recurring,
-          recurringDays: deal.recurring_days,
+          recurringDays: deal.recurring_day,
           discount: deal.discount_text || deal.price || 'SPECIAL',
           image: deal.image_url ? { uri: deal.image_url } : require('../../assets/backgrounds/BG_ALL.png'),
         };
@@ -163,12 +156,10 @@ export default function DealsPage({ onNavigate, onOpenMenu }) {
   };
 
   const formatDateRange = (deal) => {
-    // For recurring deals, show next occurrence
     if (deal.isRecurring && deal.recurringDays) {
       return `Next: ${formatDate(deal.startDate)}`;
     }
     
-    // For regular deals with date range
     if (deal.startDate && deal.endDate) {
       return `${formatDate(deal.startDate)} - ${formatDate(deal.endDate)}`;
     }
