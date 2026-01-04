@@ -131,6 +131,16 @@ export default function App() {
         setUserType(profile.user_type);
         setVenueId(profile.venue_id);
         console.log('🎯 User type set to:', profile.user_type);
+        
+        // REDIRECT TO CORRECT SCREEN AFTER LOGIN
+        if (profile.user_type === 'venue') {
+          console.log('🏪 Venue user detected - auto-navigating to venue dashboard');
+          setShowSplash(false);
+          setShowWalkthrough(false);
+          setCurrentScreen('venuedashboard');
+        } else {
+          console.log('👤 Visitor user detected - staying on current screen');
+        }
       } else {
         console.log('⚠️ No existing session on startup');
         if (storedLoginState !== 'true') {
@@ -180,6 +190,18 @@ export default function App() {
           setUserType(profile.user_type);
           setVenueId(profile.venue_id);
           console.log('🎯 User type set to:', profile.user_type);
+          
+          // REDIRECT TO CORRECT SCREEN AFTER LOGIN
+          if (event === 'SIGNED_IN') {
+            if (profile.user_type === 'venue') {
+              console.log('🏪 Venue user signed in - navigating to venue dashboard');
+              setShowSplash(false);
+              setShowWalkthrough(false);
+              setCurrentScreen('venuedashboard');
+            } else {
+              console.log('👤 Visitor user signed in - staying on current screen');
+            }
+          }
         }
       }
     });

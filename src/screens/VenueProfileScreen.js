@@ -54,7 +54,11 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
           setVenueData(venueInfo);
           setVenueName(venueInfo.name || '');
           setPhone(venueInfo.phone || '');
-          setProfileImage(venueInfo.image_url || null);
+          // Use first image from images array, or fallback to image_url
+          const venueImage = (venueInfo.images && venueInfo.images.length > 0) 
+            ? venueInfo.images[0] 
+            : venueInfo.image_url;
+          setProfileImage(venueImage || null);
         }
       } else {
         // Fallback if no venue_id
@@ -148,7 +152,7 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
       // Upload to Supabase Storage
       const fileName = `venue_${venueData.id}_${Date.now()}.jpg`;
       const { data, error } = await supabase.storage
-        .from('venues')
+        .from('venue-images')
         .upload(fileName, arrayBuffer, {
           contentType: 'image/jpeg',
           upsert: true,
@@ -164,16 +168,19 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('venues')
+        .from('venue-images')
         .getPublicUrl(fileName);
 
       const imageUrl = urlData.publicUrl;
       console.log('✅ Venue image uploaded! URL:', imageUrl);
 
-      // Update venue table with new image URL
+      // Update venue table - add to images array
+      const currentImages = venueData.images || [];
+      const updatedImages = [imageUrl, ...currentImages].slice(0, 6); // Keep max 6 images
+
       const { error: updateError } = await supabase
         .from('venues')
-        .update({ image_url: imageUrl })
+        .update({ images: updatedImages })
         .eq('id', venueData.id);
 
       if (updateError) {
@@ -222,6 +229,7 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
       setAlertTitle('Success');
       setAlertMessage('Venue profile updated successfully!');
       setShowAlert(true);
+      setIsEditing(false);
       await loadVenueProfile();
     } catch (error) {
       setAlertTitle('Error');
@@ -386,10 +394,7 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
           ) : (
             <TouchableOpacity 
               style={styles.updateButton} 
-              onPress={() => {
-                handleUpdateProfile();
-                setIsEditing(false);
-              }}
+              onPress={handleUpdateProfile}
             >
               <Text style={styles.updateButtonText}>Save Changes</Text>
             </TouchableOpacity>
@@ -492,48 +497,19 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Ionicons name="pricetag" size={24} color="#0077B6" />
-                <Text style={styles.statNumber}>0</Text>
-                <Text style={styles.statLabel}>Active Deals</Text>
+                <Text style={styles.statNumber}>{venueData.credits || 0}</Text>
+                <Text style={styles.statLabel}>Credits Left</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Ionicons name="calendar" size={24} color="#0077B6" />
-                <Text style={styles.statNumber}>0</Text>
-                <Text style={styles.statLabel}>Upcoming Events</Text>
+                <Ionicons name="star" size={24} color="#0077B6" />
+                <Text style={styles.statNumber}>{venueData.rating || '0.0'}</Text>
+                <Text style={styles.statLabel}>Rating</Text>
               </View>
             </View>
           </View>
         )}
       </ScrollView>
-
-      {/* Bottom Navigation - Venue specific */}
-      <View style={styles.bottomNav}>
-        {/* Profile (Active) */}
-        <TouchableOpacity 
-          style={[styles.navButton, styles.navButtonActive]}
-        >
-          <View style={styles.activeNavButton}>
-            <Ionicons name="person" size={20} color="#0077B6" />
-            <Text style={styles.activeNavText}>Profile</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* New Deals & Events */}
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => onNavigate('venueManage')}
-        >
-          <Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        {/* Settings */}
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => onNavigate('settings')}
-        >
-          <Ionicons name="settings-outline" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
 
       <CustomAlert
         visible={showAlert}
@@ -591,7 +567,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 100,
+    paddingBottom: 40,
   },
   profileSection: {
     alignItems: 'center',
@@ -825,50 +801,5 @@ const styles = StyleSheet.create({
     width: 1,
     height: 60,
     backgroundColor: '#E0E0E0',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    backgroundColor: '#0077B6',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  navButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  navButtonActive: {
-  },
-  activeNavButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  activeNavText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0077B6',
   },
 });

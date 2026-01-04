@@ -1617,10 +1617,58 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 let venueId = editingVenue;
                 
                 if (editingVenue) {
-                    const { error } = await supabaseClient.from('venues').update(venueData).eq('id', editingVenue);
-                    if (error) throw error;
-                    showSuccess('Venue updated!');
+                    // EDITING EXISTING VENUE
+                    // First, update the venue data
+                    const { error: updateError } = await supabaseClient.from('venues').update(venueData).eq('id', editingVenue);
+                    if (updateError) throw updateError;
+                    
+                    // Check if venue has owner_user_id (auth user)
+                    const { data: venueCheck } = await supabaseClient.from('venues').select('owner_user_id').eq('id', editingVenue).single();
+                    
+                    // If no owner_user_id AND email/password provided, create auth user
+                    if (!venueCheck.owner_user_id) {
+                        const venueEmail = document.getElementById('venue_email').value;
+                        const venuePassword = document.getElementById('venue_password').value;
+                        
+                        if (venueEmail && venuePassword) {
+                            if (venuePassword.length < 6) {
+                                showError('Password must be at least 6 characters!');
+                                return;
+                            }
+                            
+                            try {
+                                const response = await fetch('https://vfponburmjbuqqneigjr.supabase.co/functions/v1/create-venue-user', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                                    },
+                                    body: JSON.stringify({
+                                        email: venueEmail,
+                                        password: venuePassword,
+                                        venueId: editingVenue
+                                    })
+                                });
+                                
+                                const result = await response.json();
+                                
+                                if (!response.ok || result.error) {
+                                    throw new Error(result.error || 'Failed to create venue user');
+                                }
+                                
+                                showSuccess(`✅ Venue updated and login created! Email: ${venueEmail}`);
+                            } catch (edgeFunctionError) {
+                                showError(`Venue updated but login creation failed: ${edgeFunctionError.message}`);
+                                return;
+                            }
+                        } else {
+                            showSuccess('Venue updated!');
+                        }
+                    } else {
+                        showSuccess('Venue updated!');
+                    }
                 } else {
+                    // CREATING NEW VENUE
                     const venueEmail = document.getElementById('venue_email').value;
                     const venuePassword = document.getElementById('venue_password').value;
                     
@@ -1784,7 +1832,7 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 document.getElementById('submitBtn').textContent = 'Update Venue';
                 document.getElementById('cancelBtn').style.display = 'inline-block';
                 
-                document.getElementById('venueCredentialsSection').style.display = 'none';
+                document.getElementById('venueCredentialsSection').style.display = 'block';
                 
                 const pages = document.querySelectorAll('.content-page');
                 pages.forEach(page => page.classList.remove('active'));
@@ -1912,16 +1960,20 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
         }
 
         async function deleteVenue(id, name) {
-            if (!confirm(`Delete "${name}"?`)) return;
-            try {
-                const { error } = await supabaseClient.from('venues').delete().eq('id', id);
-                if (error) throw error;
-                showSuccess('Deleted!');
-                loadVenues();
-            } catch (error) {
-                showError('Error: ' + error.message);
-            }
-        }
+    if (!confirm(`Delete "${name}"?`)) return;
+    try {
+        // First delete from profiles if exists
+        await supabaseClient.from('profiles').delete().eq('venue_id', id);
+        
+        // Then delete venue
+        const { error } = await supabaseClient.from('venues').delete().eq('id', id);
+        if (error) throw error;
+        showSuccess('Deleted!');
+        loadVenues();
+    } catch (error) {
+        showError('Error: ' + error.message);
+    }
+}
 
         async function pauseVenue(id, name) {
             if (!confirm(`Pause "${name}"? It will be hidden from the app.`)) return;
