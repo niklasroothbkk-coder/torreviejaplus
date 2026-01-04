@@ -1643,29 +1643,33 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                     if (venueError) throw venueError;
                     venueId = newVenue.id;
                     
-                    showSuccess(`Venue created! ID: ${venueId}. 
-                    
-IMPORTANT: You must now create the auth user manually:
-1. Go to Supabase Dashboard → Authentication → Users
-2. Click "Add user"
-3. Email: ${venueEmail}
-4. Password: ${venuePassword}
-5. Check "Auto Confirm User"
-6. Copy the user UUID
-7. Run this SQL:
-
-UPDATE profiles SET 
-  user_type = 'venue',
-  venue_id = ${venueId},
-  is_active = true
-WHERE id = '[PASTE_USER_UUID_HERE]';
-
-UPDATE venues SET 
-  owner_user_id = '[PASTE_USER_UUID_HERE]',
-  credits = 100,
-  subscription_status = 'active',
-  subscription_expires_at = NOW() + INTERVAL '1 year'
-WHERE id = ${venueId};`);
+                    // Step 2: Call Edge Function to create auth user + link profile
+                    try {
+                        const response = await fetch('https://vfponburmjbuqqneigjr.supabase.co/functions/v1/create-venue-user', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                            },
+                            body: JSON.stringify({
+                                email: venueEmail,
+                                password: venuePassword,
+                                venueId: venueId
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (!response.ok || result.error) {
+                            throw new Error(result.error || 'Failed to create venue user');
+                        }
+                        
+                        showSuccess(`✅ Venue created successfully! The venue can now log in with email: ${venueEmail}`);
+                    } catch (edgeFunctionError) {
+                        // Edge function failed - rollback venue creation
+                        await supabaseClient.from('venues').delete().eq('id', venueId);
+                        throw new Error(`Failed to create venue user: ${edgeFunctionError.message}`);
+                    }
                 }
                 
                 document.getElementById('venueForm').reset();

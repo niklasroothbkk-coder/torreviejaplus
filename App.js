@@ -8,6 +8,8 @@ import { supabase } from './src/config/supabaseClient';
 import EventsPage from './src/screens/EventsPage';
 // OLD LOGIN SCREEN REMOVED - using SignInScreen instead
 import UserProfileScreen from './src/screens/UserProfileScreen';
+import VenueProfileScreen from './src/screens/VenueProfileScreen';
+import VenueManageScreen from './src/screens/VenueManageScreen';
 import CreateEventScreen from './src/screens/CreateEventScreen';
 import FAQContactPage from './src/screens/FAQContactPage';
 import ShareAirportTaxiPage from './src/screens/ShareAirportTaxiPage';
@@ -423,10 +425,9 @@ export default function App() {
       
       // Venue Dashboard Routes
       case 'venuedashboard':
-        return <VenueDashboardScreen 
-          navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('userprofile') }}
-          currentUser={currentUser}
-        />;
+        return <VenueProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueManage':
+        return <VenueManageScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venuemanagedeals':
         return <VenueManageDealsScreen 
           navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('venuedashboard') }}
