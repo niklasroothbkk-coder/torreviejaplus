@@ -34,6 +34,7 @@ import AllDoneScreen from './src/screens/AllDone';
 import EventDetailsScreen from './src/screens/Events/EventDetailsScreen';
 import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
 import MessagesPage from './src/screens/MessagesPage';
+import VenueBottomNavigation from './src/components/VenueBottomNavigation';
 
 // Venue Dashboard Screens
 import VenueDashboardScreen from './src/screens/Venues/VenueDashboardScreen';
@@ -596,6 +597,14 @@ export default function App() {
           />
         </View>
       </Modal>
+
+      {/* Venue Bottom Navigation */}
+      {isLoggedIn && userType === 'venue' && !showSplash && !showWalkthrough && (
+        <VenueBottomNavigation 
+          currentScreen={currentScreen}
+          onNavigate={handleMenuItemPress}
+        />
+      )}
     </View>
     </GestureHandlerRootView>
   );
