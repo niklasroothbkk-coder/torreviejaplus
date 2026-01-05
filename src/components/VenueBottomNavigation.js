@@ -32,12 +32,12 @@ export default function VenueBottomNavigation({ currentScreen, onNavigate }) {
       {/* Settings */}
       <TouchableOpacity 
         style={styles.navButton}
-        onPress={() => onNavigate('settings')}
+        onPress={() => onNavigate('venuesettings')}
       >
         <Ionicons 
-          name={currentScreen === 'settings' ? 'settings' : 'settings-outline'} 
+          name={currentScreen === 'venuesettings' ? 'settings' : 'settings-outline'} 
           size={28} 
-          color={currentScreen === 'settings' ? '#0077B6' : '#FFFFFF'} 
+          color={currentScreen === 'venuesettings' ? '#0077B6' : '#FFFFFF'} 
         />
       </TouchableOpacity>
     </View>

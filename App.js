@@ -37,6 +37,7 @@ import MessagesPage from './src/screens/MessagesPage';
 import VenueBottomNavigation from './src/components/VenueBottomNavigation';
 
 // Venue Screens
+import VenueSettingsScreen from './src/screens/VenueSettingsScreen';
 import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
 import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
 
@@ -450,6 +451,8 @@ export default function App() {
         return <VenueProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venueManage':
         return <VenueManageScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venuesettings':
+        return <VenueSettingsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venuemanagedeals':
         return <VenueManageDealsScreen 
           navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('venuedashboard') }}
