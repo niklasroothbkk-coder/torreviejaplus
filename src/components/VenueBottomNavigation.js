@@ -24,9 +24,9 @@ export default function VenueBottomNavigation({ currentScreen, onNavigate }) {
       <TouchableOpacity 
         style={[
           styles.navButton,
-          currentScreen === 'venueManage' && styles.activeButton
+          currentScreen === 'venuemanage' && styles.activeButton
         ]}
-        onPress={() => onNavigate('venueManage')}
+        onPress={() => onNavigate('venuemanage')}
       >
         <Ionicons 
           name="add-circle-outline" 

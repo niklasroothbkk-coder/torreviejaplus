@@ -40,6 +40,8 @@ import VenueBottomNavigation from './src/components/VenueBottomNavigation';
 import VenueSettingsScreen from './src/screens/VenueSettingsScreen';
 import VenueEditProfileScreen from './src/screens/VenueEditProfileScreen';
 import VenueChangePasswordScreen from './src/screens/VenueChangePasswordScreen';
+import VenueCreateDealScreen from './src/screens/VenueCreateDealScreen';
+import VenueCreateEventScreen from './src/screens/VenueCreateEventScreen';
 import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
 import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
 
@@ -451,8 +453,12 @@ export default function App() {
       // Venue Dashboard Routes
       case 'venuedashboard':
         return <VenueProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
-      case 'venueManage':
+      case 'venuemanage':
         return <VenueManageScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueCreateDeal':
+        return <VenueCreateDealScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueCreateEvent':
+        return <VenueCreateEventScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venuesettings':
         return <VenueSettingsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venueeditprofile':
