@@ -1,28 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActionSheetIOS, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getCurrentUser, updatePassword, signOut } from '../services/authService';
+import { getCurrentUser } from '../services/authService';
 import { supabase } from '../config/supabaseClient';
 import CustomAlert from '../components/CustomAlert';
 
 export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
-  const [user, setUser] = useState(null);
   const [venueName, setVenueName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [imageRefresh, setImageRefresh] = useState(0);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
   const [venueData, setVenueData] = useState(null);
 
   useEffect(() => {
@@ -32,19 +24,16 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
   const loadVenueProfile = async () => {
     const result = await getCurrentUser();
     if (result.success && result.user) {
-      setUser(result.user);
       setEmail(result.user.email || '');
       
-      // Fetch profile and venue data
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('name, user_type, venue_id')
         .eq('id', result.user.id)
         .single();
       
       if (profileData && profileData.venue_id) {
-        // Fetch venue information
-        const { data: venueInfo, error: venueError } = await supabase
+        const { data: venueInfo } = await supabase
           .from('venues')
           .select('*')
           .eq('id', profileData.venue_id)
@@ -54,14 +43,12 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
           setVenueData(venueInfo);
           setVenueName(venueInfo.name || '');
           setPhone(venueInfo.phone || '');
-          // Use first image from images array, or fallback to image_url
           const venueImage = (venueInfo.images && venueInfo.images.length > 0) 
             ? venueInfo.images[0] 
             : venueInfo.image_url;
           setProfileImage(venueImage || null);
         }
       } else {
-        // Fallback if no venue_id
         setVenueName(profileData?.name || 'Venue');
       }
     }
@@ -149,7 +136,6 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
         reader.readAsArrayBuffer(blob);
       });
       
-      // Upload to Supabase Storage
       const fileName = `venue_${venueData.id}_${Date.now()}.jpg`;
       const { data, error } = await supabase.storage
         .from('venue-images')
@@ -166,17 +152,14 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
         return;
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('venue-images')
         .getPublicUrl(fileName);
 
       const imageUrl = urlData.publicUrl;
-      console.log('✅ Venue image uploaded! URL:', imageUrl);
 
-      // Update venue table - add to images array
       const currentImages = venueData.images || [];
-      const updatedImages = [imageUrl, ...currentImages].slice(0, 6); // Keep max 6 images
+      const updatedImages = [imageUrl, ...currentImages].slice(0, 6);
 
       const { error: updateError } = await supabase
         .from('venues')
@@ -206,75 +189,6 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
     }
   };
 
-  const handleUpdateProfile = async () => {
-    try {
-      if (!venueData) {
-        setAlertTitle('Error');
-        setAlertMessage('No venue data found');
-        setShowAlert(true);
-        return;
-      }
-
-      // Update venue information
-      const { error } = await supabase
-        .from('venues')
-        .update({
-          name: venueName,
-          phone: phone,
-        })
-        .eq('id', venueData.id);
-
-      if (error) throw error;
-
-      setAlertTitle('Success');
-      setAlertMessage('Venue profile updated successfully!');
-      setShowAlert(true);
-      setIsEditing(false);
-      await loadVenueProfile();
-    } catch (error) {
-      setAlertTitle('Error');
-      setAlertMessage('Failed to update profile: ' + error.message);
-      setShowAlert(true);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    if (!newPassword || !confirmPassword) {
-      setAlertTitle('Error');
-      setAlertMessage('Please enter and confirm your new password');
-      setShowAlert(true);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setAlertTitle('Error');
-      setAlertMessage('Passwords do not match!');
-      setShowAlert(true);
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setAlertTitle('Error');
-      setAlertMessage('Password must be at least 6 characters');
-      setShowAlert(true);
-      return;
-    }
-
-    const result = await updatePassword(newPassword);
-    if (result.success) {
-      setAlertTitle('Success');
-      setAlertMessage('Password changed successfully!');
-      setShowAlert(true);
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowChangePassword(false);
-    } else {
-      setAlertTitle('Error');
-      setAlertMessage(result.error);
-      setShowAlert(true);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Image 
@@ -283,7 +197,6 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
         resizeMode="cover"
       />
       
-      {/* Hamburger Menu Button */}
       <TouchableOpacity 
         style={styles.menuButtonWrapper}
         onPress={onOpenMenu}
@@ -293,7 +206,6 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
         </View>
       </TouchableOpacity>
       
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Venue Profile</Text>
       </View>
@@ -303,7 +215,6 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Picture Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             {profileImage ? (
@@ -322,175 +233,34 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
             </TouchableOpacity>
           </View>
           <Text style={styles.profileName}>{venueName || 'Venue'}</Text>
-          {venueData && (
-            <View style={styles.venueTypeContainer}>
-              <Ionicons name="bookmark" size={16} color="#FFFFFF" />
-              <Text style={styles.venueTypeText}>{venueData.category || 'Venue'}</Text>
-            </View>
-          )}
         </View>
 
-        {/* Form Card */}
         <View style={styles.card}>
-          {/* Venue Name Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Venue Name</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, !isEditing && styles.inputDisabled]}
-                placeholder="Enter venue name"
-                placeholderTextColor="#999"
-                value={venueName}
-                onChangeText={setVenueName}
-                autoCapitalize="words"
-                editable={isEditing}
-              />
-              <Ionicons name="business-outline" size={20} color="#999" style={styles.inputIcon} />
+          <View style={styles.infoRow}>
+            <Ionicons name="business-outline" size={24} color="#0077B6" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Venue Name</Text>
+              <Text style={styles.infoValue}>{venueName || 'Not set'}</Text>
             </View>
           </View>
 
-          {/* Email Input (Read-only) */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, styles.inputDisabled]}
-                placeholder="Enter email"
-                placeholderTextColor="#999"
-                value={email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={false}
-              />
-              <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
+          <View style={styles.infoRow}>
+            <Ionicons name="mail-outline" size={24} color="#0077B6" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <Text style={styles.infoValue}>{email || 'Not set'}</Text>
             </View>
           </View>
 
-          {/* Phone Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, !isEditing && styles.inputDisabled]}
-                placeholder="Enter phone"
-                placeholderTextColor="#999"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                editable={isEditing}
-              />
-              <Ionicons name="call-outline" size={20} color="#999" style={styles.inputIcon} />
+          <View style={styles.infoRow}>
+            <Ionicons name="call-outline" size={24} color="#0077B6" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Phone</Text>
+              <Text style={styles.infoValue}>{phone || 'Not set'}</Text>
             </View>
           </View>
-
-          {/* Edit/Save Button */}
-          {!isEditing ? (
-            <TouchableOpacity 
-              style={styles.editButton} 
-              onPress={() => setIsEditing(true)}
-            >
-              <Text style={styles.editButtonText}>Edit</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              style={styles.updateButton} 
-              onPress={handleUpdateProfile}
-            >
-              <Text style={styles.updateButtonText}>Save Changes</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Change Password Button */}
-          {!showChangePassword && (
-            <TouchableOpacity 
-              style={styles.changePasswordButton} 
-              onPress={() => setShowChangePassword(true)}
-            >
-              <Text style={styles.changePasswordButtonText}>Change Password</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Change Password Section */}
-          {showChangePassword && (
-            <View style={styles.passwordSection}>
-              <Text style={styles.passwordSectionTitle}>Change Password</Text>
-              
-              {/* New Password Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>New Password (min 6 characters)</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter new password"
-                    placeholderTextColor="#999"
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                  />
-                  <TouchableOpacity 
-                    style={styles.inputIcon}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Ionicons 
-                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                      size={20} 
-                      color="#999" 
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Confirm Password Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Confirm New Password</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Must match the password above"
-                    placeholderTextColor="#999"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry={!showConfirmPassword}
-                    autoCapitalize="none"
-                  />
-                  <TouchableOpacity 
-                    style={styles.inputIcon}
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    <Ionicons 
-                      name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
-                      size={20} 
-                      color="#999" 
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Password Buttons */}
-              <View style={styles.passwordButtonContainer}>
-                <TouchableOpacity 
-                  style={styles.savePasswordButton}
-                  onPress={handleChangePassword}
-                >
-                  <Text style={styles.savePasswordButtonText}>Save Password</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.cancelPasswordButton}
-                  onPress={() => {
-                    setShowChangePassword(false);
-                    setNewPassword('');
-                    setConfirmPassword('');
-                  }}
-                >
-                  <Text style={styles.cancelPasswordButtonText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
         </View>
 
-        {/* Venue Statistics Card */}
         {venueData && (
           <View style={styles.statsCard}>
             <Text style={styles.statsTitle}>Venue Statistics</Text>
@@ -554,7 +324,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 65,
+    paddingTop: 100,
     paddingBottom: 20,
   },
   headerTitle: {
@@ -567,7 +337,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 150,
   },
   profileSection: {
     alignItems: 'center',
@@ -634,133 +404,26 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  inputContainer: {
-    position: 'relative',
-  },
-  input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingRight: 45,
-    fontSize: 16,
-    color: '#000',
-  },
-  inputDisabled: {
-    color: '#999',
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 16,
-    top: 14,
-  },
-  editButton: {
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: '#0077B6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  editButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  changePasswordButton: {
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 12,
-    shadowColor: '#0077B6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  changePasswordButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  passwordSection: {
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  passwordSectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-  },
-  passwordButtonContainer: {
+  infoRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
-  savePasswordButton: {
+  infoTextContainer: {
+    marginLeft: 16,
     flex: 1,
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    shadowColor: '#0077B6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  savePasswordButtonText: {
+  infoLabel: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 4,
+  },
+  infoValue: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  cancelPasswordButton: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#DDD',
-  },
-  cancelPasswordButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#666',
-  },
-  updateButton: {
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: '#0077B6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  updateButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#333',
+    fontWeight: '500',
   },
   statsCard: {
     backgroundColor: '#FFFFFF',

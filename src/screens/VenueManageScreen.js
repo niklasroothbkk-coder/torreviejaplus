@@ -75,9 +75,6 @@ export default function VenueManageScreen({ onNavigate, onOpenMenu }) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Manage Content</Text>
-        {venueData && (
-          <Text style={styles.headerSubtitle}>{venueData.name}</Text>
-        )}
       </View>
 
       <ScrollView 
@@ -236,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 65,
+    paddingTop: 100,
     paddingBottom: 20,
   },
   headerTitle: {
@@ -255,6 +252,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
+    paddingTop: 10,
     paddingBottom: 100,
   },
   statsCard: {

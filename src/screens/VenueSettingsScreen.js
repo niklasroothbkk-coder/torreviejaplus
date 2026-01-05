@@ -86,9 +86,6 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Settings</Text>
-        {venueData && (
-          <Text style={styles.headerSubtitle}>{venueData.name}</Text>
-        )}
       </View>
 
       <ScrollView 
@@ -102,7 +99,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => onNavigate('venuedashboard')}
+            onPress={() => onNavigate('venueeditprofile')}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="person-outline" size={24} color="#0077B6" />
@@ -113,7 +110,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Coming Soon', 'Change password functionality will be available soon')}
+            onPress={() => onNavigate('venuechangepassword')}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="lock-closed-outline" size={24} color="#0077B6" />
@@ -299,7 +296,7 @@ const styles = StyleSheet.create({
   },
   menuButtonWrapper: {
     position: 'absolute',
-    top: 50,
+    top: 65,
     left: 20,
     zIndex: 10,
   },
@@ -317,13 +314,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 100,
     paddingHorizontal: 20,
     paddingBottom: 20,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 5,

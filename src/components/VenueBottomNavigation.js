@@ -7,37 +7,61 @@ export default function VenueBottomNavigation({ currentScreen, onNavigate }) {
     <View style={styles.container}>
       {/* Dashboard */}
       <TouchableOpacity 
-        style={styles.navButton}
+        style={[
+          styles.navButton,
+          currentScreen === 'venuedashboard' && styles.activeButton
+        ]}
         onPress={() => onNavigate('venuedashboard')}
       >
         <Ionicons 
-          name={currentScreen === 'venuedashboard' ? 'home' : 'home-outline'} 
+          name="home-outline" 
           size={28} 
-          color={currentScreen === 'venuedashboard' ? '#0077B6' : '#FFFFFF'} 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
       {/* New Post */}
       <TouchableOpacity 
-        style={styles.navButton}
+        style={[
+          styles.navButton,
+          currentScreen === 'venueManage' && styles.activeButton
+        ]}
         onPress={() => onNavigate('venueManage')}
       >
         <Ionicons 
-          name={currentScreen === 'venueManage' ? 'add-circle' : 'add-circle-outline'} 
+          name="add-circle-outline" 
           size={32} 
-          color={currentScreen === 'venueManage' ? '#0077B6' : '#FFFFFF'} 
+          color="#FFFFFF" 
+        />
+      </TouchableOpacity>
+
+      {/* Messages */}
+      <TouchableOpacity 
+        style={[
+          styles.navButton,
+          currentScreen === 'messages' && styles.activeButton
+        ]}
+        onPress={() => onNavigate('messages')}
+      >
+        <Ionicons 
+          name="chatbubble-outline" 
+          size={28} 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
       {/* Settings */}
       <TouchableOpacity 
-        style={styles.navButton}
+        style={[
+          styles.navButton,
+          currentScreen === 'venuesettings' && styles.activeButton
+        ]}
         onPress={() => onNavigate('venuesettings')}
       >
         <Ionicons 
-          name={currentScreen === 'venuesettings' ? 'settings' : 'settings-outline'} 
+          name="settings-outline" 
           size={28} 
-          color={currentScreen === 'venuesettings' ? '#0077B6' : '#FFFFFF'} 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
     </View>
@@ -68,5 +92,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  activeButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
 });

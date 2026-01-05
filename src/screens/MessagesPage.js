@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   headerImageContainer: {
     position: 'relative',
     width: '100%',
-    height: 180,
+    height: 150,
   },
   headerImage: {
     width: '100%',
@@ -360,10 +360,12 @@ const styles = StyleSheet.create({
   titleContainer: {
     position: 'absolute',
     bottom: 20,
-    left: 30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   titleText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -372,7 +374,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 100,
   },
   emptyState: {
