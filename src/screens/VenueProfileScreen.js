@@ -207,7 +207,7 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
       </TouchableOpacity>
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Venue Profile</Text>
+        {/* Header utan titel */}
       </View>
 
       <ScrollView 
@@ -266,14 +266,14 @@ export default function VenueProfileScreen({ onNavigate, onOpenMenu }) {
             <Text style={styles.statsTitle}>Venue Statistics</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Ionicons name="pricetag" size={24} color="#0077B6" />
-                <Text style={styles.statNumber}>{venueData.credits || 0}</Text>
-                <Text style={styles.statLabel}>Credits Left</Text>
+                <Ionicons name="eye" size={24} color="#0077B6" />
+                <Text style={styles.statNumber}>12,898</Text>
+                <Text style={styles.statLabel}>Venue Views</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <Ionicons name="star" size={24} color="#0077B6" />
-                <Text style={styles.statNumber}>{venueData.rating || '0.0'}</Text>
+                <Text style={styles.statNumber}>4.9</Text>
                 <Text style={styles.statLabel}>Rating</Text>
               </View>
             </View>

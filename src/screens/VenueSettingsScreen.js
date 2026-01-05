@@ -7,10 +7,10 @@ import { getCurrentUser } from '../services/authService';
 export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
   const [venueData, setVenueData] = useState(null);
   const [notifications, setNotifications] = useState({
-    newDeals: true,
-    newEvents: true,
-    credits: true,
     reviews: true,
+    messages: true,
+    appUpdates: true,
+    torreviejaMessages: true,
   });
 
   useEffect(() => {
@@ -120,49 +120,44 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           </TouchableOpacity>
         </View>
 
+        {/* Package Details Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Package Details</Text>
+          
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="star" size={24} color="#FFD700" />
+              <Text style={styles.settingText}>Gold Package</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.settingItem}
+            onPress={() => Alert.alert('Gold Package', 'Includes:\n• Unlimited venue views\n• Featured listing\n• Priority support\n• 100 credits per month')}
+          >
+            <View style={styles.settingLeft}>
+              <Ionicons name="list-outline" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>Package Include</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.settingItem}
+            onPress={() => Alert.alert('Coming Soon', 'Change package functionality will be available soon')}
+          >
+            <View style={styles.settingLeft}>
+              <Ionicons name="swap-horizontal" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>Change Package</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+        </View>
+
         {/* Notifications Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications</Text>
           
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="pricetag-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>New Deals Posted</Text>
-            </View>
-            <Switch
-              value={notifications.newDeals}
-              onValueChange={() => handleToggle('newDeals')}
-              trackColor={{ false: '#ddd', true: '#0077B6' }}
-              thumbColor={notifications.newDeals ? '#FFFFFF' : '#f4f3f4'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="calendar-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>New Events Posted</Text>
-            </View>
-            <Switch
-              value={notifications.newEvents}
-              onValueChange={() => handleToggle('newEvents')}
-              trackColor={{ false: '#ddd', true: '#0077B6' }}
-              thumbColor={notifications.newEvents ? '#FFFFFF' : '#f4f3f4'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="card-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>Credit Updates</Text>
-            </View>
-            <Switch
-              value={notifications.credits}
-              onValueChange={() => handleToggle('credits')}
-              trackColor={{ false: '#ddd', true: '#0077B6' }}
-              thumbColor={notifications.credits ? '#FFFFFF' : '#f4f3f4'}
-            />
-          </View>
-
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons name="star-outline" size={24} color="#0077B6" />
@@ -175,33 +170,45 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
               thumbColor={notifications.reviews ? '#FFFFFF' : '#f4f3f4'}
             />
           </View>
-        </View>
 
-        {/* Subscription Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Subscription</Text>
-          
-          <TouchableOpacity 
-            style={styles.settingItem}
-            onPress={() => Alert.alert('Coming Soon', 'Subscription management will be available soon')}
-          >
+          <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="card-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>Manage Subscription</Text>
+              <Ionicons name="chatbubble-outline" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>Messages from Visitors</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#999" />
-          </TouchableOpacity>
+            <Switch
+              value={notifications.messages}
+              onValueChange={() => handleToggle('messages')}
+              trackColor={{ false: '#ddd', true: '#0077B6' }}
+              thumbColor={notifications.messages ? '#FFFFFF' : '#f4f3f4'}
+            />
+          </View>
 
-          <TouchableOpacity 
-            style={styles.settingItem}
-            onPress={() => Alert.alert('Coming Soon', 'Purchase credits functionality will be available soon')}
-          >
+          <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="add-circle-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>Purchase Credits</Text>
+              <Ionicons name="refresh-outline" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>New App Updates</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#999" />
-          </TouchableOpacity>
+            <Switch
+              value={notifications.appUpdates}
+              onValueChange={() => handleToggle('appUpdates')}
+              trackColor={{ false: '#ddd', true: '#0077B6' }}
+              thumbColor={notifications.appUpdates ? '#FFFFFF' : '#f4f3f4'}
+            />
+          </View>
+
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="mail-outline" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>Offers from TorreviejaPlus</Text>
+            </View>
+            <Switch
+              value={notifications.torreviejaMessages}
+              onValueChange={() => handleToggle('torreviejaMessages')}
+              trackColor={{ false: '#ddd', true: '#0077B6' }}
+              thumbColor={notifications.torreviejaMessages ? '#FFFFFF' : '#f4f3f4'}
+            />
+          </View>
         </View>
 
         {/* Support Section */}

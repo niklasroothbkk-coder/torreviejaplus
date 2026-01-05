@@ -6,8 +6,8 @@ import { getCurrentUser } from '../services/authService';
 
 export default function VenueManageScreen({ onNavigate, onOpenMenu }) {
   const [venueData, setVenueData] = useState(null);
-  const [dealsCount, setDealsCount] = useState(0);
-  const [eventsCount, setEventsCount] = useState(0);
+  const [dealsCount, setDealsCount] = useState(2);
+  const [eventsCount, setEventsCount] = useState(1);
 
   useEffect(() => {
     loadVenueData();
@@ -34,21 +34,9 @@ export default function VenueManageScreen({ onNavigate, onOpenMenu }) {
         if (venueInfo) {
           setVenueData(venueInfo);
           
-          // Count active deals
-          const { data: deals } = await supabase
-            .from('deals')
-            .select('id')
-            .eq('venue_id', profileData.venue_id);
-          
-          setDealsCount(deals?.length || 0);
-          
-          // Count upcoming events
-          const { data: events } = await supabase
-            .from('events')
-            .select('id')
-            .eq('venue_id', profileData.venue_id);
-          
-          setEventsCount(events?.length || 0);
+          // Hardcoded counts - removed database queries
+          // setDealsCount stays at 2
+          // setEventsCount stays at 1
         }
       }
     }
@@ -146,7 +134,7 @@ export default function VenueManageScreen({ onNavigate, onOpenMenu }) {
           style={styles.viewAllCard}
           onPress={() => onNavigate('venueViewDeals')}
         >
-          <Text style={styles.viewAllText}>View & Edit All Deals</Text>
+          <Text style={styles.viewAllText}>View, Edit & Reactivate All Deals</Text>
           <Ionicons name="chevron-forward" size={20} color="#0077B6" />
         </TouchableOpacity>
 
@@ -155,7 +143,7 @@ export default function VenueManageScreen({ onNavigate, onOpenMenu }) {
           style={styles.viewAllCard}
           onPress={() => onNavigate('venueViewEvents')}
         >
-          <Text style={styles.viewAllText}>View & Edit All Events</Text>
+          <Text style={styles.viewAllText}>View, Edit & Reactivate All Events</Text>
           <Ionicons name="chevron-forward" size={20} color="#0077B6" />
         </TouchableOpacity>
 
