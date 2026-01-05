@@ -36,8 +36,7 @@ import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen
 import MessagesPage from './src/screens/MessagesPage';
 import VenueBottomNavigation from './src/components/VenueBottomNavigation';
 
-// Venue Dashboard Screens
-import VenueDashboardScreen from './src/screens/Venues/VenueDashboardScreen';
+// Venue Screens
 import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
 import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
 
