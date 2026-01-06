@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TorreviejaPlus Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -430,6 +431,37 @@
             padding: 12px;
             font-size: 15px;
         }
+
+        /* Dashboard Tabs */
+        .dash-tab {
+            padding: 8px 0;
+            cursor: pointer;
+            color: #666;
+            font-size: 15px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .dash-tab:hover {
+            color: #23282d;
+        }
+        .dash-tab.active {
+            color: #23282d;
+            border-bottom-color: #23282d;
+        }
+        .dash-content {
+            display: none;
+        }
+        .dash-content.active {
+            display: block;
+        }
+        .stat-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -524,11 +556,448 @@
 
             <!-- Dashboard Page -->
             <div id="dashboard-page" class="content-page active">
-                <div class="page-header">
-                    <h1>Welcome to TorreviejaPlus Admin</h1>
+                <div class="page-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+                    <h1 style="margin: 0;">Dashboard</h1>
+                    <div class="dashboard-tabs" style="display: flex; gap: 30px;">
+                        <span class="dash-tab active" onclick="switchDashTab('analytics')" id="tab-analytics">Analytics</span>
+                        <span class="dash-tab" onclick="switchDashTab('payments')" id="tab-payments">Payments</span>
+                        <span class="dash-tab" onclick="switchDashTab('reviews')" id="tab-reviews">Reviews</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="dashboardPeriod" onchange="updateDashboardPeriod()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                            <option value="30">Past 30 Days</option>
+                            <option value="7">Past 7 Days</option>
+                            <option value="90">Past 90 Days</option>
+                            <option value="365">Past Year</option>
+                        </select>
+                        <span id="dashboardDateRange" style="color: #666; font-size: 13px; padding: 8px 12px; background: #f8f9fa; border-radius: 6px;"></span>
+                    </div>
                 </div>
-                <div class="panel" style="text-align: center; padding: 100px 30px;">
-                    <img src="assets/backgrounds/TV+STOR.png" alt="TorreviejaPlus Logo" style="max-width: 600px; width: 100%; height: auto;">
+
+                <!-- Analytics Tab Content -->
+                <div id="dashboard-analytics" class="dash-content active">
+                    <!-- Stats Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 30px 0;">
+                        <!-- All Visitors Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">All Visitors</p>
+                                    <h2 id="stat-visitors" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-visitors-percent" style="color: #22c55e; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-visitors-bar" style="width: 0%; height: 100%; background: #22c55e; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="30" cy="60" r="12" fill="#e0d4f7"/>
+                                        <circle cx="70" cy="60" r="12" fill="#a78bfa"/>
+                                        <circle cx="50" cy="45" r="15" fill="#7c3aed"/>
+                                        <rect x="20" y="72" width="20" height="20" rx="4" fill="#e0d4f7"/>
+                                        <rect x="40" y="60" width="20" height="32" rx="4" fill="#7c3aed"/>
+                                        <rect x="60" y="72" width="20" height="20" rx="4" fill="#a78bfa"/>
+                                        <circle cx="75" cy="25" r="10" fill="#f472b6" opacity="0.8"/>
+                                        <text x="75" y="29" text-anchor="middle" fill="white" font-size="12" font-weight="bold">%</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Impressions Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Impressions</p>
+                                    <h2 id="stat-impressions" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-impressions-percent" style="color: #f59e0b; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-impressions-bar" style="width: 0%; height: 100%; background: #f59e0b; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <rect x="25" y="20" width="50" height="70" rx="8" fill="#a78bfa"/>
+                                        <rect x="30" y="30" width="40" height="30" rx="4" fill="#e0d4f7"/>
+                                        <circle cx="50" cy="75" r="6" fill="#e0d4f7"/>
+                                        <circle cx="75" cy="35" r="8" fill="#22c55e"/>
+                                        <path d="M72 35 L75 38 L80 32" stroke="white" stroke-width="2" fill="none"/>
+                                        <circle cx="20" cy="50" r="5" fill="#f472b6"/>
+                                        <path d="M18 55 Q 10 65 20 70 Q 30 65 22 55" fill="#f472b6"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Clicks Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Total Clicks</p>
+                                    <h2 id="stat-clicks" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-clicks-percent" style="color: #06b6d4; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-clicks-bar" style="width: 0%; height: 100%; background: #06b6d4; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <rect x="20" y="25" width="45" height="55" rx="6" fill="#a78bfa"/>
+                                        <rect x="25" y="35" width="35" height="20" rx="3" fill="white"/>
+                                        <circle cx="42" cy="70" r="5" fill="white"/>
+                                        <circle cx="70" cy="30" r="12" fill="#06b6d4"/>
+                                        <circle cx="70" cy="30" r="6" fill="white"/>
+                                        <circle cx="80" cy="60" r="8" fill="#f472b6"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pageviews Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Pageviews</p>
+                                    <h2 id="stat-pageviews" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-revenue-percent" style="color: #ef4444; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-revenue-bar" style="width: 0%; height: 100%; background: #ef4444; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="50" cy="55" r="25" fill="#fbbf24"/>
+                                        <text x="50" y="62" text-anchor="middle" fill="white" font-size="20" font-weight="bold">€</text>
+                                        <circle cx="75" cy="25" r="12" fill="#a78bfa"/>
+                                        <circle cx="75" cy="25" r="6" fill="white"/>
+                                        <rect x="20" y="70" width="15" height="20" rx="3" fill="#22c55e"/>
+                                        <rect x="38" y="65" width="15" height="25" rx="3" fill="#7c3aed"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row Stats Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 0 0 30px 0;">
+                        <!-- Venues Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Venues</p>
+                                    <h2 id="stat-venues-analytics" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-venues-analytics-percent" style="color: #22c55e; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-venues-analytics-bar" style="width: 0%; height: 100%; background: #22c55e; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <rect x="15" y="40" width="70" height="50" rx="4" fill="#7c3aed"/>
+                                        <rect x="25" y="50" width="15" height="15" rx="2" fill="#e0d4f7"/>
+                                        <rect x="60" y="50" width="15" height="15" rx="2" fill="#e0d4f7"/>
+                                        <rect x="40" y="65" width="20" height="25" rx="2" fill="#e0d4f7"/>
+                                        <polygon points="50,15 10,40 90,40" fill="#a78bfa"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visitors Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Visitors</p>
+                                    <h2 id="stat-visitors-analytics" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-visitors-analytics-percent" style="color: #f59e0b; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-visitors-analytics-bar" style="width: 0%; height: 100%; background: #f59e0b; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="30" cy="60" r="12" fill="#e0d4f7"/>
+                                        <circle cx="70" cy="60" r="12" fill="#a78bfa"/>
+                                        <circle cx="50" cy="45" r="15" fill="#7c3aed"/>
+                                        <rect x="20" y="72" width="20" height="20" rx="4" fill="#e0d4f7"/>
+                                        <rect x="40" y="60" width="20" height="32" rx="4" fill="#7c3aed"/>
+                                        <rect x="60" y="72" width="20" height="20" rx="4" fill="#a78bfa"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Deals Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Active Deals</p>
+                                    <h2 id="stat-deals-analytics" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-deals-analytics-percent" style="color: #06b6d4; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-deals-analytics-bar" style="width: 0%; height: 100%; background: #06b6d4; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="50" cy="50" r="35" fill="#7c3aed"/>
+                                        <text x="50" y="58" text-anchor="middle" fill="white" font-size="28" font-weight="bold">%</text>
+                                        <circle cx="80" cy="25" r="12" fill="#f59e0b"/>
+                                        <text x="80" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="bold">★</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Events Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Active Events</p>
+                                    <h2 id="stat-events-analytics" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-events-analytics-percent" style="color: #ef4444; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-events-analytics-bar" style="width: 0%; height: 100%; background: #ef4444; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <rect x="20" y="25" width="60" height="60" rx="8" fill="#7c3aed"/>
+                                        <rect x="20" y="25" width="60" height="18" rx="8" fill="#a78bfa"/>
+                                        <circle cx="35" cy="55" r="6" fill="#e0d4f7"/>
+                                        <circle cx="50" cy="55" r="6" fill="#e0d4f7"/>
+                                        <circle cx="65" cy="55" r="6" fill="#e0d4f7"/>
+                                        <circle cx="35" cy="72" r="6" fill="#e0d4f7"/>
+                                        <circle cx="50" cy="72" r="6" fill="#f59e0b"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                        <!-- Sales Chart -->
+                        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #23282d;">Sales</h3>
+                                <div style="display: flex; gap: 15px; font-size: 13px;">
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #7c3aed; border-radius: 50%;"></span> Gold</span>
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #a78bfa; border-radius: 50%;"></span> Silver</span>
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #06b6d4; border-radius: 50%;"></span> Bronze</span>
+                                </div>
+                            </div>
+                            <div style="height: 280px;">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Packages Donut Chart -->
+                        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #23282d;">Packages</h3>
+                                <div style="display: flex; gap: 15px; font-size: 13px;">
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #7c3aed; border-radius: 50%;"></span> Gold</span>
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #a78bfa; border-radius: 50%;"></span> Silver</span>
+                                    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: #06b6d4; border-radius: 50%;"></span> Bronze</span>
+                                </div>
+                            </div>
+                            <div style="height: 280px; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="packagesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Tab Content -->
+                <div id="dashboard-payments" class="dash-content" style="display: none;">
+                    <!-- Month Tabs -->
+                    <div style="display: flex; gap: 8px; margin: 20px 0; flex-wrap: wrap;">
+                        <span class="month-tab active" onclick="switchPaymentMonth(1)" id="month-1" style="padding: 8px 16px; background: #7c3aed; color: white; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Jan</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(2)" id="month-2" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Feb</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(3)" id="month-3" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Mar</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(4)" id="month-4" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Apr</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(5)" id="month-5" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">May</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(6)" id="month-6" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Jun</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(7)" id="month-7" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Jul</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(8)" id="month-8" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Aug</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(9)" id="month-9" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Sep</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(10)" id="month-10" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Oct</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(11)" id="month-11" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Nov</span>
+                        <span class="month-tab" onclick="switchPaymentMonth(12)" id="month-12" style="padding: 8px 16px; background: #f3f4f6; color: #666; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500;">Dec</span>
+                    </div>
+
+                    <!-- Stats Summary -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Total Expected</p>
+                            <h2 id="payment-total" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">€0</h2>
+                        </div>
+                        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Paid</p>
+                            <h2 id="payment-paid" style="font-size: 28px; font-weight: 600; margin: 0; color: #22c55e;">€0</h2>
+                        </div>
+                        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Unpaid</p>
+                            <h2 id="payment-unpaid" style="font-size: 28px; font-weight: 600; margin: 0; color: #ef4444;">€0</h2>
+                        </div>
+                    </div>
+
+                    <!-- Payment List -->
+                    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #23282d;">Payment Status - <span id="current-month-name">January</span> 2025</h3>
+                            <select id="paymentStatusFilter" onchange="filterPayments()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                                <option value="all">All</option>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                        <div id="paymentsList">
+                            <!-- Payments will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab Content -->
+                <div id="dashboard-reviews" class="dash-content" style="display: none;">
+                    <!-- Stats Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 30px 0;">
+                        <!-- Total Reviews Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Total Reviews</p>
+                                    <h2 id="stat-total-reviews" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-total-reviews-percent" style="color: #22c55e; font-size: 13px; font-weight: 500;">100%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-total-reviews-bar" style="width: 100%; height: 100%; background: #22c55e; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <rect x="15" y="20" width="70" height="60" rx="8" fill="#7c3aed"/>
+                                        <rect x="25" y="35" width="50" height="6" rx="3" fill="#e0d4f7"/>
+                                        <rect x="25" y="48" width="35" height="6" rx="3" fill="#e0d4f7"/>
+                                        <rect x="25" y="61" width="45" height="6" rx="3" fill="#e0d4f7"/>
+                                        <circle cx="75" cy="70" r="15" fill="#f59e0b"/>
+                                        <text x="75" y="76" text-anchor="middle" fill="white" font-size="16" font-weight="bold">★</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Reviews Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Pending</p>
+                                    <h2 id="stat-pending-reviews" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-pending-reviews-percent" style="color: #f59e0b; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-pending-reviews-bar" style="width: 0%; height: 100%; background: #f59e0b; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="50" cy="50" r="35" fill="#f59e0b"/>
+                                        <rect x="47" y="25" width="6" height="28" rx="3" fill="white"/>
+                                        <rect x="47" y="45" width="6" height="18" rx="3" fill="white" transform="rotate(90 50 50)"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Published Reviews Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Published</p>
+                                    <h2 id="stat-published-reviews" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-published-reviews-percent" style="color: #22c55e; font-size: 13px; font-weight: 500;">0%</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-published-reviews-bar" style="width: 0%; height: 100%; background: #22c55e; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <circle cx="50" cy="50" r="35" fill="#22c55e"/>
+                                        <path d="M35 50 L45 60 L68 37" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Average Rating Card -->
+                        <div class="stat-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="color: #23282d; font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">Avg Rating</p>
+                                    <h2 id="stat-avg-rating" style="font-size: 28px; font-weight: 600; margin: 0; color: #23282d;">0.0</h2>
+                                    <div style="margin-top: 12px;">
+                                        <span id="stat-avg-rating-stars" style="color: #f59e0b; font-size: 13px; font-weight: 500;">★★★★☆</span>
+                                        <div style="width: 80px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 6px;">
+                                            <div id="stat-avg-rating-bar" style="width: 80%; height: 100%; background: #f59e0b; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                                        <polygon points="50,10 61,40 95,40 68,60 79,90 50,72 21,90 32,60 5,40 39,40" fill="#f59e0b"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Filter & List -->
+                    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #23282d;">All Reviews</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="reviewStatusFilter" onchange="filterReviews()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                                    <option value="all">All Reviews</option>
+                                    <option value="published">Published</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="paused">Paused</option>
+                                </select>
+                                <select id="reviewRatingFilter" onchange="filterReviews()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                                    <option value="all">All Ratings</option>
+                                    <option value="5">5 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="1">1 Star</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="reviewFilterResults" style="color: #666; font-size: 14px; margin-bottom: 15px; display: none;"></div>
+                        <div id="reviewsList" style="max-height: 500px; overflow-y: auto;">
+                            <div style="text-align: center; padding: 40px; color: #999;">Loading reviews...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1351,7 +1820,9 @@
                 event.currentTarget.classList.add('active');
             }
             
-            if (pageName === 'all-venues') {
+            if (pageName === 'dashboard') {
+                updateDashboardPeriod();
+            } else if (pageName === 'all-venues') {
                 loadVenues();
             } else if (pageName === 'all-deals') {
                 loadDeals();
@@ -3052,6 +3523,583 @@ try {
                 if (error) throw error;
                 showSuccess('Customer deleted!');
                 loadCustomers();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // ===== DASHBOARD FUNCTIONS =====
+        let salesChart = null;
+        let packagesChart = null;
+
+        function switchDashTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.dash-content').forEach(c => {
+                c.classList.remove('active');
+                c.style.display = 'none';
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected content
+            const content = document.getElementById('dashboard-' + tabName);
+            if (content) {
+                content.classList.add('active');
+                content.style.display = 'block';
+            }
+            
+            // Activate tab
+            const tab = document.getElementById('tab-' + tabName);
+            if (tab) tab.classList.add('active');
+
+            // Load data for the selected tab
+            if (tabName === 'payments') {
+                loadPaymentsTabData();
+            } else if (tabName === 'reviews') {
+                loadReviewsTabData();
+            }
+        }
+
+        function updateDashboardPeriod() {
+            const days = parseInt(document.getElementById('dashboardPeriod').value);
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            const formatDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('dashboardDateRange').textContent = `${formatDate(startDate)} to ${formatDate(endDate)}`;
+            
+            loadDashboardData();
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load visitors count
+                const { data: visitors, error: visitorsError } = await supabaseClient
+                    .from('profiles')
+                    .select('id')
+                    .eq('user_type', 'visitor');
+                
+                if (!visitorsError && visitors) {
+                    document.getElementById('stat-visitors').textContent = visitors.length.toLocaleString();
+                    document.getElementById('stat-visitors-percent').textContent = '42%';
+                    document.getElementById('stat-visitors-bar').style.width = '42%';
+                }
+
+                // Load total venue views (impressions)
+                const { data: venues, error: venuesError } = await supabaseClient
+                    .from('venues')
+                    .select('views');
+                
+                if (!venuesError && venues) {
+                    const totalViews = venues.reduce((sum, v) => sum + (v.views || 0), 0);
+                    document.getElementById('stat-impressions').textContent = totalViews.toLocaleString();
+                    document.getElementById('stat-impressions-percent').textContent = '33%';
+                    document.getElementById('stat-impressions-bar').style.width = '33%';
+                }
+
+                // Load total clicks (deal + event views)
+                const { data: deals } = await supabaseClient.from('deals').select('views');
+                const { data: events } = await supabaseClient.from('events').select('views');
+                
+                let totalClicks = 0;
+                if (deals) totalClicks += deals.reduce((sum, d) => sum + (d.views || 0), 0);
+                if (events) totalClicks += events.reduce((sum, e) => sum + (e.views || 0), 0);
+                
+                document.getElementById('stat-clicks').textContent = totalClicks.toLocaleString();
+                document.getElementById('stat-clicks-percent').textContent = '25%';
+                document.getElementById('stat-clicks-bar').style.width = '25%';
+
+                // Pageviews (total deal + event + venue views)
+                const { data: allVenues } = await supabaseClient.from('venues').select('views, active');
+                const { data: allDeals } = await supabaseClient.from('deals').select('views, active');
+                const { data: allEvents } = await supabaseClient.from('events').select('views, active');
+                
+                let totalPageviews = 0;
+                if (allVenues) totalPageviews += allVenues.reduce((sum, v) => sum + (v.views || 0), 0);
+                if (allDeals) totalPageviews += allDeals.reduce((sum, d) => sum + (d.views || 0), 0);
+                if (allEvents) totalPageviews += allEvents.reduce((sum, e) => sum + (e.views || 0), 0);
+                
+                document.getElementById('stat-pageviews').textContent = totalPageviews.toLocaleString();
+                document.getElementById('stat-revenue-percent').textContent = '65%';
+                document.getElementById('stat-revenue-bar').style.width = '65%';
+
+                // Second row stats - Venues, Visitors, Active Deals, Active Events
+                if (allVenues) {
+                    const activeVenues = allVenues.filter(v => v.active !== false).length;
+                    document.getElementById('stat-venues-analytics').textContent = activeVenues.toLocaleString();
+                    document.getElementById('stat-venues-analytics-percent').textContent = '100%';
+                    document.getElementById('stat-venues-analytics-bar').style.width = '100%';
+                }
+
+                // Visitors count (same as first row but for second row)
+                document.getElementById('stat-visitors-analytics').textContent = visitors ? visitors.length.toLocaleString() : '0';
+                document.getElementById('stat-visitors-analytics-percent').textContent = '42%';
+                document.getElementById('stat-visitors-analytics-bar').style.width = '42%';
+
+                // Active Deals
+                if (allDeals) {
+                    const activeDeals = allDeals.filter(d => d.active === true).length;
+                    document.getElementById('stat-deals-analytics').textContent = activeDeals.toLocaleString();
+                    document.getElementById('stat-deals-analytics-percent').textContent = '75%';
+                    document.getElementById('stat-deals-analytics-bar').style.width = '75%';
+                }
+
+                // Active Events
+                if (allEvents) {
+                    const activeEvents = allEvents.filter(e => e.active === true).length;
+                    document.getElementById('stat-events-analytics').textContent = activeEvents.toLocaleString();
+                    document.getElementById('stat-events-analytics-percent').textContent = '60%';
+                    document.getElementById('stat-events-analytics-bar').style.width = '60%';
+                }
+
+                // Initialize charts
+                initCharts();
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+            }
+        }
+
+        function initCharts() {
+            // Sales Line Chart
+            const salesCtx = document.getElementById('salesChart');
+            if (salesCtx) {
+                if (salesChart) salesChart.destroy();
+                
+                salesChart = new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                        datasets: [
+                            {
+                                label: 'Gold',
+                                data: [20, 45, 60, 80, 75, 90, 50, 60, 145],
+                                borderColor: '#7c3aed',
+                                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#7c3aed'
+                            },
+                            {
+                                label: 'Silver',
+                                data: [10, 35, 70, 65, 85, 55, 40, 45, 110],
+                                borderColor: '#a78bfa',
+                                backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#a78bfa'
+                            },
+                            {
+                                label: 'Bronze',
+                                data: [5, 25, 40, 35, 50, 30, 25, 30, 50],
+                                borderColor: '#06b6d4',
+                                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                borderDash: [5, 5],
+                                pointRadius: 4,
+                                pointBackgroundColor: '#06b6d4'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 160,
+                                grid: { color: '#f0f0f0' },
+                                ticks: { stepSize: 20 }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Packages Donut Chart
+            const packagesCtx = document.getElementById('packagesChart');
+            if (packagesCtx) {
+                if (packagesChart) packagesChart.destroy();
+                
+                packagesChart = new Chart(packagesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Gold', 'Silver', 'Bronze'],
+                        datasets: [{
+                            data: [45, 30, 25],
+                            backgroundColor: ['#7c3aed', '#a78bfa', '#06b6d4'],
+                            borderWidth: 0,
+                            cutout: '55%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboardPeriod();
+        });
+
+        // ===== PAYMENTS TAB FUNCTIONS =====
+        let currentPaymentMonth = 1;
+        let allPaymentsData = [];
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        // Test data for payments (will be replaced with real data later)
+        const testPayments = [
+            { id: 1, venue_name: 'Restaurant La Playa', package: 'Gold', amount: 99, payment_month: 1, paid: true, paid_date: '2025-01-05' },
+            { id: 2, venue_name: 'Bar El Sol', package: 'Silver', amount: 69, payment_month: 1, paid: true, paid_date: '2025-01-03' },
+            { id: 3, venue_name: 'Cafe Central', package: 'Bronze', amount: 39, payment_month: 1, paid: false, paid_date: null },
+            { id: 4, venue_name: 'Pizzeria Roma', package: 'Gold', amount: 99, payment_month: 1, paid: false, paid_date: null },
+            { id: 5, venue_name: 'Tapas & Wine', package: 'Silver', amount: 69, payment_month: 1, paid: true, paid_date: '2025-01-08' },
+            { id: 6, venue_name: 'Beach Club Azul', package: 'Gold', amount: 99, payment_month: 2, paid: false, paid_date: null },
+            { id: 7, venue_name: 'Irish Pub', package: 'Bronze', amount: 39, payment_month: 2, paid: true, paid_date: '2025-02-01' },
+            { id: 8, venue_name: 'Sushi House', package: 'Silver', amount: 69, payment_month: 3, paid: false, paid_date: null },
+        ];
+
+        function switchPaymentMonth(month) {
+            currentPaymentMonth = month;
+            
+            // Update tab styles
+            document.querySelectorAll('.month-tab').forEach(tab => {
+                tab.style.background = '#f3f4f6';
+                tab.style.color = '#666';
+            });
+            const activeTab = document.getElementById('month-' + month);
+            if (activeTab) {
+                activeTab.style.background = '#7c3aed';
+                activeTab.style.color = 'white';
+            }
+            
+            // Update month name
+            document.getElementById('current-month-name').textContent = monthNames[month - 1];
+            
+            // Load payments for this month
+            loadPaymentsForMonth(month);
+        }
+
+        async function loadPaymentsTabData() {
+            // For now, use test data. Later this will load from database
+            allPaymentsData = testPayments;
+            
+            // Set to current month
+            const currentMonth = new Date().getMonth() + 1;
+            switchPaymentMonth(currentMonth);
+        }
+
+        function loadPaymentsForMonth(month) {
+            const monthPayments = allPaymentsData.filter(p => p.payment_month === month);
+            
+            // Calculate totals
+            const total = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+            const paid = monthPayments.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
+            const unpaid = monthPayments.filter(p => !p.paid).reduce((sum, p) => sum + p.amount, 0);
+            
+            document.getElementById('payment-total').textContent = '€' + total.toLocaleString();
+            document.getElementById('payment-paid').textContent = '€' + paid.toLocaleString();
+            document.getElementById('payment-unpaid').textContent = '€' + unpaid.toLocaleString();
+            
+            // Render payments list
+            renderPayments(monthPayments);
+        }
+
+        function renderPayments(payments) {
+            const listDiv = document.getElementById('paymentsList');
+            
+            if (!payments || payments.length === 0) {
+                listDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p style="font-size: 16px; margin-bottom: 10px;">No payments for this month</p>
+                        <p style="font-size: 13px;">Payments will appear here when venues have active subscriptions.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listDiv.innerHTML = payments.map(payment => {
+                const statusColor = payment.paid ? '#22c55e' : '#ef4444';
+                const statusBg = payment.paid ? '#dcfce7' : '#fee2e2';
+                const statusText = payment.paid ? 'Paid' : 'Unpaid';
+                const packageColor = payment.package === 'Gold' ? '#f59e0b' : payment.package === 'Silver' ? '#9ca3af' : '#cd7f32';
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 45px; height: 45px; background: #7c3aed; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">
+                                ${payment.venue_name.charAt(0)}
+                            </div>
+                            <div>
+                                <strong style="color: #23282d; font-size: 15px;">${payment.venue_name}</strong>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                                    <span style="background: ${packageColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500;">${payment.package}</span>
+                                    ${payment.paid ? `<span style="color: #999; font-size: 12px;">Paid on ${payment.paid_date}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="font-size: 18px; font-weight: 600; color: #23282d;">€${payment.amount}</span>
+                            <span style="background: ${statusBg}; color: ${statusColor}; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">${statusText}</span>
+                            ${!payment.paid ? 
+                                `<button onclick="markAsPaid(${payment.id})" style="background: #22c55e; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">✓ Mark Paid</button>` :
+                                `<button onclick="markAsUnpaid(${payment.id})" style="background: #f3f4f6; color: #666; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">Undo</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterPayments() {
+            const filter = document.getElementById('paymentStatusFilter').value;
+            let monthPayments = allPaymentsData.filter(p => p.payment_month === currentPaymentMonth);
+            
+            if (filter === 'paid') {
+                monthPayments = monthPayments.filter(p => p.paid);
+            } else if (filter === 'unpaid') {
+                monthPayments = monthPayments.filter(p => !p.paid);
+            }
+            
+            renderPayments(monthPayments);
+        }
+
+        function markAsPaid(id) {
+            const payment = allPaymentsData.find(p => p.id === id);
+            if (payment) {
+                payment.paid = true;
+                payment.paid_date = new Date().toISOString().split('T')[0];
+                showSuccess(`${payment.venue_name} marked as paid!`);
+                loadPaymentsForMonth(currentPaymentMonth);
+                
+                // TODO: Save to database
+                // await supabaseClient.from('payments').update({ paid: true, paid_date: payment.paid_date }).eq('id', id);
+            }
+        }
+
+        function markAsUnpaid(id) {
+            const payment = allPaymentsData.find(p => p.id === id);
+            if (payment) {
+                payment.paid = false;
+                payment.paid_date = null;
+                showSuccess(`${payment.venue_name} marked as unpaid`);
+                loadPaymentsForMonth(currentPaymentMonth);
+                
+                // TODO: Save to database
+                // await supabaseClient.from('payments').update({ paid: false, paid_date: null }).eq('id', id);
+            }
+        }
+
+        // ===== REVIEWS TAB FUNCTIONS =====
+        let allReviewsData = [];
+
+        async function loadReviewsTabData() {
+            try {
+                // Load all reviews
+                const { data: reviews, error } = await supabaseClient
+                    .from('reviews')
+                    .select(`
+                        *,
+                        venues!reviews_venue_id_fkey(name),
+                        profiles!reviews_user_id_fkey(name, email)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.log('Reviews table may not exist yet:', error.message);
+                    // Show placeholder if no reviews table
+                    document.getElementById('reviewsList').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #999;">
+                            <p style="font-size: 16px; margin-bottom: 10px;">No reviews yet</p>
+                            <p style="font-size: 13px;">Reviews will appear here when users submit them in the app.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                allReviewsData = reviews || [];
+                
+                // Update stats
+                const total = allReviewsData.length;
+                const published = allReviewsData.filter(r => r.status === 'published' || r.status === undefined).length;
+                const pending = allReviewsData.filter(r => r.status === 'pending').length;
+                const paused = allReviewsData.filter(r => r.status === 'paused').length;
+                
+                document.getElementById('stat-total-reviews').textContent = total.toLocaleString();
+                document.getElementById('stat-pending-reviews').textContent = pending.toLocaleString();
+                document.getElementById('stat-published-reviews').textContent = published.toLocaleString();
+                
+                // Calculate average rating
+                if (total > 0) {
+                    const avgRating = allReviewsData.reduce((sum, r) => sum + (r.rating || 0), 0) / total;
+                    document.getElementById('stat-avg-rating').textContent = avgRating.toFixed(1);
+                    
+                    // Update stars display
+                    const fullStars = Math.floor(avgRating);
+                    const hasHalf = avgRating % 1 >= 0.5;
+                    let starsHtml = '★'.repeat(fullStars);
+                    if (hasHalf && fullStars < 5) starsHtml += '☆';
+                    starsHtml += '☆'.repeat(5 - fullStars - (hasHalf ? 1 : 0));
+                    document.getElementById('stat-avg-rating-stars').textContent = starsHtml;
+                    document.getElementById('stat-avg-rating-bar').style.width = (avgRating / 5 * 100) + '%';
+                }
+
+                // Update percentages
+                if (total > 0) {
+                    document.getElementById('stat-pending-reviews-percent').textContent = Math.round(pending / total * 100) + '%';
+                    document.getElementById('stat-pending-reviews-bar').style.width = (pending / total * 100) + '%';
+                    document.getElementById('stat-published-reviews-percent').textContent = Math.round(published / total * 100) + '%';
+                    document.getElementById('stat-published-reviews-bar').style.width = (published / total * 100) + '%';
+                }
+
+                // Render reviews list
+                renderReviews(allReviewsData);
+            } catch (error) {
+                console.error('Reviews tab load error:', error);
+                document.getElementById('reviewsList').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p>No reviews yet</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderReviews(reviews) {
+            const listDiv = document.getElementById('reviewsList');
+            
+            if (!reviews || reviews.length === 0) {
+                listDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p style="font-size: 16px; margin-bottom: 10px;">No reviews found</p>
+                        <p style="font-size: 13px;">Reviews will appear here when users submit them.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listDiv.innerHTML = reviews.map(review => {
+                const status = review.status || 'published';
+                const statusColor = status === 'published' ? '#22c55e' : status === 'pending' ? '#f59e0b' : '#ef4444';
+                const statusBg = status === 'published' ? '#dcfce7' : status === 'pending' ? '#fef3c7' : '#fee2e2';
+                const stars = '★'.repeat(review.rating || 0) + '☆'.repeat(5 - (review.rating || 0));
+                const date = new Date(review.created_at).toLocaleDateString('sv-SE');
+                
+                return `
+                    <div style="display: flex; gap: 15px; padding: 20px; border-bottom: 1px solid #f0f0f0; align-items: flex-start;">
+                        <div style="width: 50px; height: 50px; background: #7c3aed; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; flex-shrink: 0;">
+                            ${(review.profiles?.name || review.profiles?.email || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <div>
+                                    <strong style="color: #23282d;">${review.profiles?.name || review.profiles?.email || 'Anonymous'}</strong>
+                                    <span style="color: #999; font-size: 13px; margin-left: 10px;">${date}</span>
+                                </div>
+                                <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                            </div>
+                            <div style="color: #f59e0b; font-size: 14px; margin-bottom: 6px;">${stars}</div>
+                            <p style="color: #23282d; font-size: 14px; margin: 0 0 8px 0; line-height: 1.5;">${review.comment || review.text || 'No comment'}</p>
+                            <p style="color: #666; font-size: 13px; margin: 0;">Venue: <strong>${review.venues?.name || 'Unknown'}</strong></p>
+                            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                ${status === 'published' ? 
+                                    `<button onclick="pauseReview(${review.id})" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">⏸️ Pause</button>` :
+                                    `<button onclick="publishReview(${review.id})" style="background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">✅ Publish</button>`
+                                }
+                                <button onclick="deleteReview(${review.id})" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterReviews() {
+            const statusFilter = document.getElementById('reviewStatusFilter').value;
+            const ratingFilter = document.getElementById('reviewRatingFilter').value;
+            
+            let filtered = allReviewsData;
+            
+            if (statusFilter !== 'all') {
+                if (statusFilter === 'published') {
+                    filtered = filtered.filter(r => r.status === 'published' || r.status === undefined);
+                } else {
+                    filtered = filtered.filter(r => r.status === statusFilter);
+                }
+            }
+            
+            if (ratingFilter !== 'all') {
+                filtered = filtered.filter(r => r.rating === parseInt(ratingFilter));
+            }
+            
+            const resultsDiv = document.getElementById('reviewFilterResults');
+            if (statusFilter !== 'all' || ratingFilter !== 'all') {
+                resultsDiv.style.display = 'block';
+                resultsDiv.textContent = `Showing ${filtered.length} of ${allReviewsData.length} reviews`;
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            
+            renderReviews(filtered);
+        }
+
+        async function pauseReview(id) {
+            if (!confirm('Pause this review? It will be hidden from public view.')) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .update({ status: 'paused' })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                showSuccess('Review paused!');
+                loadReviewsTabData();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function publishReview(id) {
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .update({ status: 'published' })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                showSuccess('Review published!');
+                loadReviewsTabData();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function deleteReview(id) {
+            if (!confirm('Delete this review permanently?')) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                showSuccess('Review deleted!');
+                loadReviewsTabData();
             } catch (error) {
                 showError('Error: ' + error.message);
             }
