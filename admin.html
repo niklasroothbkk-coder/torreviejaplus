@@ -511,6 +511,11 @@
                 <span>🏪</span>
                 <div>Customers (Venues)</div>
             </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('packages')">
+                <span>📦</span>
+                <div>Packages</div>
+            </div>
         </div>
     </div>
 
@@ -1319,6 +1324,22 @@
                     </div>
                 </div>
 
+                <!-- Package & Payment Section -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="venuePackage">Package</label>
+                        <select id="venuePackage">
+                            <option value="Bronze">Bronze - €99</option>
+                            <option value="Silver">Silver - €199</option>
+                            <option value="Gold" selected>Gold - €499</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="venuePaymentDate">Payment Date</label>
+                        <input type="date" id="venuePaymentDate">
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="rating">Rating (0-5)</label>
@@ -1799,6 +1820,84 @@
                     <div id="customersList" class="loading">Loading customers...</div>
                 </div>
             </div>
+
+            <!-- Packages Page -->
+            <div id="packages-page" class="content-page">
+                <div class="page-header">
+                    <h1>📦 Subscription Packages</h1>
+                </div>
+                <p style="color: #666; margin-bottom: 30px;">Configure what each package includes. This information is shown to venue owners in the mobile app.</p>
+                
+                <!-- Bronze Package -->
+                <div class="panel" style="border-left: 4px solid #cd7f32;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="border: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                <span style="background: #cd7f32; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">Bronze</span>
+                                Package
+                            </h2>
+                        </div>
+                        <div style="font-size: 24px; font-weight: bold; color: #cd7f32;">€99<span style="font-size: 14px; color: #999;">/year</span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Package Benefits (one per line)</label>
+                        <textarea id="bronzePackageBenefits" rows="6" placeholder="Enter benefits, one per line..." style="font-size: 14px;">Basic venue listing
+Up to 3 photos
+Contact information display
+Opening hours display</textarea>
+                    </div>
+                    <button onclick="savePackageBenefits('Bronze')" style="background: #cd7f32;">💾 Save Bronze Package</button>
+                </div>
+
+                <!-- Silver Package -->
+                <div class="panel" style="border-left: 4px solid #9ca3af;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="border: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                <span style="background: #9ca3af; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">Silver</span>
+                                Package
+                            </h2>
+                        </div>
+                        <div style="font-size: 24px; font-weight: bold; color: #9ca3af;">€199<span style="font-size: 14px; color: #999;">/year</span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Package Benefits (one per line)</label>
+                        <textarea id="silverPackageBenefits" rows="6" placeholder="Enter benefits, one per line..." style="font-size: 14px;">Enhanced venue listing
+Up to 6 photos
+Contact information display
+Opening hours display
+Create deals & promotions
+50 credits per month</textarea>
+                    </div>
+                    <button onclick="savePackageBenefits('Silver')" style="background: #9ca3af;">💾 Save Silver Package</button>
+                </div>
+
+                <!-- Gold Package -->
+                <div class="panel" style="border-left: 4px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="border: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                <span style="background: #f59e0b; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">Gold</span>
+                                Package
+                            </h2>
+                        </div>
+                        <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">€499<span style="font-size: 14px; color: #999;">/year</span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Package Benefits (one per line)</label>
+                        <textarea id="goldPackageBenefits" rows="8" placeholder="Enter benefits, one per line..." style="font-size: 14px;">Premium venue listing
+Unlimited photos
+Featured listing placement
+Contact information display
+Opening hours display
+Create deals & promotions
+Create events
+100 credits per month
+Priority support</textarea>
+                    </div>
+                    <button onclick="savePackageBenefits('Gold')" style="background: #f59e0b;">💾 Save Gold Package</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1832,6 +1931,8 @@
                 loadVisitors();
             } else if (pageName === 'customers') {
                 loadCustomers();
+            } else if (pageName === 'packages') {
+                loadPackages();
             }
         }
 
@@ -2071,7 +2172,9 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 features: features,
                 registered_date: document.getElementById('registered_date').value || null,
                 images: uploadedImages,
-                active: true
+                active: true,
+                package: document.getElementById('venuePackage').value,
+                payment_date: document.getElementById('venuePaymentDate').value || null
             };
 
             try {
@@ -2384,6 +2487,8 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 }
                 
                 document.getElementById('registered_date').value = data.registered_date || '';
+                document.getElementById('venuePackage').value = data.package || 'Gold';
+                document.getElementById('venuePaymentDate').value = data.payment_date || '';
                 
                 document.getElementById('feature_indoor').checked = data.features && data.features.includes('Indoor Seating');
                 document.getElementById('feature_outdoor').checked = data.features && data.features.includes('Outdoor Seating');
@@ -2414,6 +2519,9 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
             document.querySelectorAll('input[name="cuisine"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('input[name="pub_types"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('input[name="spa_types"]').forEach(cb => cb.checked = false);
+            
+            document.getElementById('venuePackage').value = 'Gold';
+            document.getElementById('venuePaymentDate').value = '';
             
             uploadedImages = [];
             renderImagePreviews();
@@ -3762,18 +3870,7 @@ try {
         let currentPaymentMonth = 1;
         let allPaymentsData = [];
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-        // Test data for payments (will be replaced with real data later)
-        const testPayments = [
-            { id: 1, venue_name: 'Restaurant La Playa', package: 'Gold', amount: 99, payment_month: 1, paid: true, paid_date: '2025-01-05' },
-            { id: 2, venue_name: 'Bar El Sol', package: 'Silver', amount: 69, payment_month: 1, paid: true, paid_date: '2025-01-03' },
-            { id: 3, venue_name: 'Cafe Central', package: 'Bronze', amount: 39, payment_month: 1, paid: false, paid_date: null },
-            { id: 4, venue_name: 'Pizzeria Roma', package: 'Gold', amount: 99, payment_month: 1, paid: false, paid_date: null },
-            { id: 5, venue_name: 'Tapas & Wine', package: 'Silver', amount: 69, payment_month: 1, paid: true, paid_date: '2025-01-08' },
-            { id: 6, venue_name: 'Beach Club Azul', package: 'Gold', amount: 99, payment_month: 2, paid: false, paid_date: null },
-            { id: 7, venue_name: 'Irish Pub', package: 'Bronze', amount: 39, payment_month: 2, paid: true, paid_date: '2025-02-01' },
-            { id: 8, venue_name: 'Sushi House', package: 'Silver', amount: 69, payment_month: 3, paid: false, paid_date: null },
-        ];
+        const packagePrices = { 'Bronze': 99, 'Silver': 199, 'Gold': 499 };
 
         function switchPaymentMonth(month) {
             currentPaymentMonth = month;
@@ -3797,12 +3894,37 @@ try {
         }
 
         async function loadPaymentsTabData() {
-            // For now, use test data. Later this will load from database
-            allPaymentsData = testPayments;
-            
-            // Set to current month
-            const currentMonth = new Date().getMonth() + 1;
-            switchPaymentMonth(currentMonth);
+            try {
+                const { data: venues, error } = await supabaseClient
+                    .from('venues')
+                    .select('id, name, package, payment_date, active')
+                    .eq('active', true);
+                
+                if (error) throw error;
+                
+                // Konvertera venues till payments format
+                allPaymentsData = (venues || []).map(v => {
+                    const pkg = v.package || 'Gold';
+                    const paymentMonth = v.payment_date ? new Date(v.payment_date).getMonth() + 1 : new Date().getMonth() + 1;
+                    
+                    return {
+                        id: v.id,
+                        venue_name: v.name,
+                        package: pkg,
+                        amount: packagePrices[pkg] || 499,
+                        payment_month: paymentMonth,
+                        paid: !!v.payment_date,
+                        paid_date: v.payment_date
+                    };
+                });
+                
+                const currentMonth = new Date().getMonth() + 1;
+                switchPaymentMonth(currentMonth);
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                allPaymentsData = [];
+                switchPaymentMonth(new Date().getMonth() + 1);
+            }
         }
 
         function loadPaymentsForMonth(month) {
@@ -3880,29 +4002,47 @@ try {
             renderPayments(monthPayments);
         }
 
-        function markAsPaid(id) {
+        async function markAsPaid(id) {
             const payment = allPaymentsData.find(p => p.id === id);
             if (payment) {
-                payment.paid = true;
-                payment.paid_date = new Date().toISOString().split('T')[0];
-                showSuccess(`${payment.venue_name} marked as paid!`);
-                loadPaymentsForMonth(currentPaymentMonth);
+                const today = new Date().toISOString().split('T')[0];
                 
-                // TODO: Save to database
-                // await supabaseClient.from('payments').update({ paid: true, paid_date: payment.paid_date }).eq('id', id);
+                try {
+                    const { error } = await supabaseClient
+                        .from('venues')
+                        .update({ payment_date: today })
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    payment.paid = true;
+                    payment.paid_date = today;
+                    showSuccess(`${payment.venue_name} marked as paid!`);
+                    loadPaymentsForMonth(currentPaymentMonth);
+                } catch (error) {
+                    showError('Failed to update payment: ' + error.message);
+                }
             }
         }
 
-        function markAsUnpaid(id) {
+        async function markAsUnpaid(id) {
             const payment = allPaymentsData.find(p => p.id === id);
             if (payment) {
-                payment.paid = false;
-                payment.paid_date = null;
-                showSuccess(`${payment.venue_name} marked as unpaid`);
-                loadPaymentsForMonth(currentPaymentMonth);
-                
-                // TODO: Save to database
-                // await supabaseClient.from('payments').update({ paid: false, paid_date: null }).eq('id', id);
+                try {
+                    const { error } = await supabaseClient
+                        .from('venues')
+                        .update({ payment_date: null })
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    payment.paid = false;
+                    payment.paid_date = null;
+                    showSuccess(`${payment.venue_name} marked as unpaid`);
+                    loadPaymentsForMonth(currentPaymentMonth);
+                } catch (error) {
+                    showError('Failed to update payment: ' + error.message);
+                }
             }
         }
 
@@ -4102,6 +4242,66 @@ try {
                 loadReviewsTabData();
             } catch (error) {
                 showError('Error: ' + error.message);
+            }
+        }
+
+        // ===== PACKAGES FUNCTIONS =====
+        async function loadPackages() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('package_benefits')
+                    .select('*');
+                
+                if (error) {
+                    console.log('Package benefits table may not exist yet or is empty');
+                    return;
+                }
+                
+                if (data && data.length > 0) {
+                    data.forEach(pkg => {
+                        const textarea = document.getElementById(pkg.package_name.toLowerCase() + 'PackageBenefits');
+                        if (textarea && pkg.benefits) {
+                            textarea.value = pkg.benefits.join('\n');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading packages:', error);
+            }
+        }
+
+        async function savePackageBenefits(packageName) {
+            const textarea = document.getElementById(packageName.toLowerCase() + 'PackageBenefits');
+            const benefits = textarea.value.split('\n').filter(line => line.trim() !== '');
+            
+            try {
+                // First try to update existing
+                const { data: existing } = await supabaseClient
+                    .from('package_benefits')
+                    .select('id')
+                    .eq('package_name', packageName)
+                    .single();
+                
+                if (existing) {
+                    // Update existing
+                    const { error } = await supabaseClient
+                        .from('package_benefits')
+                        .update({ benefits: benefits })
+                        .eq('package_name', packageName);
+                    
+                    if (error) throw error;
+                } else {
+                    // Insert new
+                    const { error } = await supabaseClient
+                        .from('package_benefits')
+                        .insert([{ package_name: packageName, benefits: benefits }]);
+                    
+                    if (error) throw error;
+                }
+                
+                showSuccess(packageName + ' package saved!');
+            } catch (error) {
+                showError('Error saving package: ' + error.message);
             }
         }
 

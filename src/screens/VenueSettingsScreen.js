@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../config/supabaseClient';
 import { getCurrentUser } from '../services/authService';
@@ -12,10 +12,74 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
     appUpdates: true,
     torreviejaMessages: true,
   });
+  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [packageBenefits, setPackageBenefits] = useState([]);
 
   useEffect(() => {
     loadVenueData();
   }, []);
+
+  // Load package benefits when venue data changes
+  useEffect(() => {
+    if (venueData?.package) {
+      loadPackageBenefits(venueData.package);
+    }
+  }, [venueData?.package]);
+
+  const loadPackageBenefits = async (packageName) => {
+    try {
+      const { data, error } = await supabase
+        .from('package_benefits')
+        .select('benefits')
+        .eq('package_name', packageName)
+        .single();
+      
+      if (data && data.benefits) {
+        setPackageBenefits(data.benefits);
+      } else {
+        // Fallback to default benefits if not found in database
+        setPackageBenefits(getDefaultBenefits(packageName));
+      }
+    } catch (error) {
+      console.log('Using default benefits');
+      setPackageBenefits(getDefaultBenefits(packageName));
+    }
+  };
+
+  // Default benefits fallback
+  const getDefaultBenefits = (packageName) => {
+    if (packageName === 'Bronze') {
+      return [
+        'Basic venue listing',
+        'Up to 3 photos',
+        'Contact information display',
+        'Opening hours display'
+      ];
+    }
+    if (packageName === 'Silver') {
+      return [
+        'Enhanced venue listing',
+        'Up to 6 photos',
+        'Contact information display',
+        'Opening hours display',
+        'Create deals & promotions',
+        '50 credits per month'
+      ];
+    }
+    return [
+      'Premium venue listing',
+      'Unlimited photos',
+      'Featured listing placement',
+      'Contact information display',
+      'Opening hours display',
+      'Create deals & promotions',
+      'Create events',
+      '100 credits per month',
+      'Priority support'
+    ];
+  };
 
   const loadVenueData = async () => {
     const result = await getCurrentUser();
@@ -48,22 +112,31 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: () => {
-            // Logout functionality will be handled by App.js
-            console.log('Logout pressed');
-          }
-        }
-      ]
-    );
+    setShowLogoutModal(true);
   };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    console.log('Logout pressed');
+  };
+
+  // Helper function to get package price
+  const getPackagePrice = () => {
+    const pkg = venueData?.package || 'Gold';
+    if (pkg === 'Bronze') return 99;
+    if (pkg === 'Silver') return 199;
+    return 499;
+  };
+
+  // Helper function to format payment date
+  const formatPaymentDate = () => {
+    if (venueData?.payment_date) {
+      return `(Paid ${venueData.payment_date})`;
+    }
+    return '(Not paid)';
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -127,13 +200,20 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons name="star" size={24} color="#FFD700" />
-              <Text style={styles.settingText}>Gold Package</Text>
+              <Text style={styles.settingText}>{venueData?.package || 'Gold'} Package</Text>
+            </View>
+          </View>
+
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="cash-outline" size={24} color="#0077B6" />
+              <Text style={styles.settingText}>{getPackagePrice()} Euro {formatPaymentDate()}</Text>
             </View>
           </View>
 
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Gold Package', 'Includes:\n• Unlimited venue views\n• Featured listing\n• Priority support\n• 100 credits per month')}
+            onPress={() => setShowPackageModal(true)}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="list-outline" size={24} color="#0077B6" />
@@ -144,7 +224,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Coming Soon', 'Change package functionality will be available soon')}
+            onPress={() => setShowContactModal(true)}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="swap-horizontal" size={24} color="#0077B6" />
@@ -217,7 +297,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => onNavigate('faq')}
+            onPress={() => onNavigate('faq', { fromVenue: true })}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="help-circle-outline" size={24} color="#0077B6" />
@@ -228,7 +308,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Contact Support', 'Email: support@torreviejaplus.com\nPhone: +34 123 456 789')}
+            onPress={() => setShowContactModal(true)}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="mail-outline" size={24} color="#0077B6" />
@@ -244,7 +324,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Terms of Service', 'Terms of Service content will be displayed here')}
+            onPress={() => onNavigate('venueterms')}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="document-text-outline" size={24} color="#0077B6" />
@@ -255,7 +335,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Privacy Policy', 'Privacy Policy content will be displayed here')}
+            onPress={() => onNavigate('venueprivacy')}
           >
             <View style={styles.settingLeft}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#0077B6" />
@@ -285,6 +365,114 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
         {/* Bottom spacing for navigation */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* Package Include Modal */}
+      <Modal
+        visible={showPackageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPackageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{venueData?.package || 'Gold'} Package</Text>
+            <Text style={styles.modalSubtitle}>Your package includes:</Text>
+
+            <View style={styles.benefitsList}>
+              {packageBenefits.map((benefit, index) => (
+                <View key={index} style={styles.benefitItem}>
+                  <Ionicons name="checkmark-circle" size={20} color="#0077B6" />
+                  <Text style={styles.benefitText}>{benefit}</Text>
+                </View>
+              ))}
+            </View>
+
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={() => setShowPackageModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Contact Support Modal */}
+      <Modal
+        visible={showContactModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowContactModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Contact Support</Text>
+            <Text style={styles.modalSubtitle}>We're here to help!</Text>
+
+            <View style={styles.contactInfo}>
+              <View style={styles.contactItem}>
+                <Ionicons name="mail" size={24} color="#0077B6" />
+                <View style={styles.contactTextContainer}>
+                  <Text style={styles.contactLabel}>Email</Text>
+                  <Text style={styles.contactValue}>support@torreviejaplus.com</Text>
+                </View>
+              </View>
+
+              <View style={styles.contactItem}>
+                <Ionicons name="call" size={24} color="#0077B6" />
+                <View style={styles.contactTextContainer}>
+                  <Text style={styles.contactLabel}>Phone</Text>
+                  <Text style={styles.contactValue}>+34 123 456 789</Text>
+                </View>
+              </View>
+
+              <View style={styles.contactItem}>
+                <Ionicons name="time" size={24} color="#0077B6" />
+                <View style={styles.contactTextContainer}>
+                  <Text style={styles.contactLabel}>Hours</Text>
+                  <Text style={styles.contactValue}>Mon-Fri: 9:00 - 18:00</Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={() => setShowContactModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={showLogoutModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLogoutModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Logout</Text>
+            <Text style={styles.modalSubtitle}>Are you sure you want to logout?</Text>
+
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.logoutConfirmButton]}
+              onPress={confirmLogout}
+            >
+              <Text style={styles.modalButtonText}>Logout</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.modalCancelButton}
+              onPress={() => setShowLogoutModal(false)}
+            >
+              <Text style={styles.modalCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -331,11 +519,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 5,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
   },
   scrollView: {
     flex: 1,
@@ -404,5 +587,104 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+  },
+  benefitsList: {
+    marginBottom: 20,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  benefitText: {
+    fontSize: 15,
+    color: '#333',
+    marginLeft: 12,
+  },
+  contactInfo: {
+    marginBottom: 20,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  contactTextContainer: {
+    marginLeft: 15,
+  },
+  contactLabel: {
+    fontSize: 12,
+    color: '#999',
+  },
+  contactValue: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  modalButton: {
+    backgroundColor: '#0077B6',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: '#0077B6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  modalCancelButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#666',
+  },
+  logoutConfirmButton: {
+    backgroundColor: '#d12028',
   },
 });

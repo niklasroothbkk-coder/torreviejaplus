@@ -48,6 +48,8 @@ import VenueEditDealScreen from './src/screens/VenueEditDealScreen';
 import VenueEditEventScreen from './src/screens/VenueEditEventScreen';
 import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
 import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
+import VenueTermsScreen from './src/screens/VenueTermsScreen';
+import VenuePrivacyScreen from './src/screens/VenuePrivacyScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -410,7 +412,7 @@ export default function App() {
       case 'userprofile':
         return <UserProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'faq':
-        return <FAQContactPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+        return <FAQContactPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} fromVenue={authParams?.fromVenue || false} />;
       case 'taxi':
         return <ShareAirportTaxiPage onNavigate={handleMenuItemPress} onOpenMenu={openMenu} rides={rides} />;
       case 'addride':
@@ -477,6 +479,10 @@ export default function App() {
         return <VenueEditProfileScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venuechangepassword':
         return <VenueChangePasswordScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueterms':
+        return <VenueTermsScreen onNavigate={handleMenuItemPress} />;
+      case 'venueprivacy':
+        return <VenuePrivacyScreen onNavigate={handleMenuItemPress} />;
       case 'venuemanagedeals':
         return <VenueManageDealsScreen 
           navigation={{ navigate: handleMenuItemPress, goBack: () => handleMenuItemPress('venuedashboard') }}

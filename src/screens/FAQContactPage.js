@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-export default function FAQContactPage({ onNavigate, onOpenMenu }) {
+export default function FAQContactPage({ onNavigate, onOpenMenu, fromVenue = false }) {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [messageTitle, setMessageTitle] = useState('');
   const [messageText, setMessageText] = useState('');
@@ -77,10 +77,10 @@ export default function FAQContactPage({ onNavigate, onOpenMenu }) {
         
         <TouchableOpacity 
           style={styles.menuButtonWrapper}
-          onPress={onOpenMenu}
+          onPress={fromVenue ? () => onNavigate('venuesettings') : onOpenMenu}
         >
           <View style={styles.menuButtonContainer}>
-            <Ionicons name="menu" size={32} color="#FFFFFF" />
+            <Ionicons name={fromVenue ? "arrow-back" : "menu"} size={fromVenue ? 24 : 32} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
 
