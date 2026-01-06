@@ -6,43 +6,72 @@ import { getCurrentUser } from '../services/authService';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
-  const [eventName, setEventName] = useState('');
+export default function VenueEditDealScreen({ onNavigate, onOpenMenu, route }) {
+  const { deal, reactivate } = route?.params || {};
+  
+  const [dealName, setDealName] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
-  const [eventDate, setEventDate] = useState(new Date());
+  const [dealDate, setDealDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [startTime, setStartTime] = useState('20:00');
-  const [endTime, setEndTime] = useState('23:00');
+  const [startTime, setStartTime] = useState('12:00');
+  const [endTime, setEndTime] = useState('12:00');
   const [isRepeat, setIsRepeat] = useState(false);
   const [repeatDays, setRepeatDays] = useState([]);
   const [repeatWeeks, setRepeatWeeks] = useState('');
-  const [eventImage, setEventImage] = useState(null);
+  const [dealImage, setDealImage] = useState(null);
+  const [existingImageUrl, setExistingImageUrl] = useState(null);
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [venueId, setVenueId] = useState(null);
   const [venuePhone, setVenuePhone] = useState(null);
-  const [venueWebsite, setVenueWebsite] = useState(null);
 
   const categories = [
-    'Concerts & Festivals',
-    'Sports Events',
-    'Markets & Attractions',
-    'Tours & Trips',
-    'Other Events'
+    'Happy Hours',
+    'Watersport Deals',
+    'Restaurant Deals',
+    'Sport Deals',
+    'Pub & Bar Deals',
+    'Other Deals'
   ];
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
     loadVenueData();
+    if (deal) {
+      loadDealData();
+    }
   }, []);
+
+  const loadDealData = () => {
+    setDealName(deal.name || '');
+    setCategory(deal.category || '');
+    setDescription(deal.description || '');
+    setPrice(deal.price || '');
+    setStartTime(deal.start_time ? deal.start_time.slice(0, 5) : '12:00');
+    setEndTime(deal.end_time ? deal.end_time.slice(0, 5) : '12:00');
+    setIsRepeat(deal.is_recurring || false);
+    setExistingImageUrl(deal.image_url || null);
+    
+    if (deal.recurring_day) {
+      setRepeatDays(deal.recurring_day.split(',').map(d => d.trim()));
+    }
+    if (deal.recurring_weeks) {
+      setRepeatWeeks(deal.recurring_weeks.toString());
+    }
+    
+    // For reactivate, clear the date so user must set new one
+    // For edit, use existing date
+    if (!reactivate && deal.deal_date) {
+      setDealDate(new Date(deal.deal_date));
+    }
+  };
 
   const loadVenueData = async () => {
     try {
       const result = await getCurrentUser();
       if (result.success && result.user) {
-        // Get venue_id from profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('venue_id')
@@ -57,16 +86,14 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
         if (profileData && profileData.venue_id) {
           setVenueId(profileData.venue_id);
           
-          // Get phone and website from venue
           const { data: venueData, error: venueError } = await supabase
             .from('venues')
-            .select('phone, website')
+            .select('phone')
             .eq('id', profileData.venue_id)
             .single();
           
           if (!venueError && venueData) {
             setVenuePhone(venueData.phone);
-            setVenueWebsite(venueData.website);
           }
         }
       }
@@ -97,7 +124,8 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
     });
 
     if (!result.canceled) {
-      setEventImage(result.assets[0].uri);
+      setDealImage(result.assets[0].uri);
+      setExistingImageUrl(null);
     }
   };
 
@@ -113,7 +141,7 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
         reader.readAsArrayBuffer(blob);
       });
       
-      const fileName = `event_${venueId}_${Date.now()}.jpg`;
+      const fileName = `deal_${venueId}_${Date.now()}.jpg`;
       const { data, error } = await supabase.storage
         .from('venue-images')
         .upload(fileName, arrayBuffer, {
@@ -137,7 +165,7 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
   const onDateChange = (event, selectedDate) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setEventDate(selectedDate);
+      setDealDate(selectedDate);
     }
   };
 
@@ -150,68 +178,41 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
     return date.toLocaleDateString('en-US', options);
   };
 
-  // Auto-format time input (e.g., "12" becomes "12:00", "9" becomes "09:00")
   const formatTimeInput = (value) => {
-    // Remove any non-numeric characters except colon
     let cleaned = value.replace(/[^0-9:]/g, '');
     
-    // If it's just numbers without colon
     if (!cleaned.includes(':')) {
       if (cleaned.length === 1) {
-        // Single digit: "9" -> "09:00"
         return `0${cleaned}:00`;
       } else if (cleaned.length === 2) {
-        // Two digits: "12" -> "12:00" or "09" -> "09:00"
         return `${cleaned}:00`;
       } else if (cleaned.length === 3) {
-        // Three digits: "930" -> "09:30"
         return `0${cleaned[0]}:${cleaned.slice(1)}`;
       } else if (cleaned.length === 4) {
-        // Four digits: "1230" -> "12:30"
         return `${cleaned.slice(0, 2)}:${cleaned.slice(2)}`;
       }
     }
     
-    // If it already has a colon, validate format
     if (cleaned.includes(':')) {
       const parts = cleaned.split(':');
       let hours = parts[0].padStart(2, '0');
       let minutes = (parts[1] || '00').padStart(2, '0').slice(0, 2);
-      
-      // Validate hours (00-23) and minutes (00-59)
       if (parseInt(hours) > 23) hours = '23';
       if (parseInt(minutes) > 59) minutes = '59';
-      
       return `${hours}:${minutes}`;
     }
     
     return cleaned;
   };
 
-  const handleStartTimeChange = (value) => {
-    setStartTime(value);
-  };
-
-  const handleStartTimeBlur = () => {
-    if (startTime) {
-      setStartTime(formatTimeInput(startTime));
-    }
-  };
-
-  const handleEndTimeChange = (value) => {
-    setEndTime(value);
-  };
-
-  const handleEndTimeBlur = () => {
-    if (endTime) {
-      setEndTime(formatTimeInput(endTime));
-    }
-  };
+  const handleStartTimeChange = (value) => setStartTime(value);
+  const handleStartTimeBlur = () => { if (startTime) setStartTime(formatTimeInput(startTime)); };
+  const handleEndTimeChange = (value) => setEndTime(value);
+  const handleEndTimeBlur = () => { if (endTime) setEndTime(formatTimeInput(endTime)); };
 
   const handleSubmit = async () => {
-    // Validation
-    if (!eventName.trim()) {
-      Alert.alert('Error', 'Please enter an event name');
+    if (!dealName.trim()) {
+      Alert.alert('Error', 'Please enter a deal name');
       return;
     }
     if (!category) {
@@ -230,63 +231,59 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
     setLoading(true);
 
     try {
-      let imageUrl = null;
-      if (eventImage) {
-        imageUrl = await uploadImage(eventImage);
+      let imageUrl = existingImageUrl;
+      if (dealImage) {
+        imageUrl = await uploadImage(dealImage);
       }
 
-      // Calculate end_date
       let calculatedEndDate;
-      const eventDateStr = formatDate(eventDate);
+      const dealDateStr = formatDate(dealDate);
       
       if (isRepeat && repeatWeeks) {
-        const startDate = new Date(eventDate);
+        const startDate = new Date(dealDate);
         calculatedEndDate = new Date(startDate);
         calculatedEndDate.setDate(calculatedEndDate.getDate() + (parseInt(repeatWeeks) * 7));
         calculatedEndDate = calculatedEndDate.toISOString().split('T')[0];
       } else {
-        calculatedEndDate = eventDateStr;
+        calculatedEndDate = dealDateStr;
       }
 
-      const eventData = {
-        venue_id: venueId,
-        name: eventName.trim(),
+      const dealData = {
+        name: dealName.trim(),
         category: category,
         description: description.trim(),
-        phone: venuePhone || null, // Automatically use venue phone
-        website: venueWebsite || null, // Automatically use venue website
-        event_date: eventDateStr,
+        phone: venuePhone || null,
+        deal_date: dealDateStr,
         end_date: calculatedEndDate,
         start_time: startTime || null,
         end_time: endTime || null,
         is_recurring: isRepeat,
         recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
         recurring_weeks: (isRepeat && repeatWeeks) ? parseInt(repeatWeeks) : null,
-        price: price.trim() || 'Free',
+        price: price.trim() || null,
         image_url: imageUrl,
-        views: 0,
-        registered_date: new Date().toISOString().split('T')[0],
         active: true,
       };
 
       const { error } = await supabase
-        .from('events')
-        .insert([eventData]);
+        .from('deals')
+        .update(dealData)
+        .eq('id', deal.id);
 
       if (error) throw error;
 
-      Alert.alert('Success', 'Event created successfully!', [
+      Alert.alert('Success', reactivate ? 'Deal reactivated successfully!' : 'Deal updated successfully!', [
         {
           text: 'OK',
           onPress: () => {
-            onNavigate('venuemanage');
+            onNavigate('venueViewDeals');
           }
         }
       ]);
 
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'Failed to create event: ' + error.message);
+      Alert.alert('Error', 'Failed to update deal: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -311,13 +308,15 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
 
       <TouchableOpacity 
         style={styles.backButton}
-        onPress={() => onNavigate('venuemanage')}
+        onPress={() => onNavigate('venueViewDeals')}
       >
         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Create New Event</Text>
+        <Text style={styles.headerTitle}>
+          {reactivate ? 'Reactivate Deal' : 'Edit Deal'}
+        </Text>
       </View>
 
       <ScrollView 
@@ -326,21 +325,30 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.formCard}>
-          {/* Event Name */}
+          {reactivate && (
+            <View style={styles.reactivateNotice}>
+              <Ionicons name="information-circle" size={24} color="#0077B6" />
+              <Text style={styles.reactivateText}>
+                Set a new start date to reactivate this deal
+              </Text>
+            </View>
+          )}
+
+          {/* Deal Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Event Name *</Text>
+            <Text style={styles.label}>Deal Name *</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Live Music Night"
+              placeholder="e.g., Happy Hour Special"
               placeholderTextColor="#999"
-              value={eventName}
-              onChangeText={setEventName}
+              value={dealName}
+              onChangeText={setDealName}
             />
           </View>
 
           {/* Category */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Events / Happenings Category *</Text>
+            <Text style={styles.label}>Deal / Promotion Category *</Text>
             <View style={styles.pickerContainer}>
               {categories.map((cat) => (
                 <TouchableOpacity
@@ -361,7 +369,7 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
             <Text style={styles.label}>Description *</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Describe your event..."
+              placeholder="Describe your deal..."
               placeholderTextColor="#999"
               value={description}
               onChangeText={setDescription}
@@ -373,20 +381,20 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
 
           {/* Date Picker */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>📅 Event Schedule Start Day *</Text>
+            <Text style={styles.label}>📅 Deal Schedule Start Day *</Text>
             
             <TouchableOpacity 
               style={styles.datePickerButton}
               onPress={() => setShowDatePicker(!showDatePicker)}
             >
               <Ionicons name="calendar-outline" size={24} color="#0077B6" />
-              <Text style={styles.datePickerText}>{formatDisplayDate(eventDate)}</Text>
+              <Text style={styles.datePickerText}>{formatDisplayDate(dealDate)}</Text>
               <Ionicons name="chevron-down" size={20} color="#666" />
             </TouchableOpacity>
             
             {showDatePicker && (
               <DateTimePicker
-                value={eventDate}
+                value={dealDate}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={onDateChange}
@@ -464,7 +472,7 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
                   keyboardType="number-pad"
                 />
                 <Text style={styles.helperText}>
-                  📝 Example: Select Friday + Saturday with 4 weeks = 8 events total
+                  📝 Example: Select Friday + Saturday with 4 weeks = 8 deals total
                 </Text>
               </View>
             </View>
@@ -472,17 +480,23 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
 
           {/* Image Upload */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>📸 Event Image (Max 1)</Text>
+            <Text style={styles.label}>📸 Deal Image (Max 1)</Text>
             <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
               <Ionicons name="image-outline" size={24} color="#0077B6" />
               <Text style={styles.imageButtonText}>Choose Image</Text>
             </TouchableOpacity>
-            {eventImage && (
+            {(dealImage || existingImageUrl) && (
               <View style={styles.imagePreview}>
-                <Image source={{ uri: eventImage }} style={styles.previewImage} />
+                <Image 
+                  source={{ uri: dealImage || existingImageUrl }} 
+                  style={styles.previewImage} 
+                />
                 <TouchableOpacity 
                   style={styles.removeImageButton}
-                  onPress={() => setEventImage(null)}
+                  onPress={() => {
+                    setDealImage(null);
+                    setExistingImageUrl(null);
+                  }}
                 >
                   <Ionicons name="close-circle" size={24} color="#d12028" />
                 </TouchableOpacity>
@@ -495,7 +509,7 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
             <Text style={styles.label}>Price (optional)</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. 15 Euro, €15"
+              placeholder="e.g. 15 Euro, €15 or 50% off"
               placeholderTextColor="#999"
               value={price}
               onChangeText={setPrice}
@@ -510,14 +524,14 @@ export default function VenueCreateEventScreen({ onNavigate, onOpenMenu }) {
           >
             <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
             <Text style={styles.submitButtonText}>
-              {loading ? 'Creating Event...' : 'Create Event'}
+              {loading ? 'Saving...' : (reactivate ? 'Reactivate Deal' : 'Save Changes')}
             </Text>
           </TouchableOpacity>
 
           {/* Cancel Button */}
           <TouchableOpacity 
             style={styles.cancelButton}
-            onPress={() => onNavigate('venuemanage')}
+            onPress={() => onNavigate('venueViewDeals')}
             disabled={loading}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -603,6 +617,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+  },
+  reactivateNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 10,
+  },
+  reactivateText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#0077B6',
   },
   inputGroup: {
     marginBottom: 20,

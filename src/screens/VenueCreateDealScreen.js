@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../config/supabaseClient';
 import { getCurrentUser } from '../services/authService';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
   const [dealName, setDealName] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dealDate, setDealDate] = useState('');
+  const [dealDate, setDealDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [startTime, setStartTime] = useState('12:00');
   const [endTime, setEndTime] = useState('12:00');
   const [isRepeat, setIsRepeat] = useState(false);
   const [repeatDays, setRepeatDays] = useState([]);
   const [repeatWeeks, setRepeatWeeks] = useState('');
   const [dealImage, setDealImage] = useState(null);
-  const [priceRange, setPriceRange] = useState('');
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [venueId, setVenueId] = useState(null);
+  const [venuePhone, setVenuePhone] = useState(null);
 
   const categories = [
     'Happy Hours',
@@ -34,21 +35,42 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
-    loadVenueId();
+    loadVenueData();
   }, []);
 
-  const loadVenueId = async () => {
-    const result = await getCurrentUser();
-    if (result.success && result.user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('venue_id')
-        .eq('id', result.user.id)
-        .single();
-      
-      if (profileData && profileData.venue_id) {
-        setVenueId(profileData.venue_id);
+  const loadVenueData = async () => {
+    try {
+      const result = await getCurrentUser();
+      if (result.success && result.user) {
+        // Get venue_id from profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('venue_id')
+          .eq('id', result.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          return;
+        }
+        
+        if (profileData && profileData.venue_id) {
+          setVenueId(profileData.venue_id);
+          
+          // Get phone from venue
+          const { data: venueData, error: venueError } = await supabase
+            .from('venues')
+            .select('phone')
+            .eq('id', profileData.venue_id)
+            .single();
+          
+          if (!venueError && venueData) {
+            setVenuePhone(venueData.phone);
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error loading venue data:', error);
     }
   };
 
@@ -111,6 +133,57 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
     }
   };
 
+  const onDateChange = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setDealDate(selectedDate);
+    }
+  };
+
+  const formatDate = (date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const formatDisplayDate = (date) => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  // Auto-format time input (e.g., "12" becomes "12:00", "9" becomes "09:00")
+  const formatTimeInput = (value) => {
+    // Remove any non-numeric characters except colon
+    let cleaned = value.replace(/[^0-9:]/g, '');
+    
+    // If it's just numbers without colon
+    if (!cleaned.includes(':')) {
+      if (cleaned.length === 1) {
+        return `0${cleaned}:00`;
+      } else if (cleaned.length === 2) {
+        return `${cleaned}:00`;
+      } else if (cleaned.length === 3) {
+        return `0${cleaned[0]}:${cleaned.slice(1)}`;
+      } else if (cleaned.length === 4) {
+        return `${cleaned.slice(0, 2)}:${cleaned.slice(2)}`;
+      }
+    }
+    
+    if (cleaned.includes(':')) {
+      const parts = cleaned.split(':');
+      let hours = parts[0].padStart(2, '0');
+      let minutes = (parts[1] || '00').padStart(2, '0').slice(0, 2);
+      if (parseInt(hours) > 23) hours = '23';
+      if (parseInt(minutes) > 59) minutes = '59';
+      return `${hours}:${minutes}`;
+    }
+    
+    return cleaned;
+  };
+
+  const handleStartTimeChange = (value) => setStartTime(value);
+  const handleStartTimeBlur = () => { if (startTime) setStartTime(formatTimeInput(startTime)); };
+  const handleEndTimeChange = (value) => setEndTime(value);
+  const handleEndTimeBlur = () => { if (endTime) setEndTime(formatTimeInput(endTime)); };
+
   const handleSubmit = async () => {
     // Validation
     if (!dealName.trim()) {
@@ -125,12 +198,8 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
       Alert.alert('Error', 'Please enter a description');
       return;
     }
-    if (!dealDate) {
-      Alert.alert('Error', 'Please enter a date (YYYY-MM-DD)');
-      return;
-    }
     if (!venueId) {
-      Alert.alert('Error', 'Venue not found');
+      Alert.alert('Error', 'Venue not found. Please try logging in again.');
       return;
     }
 
@@ -144,13 +213,15 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
 
       // Calculate end_date
       let calculatedEndDate;
+      const dealDateStr = formatDate(dealDate);
+      
       if (isRepeat && repeatWeeks) {
         const startDate = new Date(dealDate);
         calculatedEndDate = new Date(startDate);
         calculatedEndDate.setDate(calculatedEndDate.getDate() + (parseInt(repeatWeeks) * 7));
         calculatedEndDate = calculatedEndDate.toISOString().split('T')[0];
       } else {
-        calculatedEndDate = dealDate;
+        calculatedEndDate = dealDateStr;
       }
 
       const dealData = {
@@ -158,8 +229,8 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
         name: dealName.trim(),
         category: category,
         description: description.trim(),
-        phone: phone.trim() || null,
-        deal_date: dealDate,
+        phone: venuePhone || null, // Automatically use venue phone
+        deal_date: dealDateStr,
         end_date: calculatedEndDate,
         start_time: startTime || null,
         end_time: endTime || null,
@@ -167,7 +238,6 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
         recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
         recurring_weeks: (isRepeat && repeatWeeks) ? parseInt(repeatWeeks) : null,
         price: price.trim() || null,
-        price_range: priceRange || null,
         image_url: imageUrl,
         views: 0,
         registered_date: new Date().toISOString().split('T')[0],
@@ -276,52 +346,52 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
             />
           </View>
 
-          {/* Phone */}
+          {/* Date Picker */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Contact phone number"
-              placeholderTextColor="#999"
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          {/* Date & Time */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>📅 Deal Schedule Start Day</Text>
+            <Text style={styles.label}>📅 Deal Schedule Start Day *</Text>
             
-            <View style={styles.dateTimeRow}>
-              <View style={styles.dateTimeItem}>
-                <Text style={styles.subLabel}>Date *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#999"
-                  value={dealDate}
-                  onChangeText={setDealDate}
-                />
-              </View>
-              <View style={styles.dateTimeItem}>
+            <TouchableOpacity 
+              style={styles.datePickerButton}
+              onPress={() => setShowDatePicker(!showDatePicker)}
+            >
+              <Ionicons name="calendar-outline" size={24} color="#0077B6" />
+              <Text style={styles.datePickerText}>{formatDisplayDate(dealDate)}</Text>
+              <Ionicons name="chevron-down" size={20} color="#666" />
+            </TouchableOpacity>
+            
+            {showDatePicker && (
+              <DateTimePicker
+                value={dealDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onDateChange}
+                minimumDate={new Date()}
+              />
+            )}
+            
+            <View style={styles.timeRow}>
+              <View style={styles.timeItem}>
                 <Text style={styles.subLabel}>Start Time</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="HH:MM"
                   placeholderTextColor="#999"
                   value={startTime}
-                  onChangeText={setStartTime}
+                  onChangeText={handleStartTimeChange}
+                  onBlur={handleStartTimeBlur}
+                  keyboardType="numeric"
                 />
               </View>
-              <View style={styles.dateTimeItem}>
+              <View style={styles.timeItem}>
                 <Text style={styles.subLabel}>End Time</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="HH:MM"
                   placeholderTextColor="#999"
                   value={endTime}
-                  onChangeText={setEndTime}
+                  onChangeText={handleEndTimeChange}
+                  onBlur={handleEndTimeBlur}
+                  keyboardType="numeric"
                 />
               </View>
             </View>
@@ -395,35 +465,16 @@ export default function VenueCreateDealScreen({ onNavigate, onOpenMenu }) {
             )}
           </View>
 
-          {/* Price Range & Price */}
-          <View style={styles.twoColumn}>
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Price Range</Text>
-              <View style={styles.priceRangeButtons}>
-                {['€', '€€', '€€€', '€€€€'].map((range) => (
-                  <TouchableOpacity
-                    key={range}
-                    style={[styles.priceButton, priceRange === range && styles.priceButtonActive]}
-                    onPress={() => setPriceRange(range)}
-                  >
-                    <Text style={[styles.priceButtonText, priceRange === range && styles.priceButtonTextActive]}>
-                      {range}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Price</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., €15, Buy 1 Get 1, 50% off"
-                placeholderTextColor="#999"
-                value={price}
-                onChangeText={setPrice}
-              />
-            </View>
+          {/* Price */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Price (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 15 Euro, €15 or 50% off"
+              placeholderTextColor="#999"
+              value={price}
+              onChangeText={setPrice}
+            />
           </View>
 
           {/* Submit Button */}
@@ -586,12 +637,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
   },
-  dateTimeRow: {
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    gap: 12,
+  },
+  datePickerText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  timeRow: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 10,
+    marginTop: 15,
   },
-  dateTimeItem: {
+  timeItem: {
     flex: 1,
   },
   checkboxRow: {
@@ -683,38 +749,6 @@ const styles = StyleSheet.create({
     right: 8,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-  },
-  twoColumn: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  halfWidth: {
-    flex: 1,
-  },
-  priceRangeButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  priceButton: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
-  },
-  priceButtonActive: {
-    backgroundColor: '#0077B6',
-    borderColor: '#0077B6',
-  },
-  priceButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-  },
-  priceButtonTextActive: {
-    color: '#FFFFFF',
   },
   submitButton: {
     backgroundColor: '#0077B6',

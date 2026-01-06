@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function DealsFilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedPrices, setSelectedPrices] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const categories = [
@@ -17,20 +16,9 @@ export default function DealsFilterScreen({ onClose, onApply }) {
     'Other Deals',
   ];
 
-  const prices = ['€', '€€', '€€€', '€€€€'];
-
-  const togglePrice = (price) => {
-    if (selectedPrices.includes(price)) {
-      setSelectedPrices(selectedPrices.filter(p => p !== price));
-    } else {
-      setSelectedPrices([...selectedPrices, price]);
-    }
-  };
-
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
-      prices: selectedPrices,
     });
     onClose && onClose();
   };
@@ -70,43 +58,6 @@ export default function DealsFilterScreen({ onClose, onApply }) {
             ))}
           </View>
         )}
-
-        {/* Price Level */}
-        <Text style={styles.sectionTitle}>Price Level</Text>
-        <View style={styles.priceContainer}>
-          <TouchableOpacity
-            style={[
-              styles.priceButton,
-              selectedPrices.length === 0 && styles.priceButtonActive
-            ]}
-            onPress={() => setSelectedPrices([])}
-          >
-            <Text style={[
-              styles.priceText,
-              selectedPrices.length === 0 && styles.priceTextActive
-            ]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          
-          {prices.map((price) => (
-            <TouchableOpacity
-              key={price}
-              style={[
-                styles.priceButton,
-                selectedPrices.includes(price) && styles.priceButtonActive
-              ]}
-              onPress={() => togglePrice(price)}
-            >
-              <Text style={[
-                styles.priceText,
-                selectedPrices.includes(price) && styles.priceTextActive
-              ]}>
-                {price}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
@@ -188,35 +139,6 @@ const styles = StyleSheet.create({
   dropdownItemTextActive: {
     color: '#0077B6',
     fontWeight: '600',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  priceButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#0077B6',
-    minWidth: 60,
-    justifyContent: 'center',
-  },
-  priceButtonActive: {
-    backgroundColor: '#0077B6',
-  },
-  priceText: {
-    fontSize: 16,
-    color: '#0077B6',
-    fontWeight: '500',
-  },
-  priceTextActive: {
-    color: '#FFFFFF',
   },
   buttonContainer: {
     flexDirection: 'row',

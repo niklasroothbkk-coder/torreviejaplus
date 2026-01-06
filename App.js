@@ -42,6 +42,10 @@ import VenueEditProfileScreen from './src/screens/VenueEditProfileScreen';
 import VenueChangePasswordScreen from './src/screens/VenueChangePasswordScreen';
 import VenueCreateDealScreen from './src/screens/VenueCreateDealScreen';
 import VenueCreateEventScreen from './src/screens/VenueCreateEventScreen';
+import VenueViewDealsScreen from './src/screens/VenueViewDealsScreen';
+import VenueViewEventsScreen from './src/screens/VenueViewEventsScreen';
+import VenueEditDealScreen from './src/screens/VenueEditDealScreen';
+import VenueEditEventScreen from './src/screens/VenueEditEventScreen';
 import VenueManageDealsScreen from './src/screens/Venues/VenueManageDealsScreen';
 import VenueManageEventsScreen from './src/screens/Venues/VenueManageEventsScreen';
 
@@ -459,6 +463,14 @@ export default function App() {
         return <VenueCreateDealScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venueCreateEvent':
         return <VenueCreateEventScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueViewDeals':
+        return <VenueViewDealsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueViewEvents':
+        return <VenueViewEventsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
+      case 'venueEditDeal':
+        return <VenueEditDealScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} route={{ params: authParams }} />;
+      case 'venueEditEvent':
+        return <VenueEditEventScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} route={{ params: authParams }} />;
       case 'venuesettings':
         return <VenueSettingsScreen onNavigate={handleMenuItemPress} onOpenMenu={openMenu} />;
       case 'venueeditprofile':

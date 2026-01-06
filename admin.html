@@ -1022,17 +1022,7 @@
                         </div>
                     </div>
 
-                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <div class="form-group">
-                            <label for="deal_price_range">Price Range</label>
-                            <select id="deal_price_range">
-                                <option value="">Select price...</option>
-                                <option value="€">€ (Budget)</option>
-                                <option value="€€">€€ (Moderate)</option>
-                                <option value="€€€">€€€ (Upscale)</option>
-                                <option value="€€€€">€€€€ (Luxury)</option>
-                            </select>
-                        </div>
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr;">
                         <div class="form-group">
                             <label for="deal_price">Price (e.g. €15, Buy 1 Get 1, 50% off)</label>
                             <input type="text" id="deal_price" placeholder="€15:00">
@@ -2081,7 +2071,6 @@ try {
         recurring_day: (isRepeat && repeatDays.length > 0) ? repeatDays.join(',') : null,
         recurring_weeks: (isRepeat && repeatWeeks > 0) ? repeatWeeks : null,
         price: dealPrice,
-        price_range: document.getElementById('deal_price_range').value || null,
         image_url: uploadedDealImage,
         views: dealViews,
         registered_date: registeredDate,
@@ -2175,7 +2164,8 @@ try {
                             <h3>${deal.name}</h3>
                             <p><strong>Category:</strong> ${deal.category || 'N/A'}</p>
                             <p><strong>Venue:</strong> ${deal.venues?.name || 'N/A'} - ${deal.venues?.location_short || ''}</p>
-                            <p><strong>Date:</strong> ${deal.deal_date} ${deal.start_time ? `(${deal.start_time} - ${deal.end_time})` : ''}</p>
+                            <p><strong>Date:</strong> ${deal.deal_date} ${deal.start_time ? `(${deal.start_time.slice(0,5)} - ${deal.end_time.slice(0,5)})` : ''}</p>
+                            ${deal.end_date ? `<p><strong>End Date:</strong> ${deal.end_date}</p>` : ''}
                             ${deal.is_recurring ? `<p><strong>Recurring:</strong> ${deal.recurring_day} (${deal.recurring_weeks} weeks)</p>` : ''}
                             <p><strong>Price:</strong> ${deal.price || 'N/A'} | <strong>Status:</strong> ${deal.active ? '✅ Active' : '❌ Inactive'}</p>
                             ${deal.image_url ? '<p><strong>Image:</strong> 📸</p>' : ''}
@@ -2246,7 +2236,6 @@ try {
                 document.getElementById('deal_start_time').value = data.start_time || '12:00';
                 document.getElementById('deal_end_time').value = data.end_time || '12:00';
                 document.getElementById('deal_price').value = data.price || '';
-                document.getElementById('deal_price_range').value = data.price_range || '';
                 document.getElementById('deal_views').value = 0;
                 
                 document.getElementById('deal_registered_date').value = new Date().toISOString().split('T')[0];
@@ -2343,7 +2332,6 @@ try {
                 document.getElementById('deal_start_time').value = data.start_time || '12:00';
                 document.getElementById('deal_end_time').value = data.end_time || '12:00';
                 document.getElementById('deal_price').value = data.price || '';
-                document.getElementById('deal_price_range').value = data.price_range || '';
                 document.getElementById('deal_views').value = data.views || 0;
                 
                 const dealRegisteredDate = data.registered_date || new Date().toISOString().split('T')[0];
@@ -2543,7 +2531,7 @@ try {
             if (!listDiv) return;
             listDiv.innerHTML = '<div class="loading">Loading events...</div>';
             try {
-                const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
+                const { data, error } = await supabaseClient.from('events').select('*, venues!events_venue_id_fkey(name, location_short)').order('event_date', { ascending: false });
                 if (error) throw error;
                 allEvents = data;
                 if (data.length === 0) {
@@ -2570,8 +2558,10 @@ try {
                     <div class="venue-info">
                         <h3>${event.name}</h3>
                         <p><strong>Category:</strong> ${event.category || 'N/A'}</p>
+                        ${event.venues?.name ? `<p><strong>Venue:</strong> ${event.venues.name} - ${event.venues.location_short || ''}</p>` : ''}
                         ${event.website ? `<p><strong>Website:</strong> <a href="${event.website}" target="_blank">${event.website}</a></p>` : ''}
-                        <p><strong>Date:</strong> ${event.event_date} ${event.start_time ? `(${event.start_time} - ${event.end_time})` : ''}</p>
+                        <p><strong>Date:</strong> ${event.event_date} ${event.start_time ? `(${event.start_time.slice(0,5)} - ${event.end_time.slice(0,5)})` : ''}</p>
+                        ${event.end_date ? `<p><strong>End Date:</strong> ${event.end_date}</p>` : ''}
                         ${event.is_recurring ? `<p><strong>Recurring:</strong> ${event.recurring_day} (${event.recurring_weeks} weeks)</p>` : ''}
                         <p><strong>Price:</strong> ${event.price || 'Free'} | <strong>Status:</strong> ${event.active ? '✅ Active' : '❌ Inactive'}</p>
                         ${event.image_url ? '<p><strong>Image:</strong> 📸</p>' : ''}

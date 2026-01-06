@@ -12,15 +12,29 @@ const getNextOccurrence = (event) => {
   now.setHours(0, 0, 0, 0); // Start of today
   
   // If event is recurring
-  if (event.is_recurring && event.recurring_days) {
+  if (event.is_recurring && event.recurring_day) {
     const eventDate = new Date(event.event_date);
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const recurringDays = event.recurring_days.split(',').map(d => d.trim());
+    const recurringDays = event.recurring_day.split(',').map(d => d.trim());
+    
+    // Check if we're past the end_date
+    if (event.end_date) {
+      const endDate = new Date(event.end_date);
+      endDate.setHours(23, 59, 59, 999);
+      if (now > endDate) return null;
+    }
     
     // Find next occurrence within next 60 days
     for (let i = 0; i < 60; i++) {
       const checkDate = new Date(now);
       checkDate.setDate(checkDate.getDate() + i);
+      
+      // Don't go past end_date
+      if (event.end_date) {
+        const endDate = new Date(event.end_date);
+        if (checkDate > endDate) return null;
+      }
+      
       const dayName = daysOfWeek[checkDate.getDay()];
       
       if (recurringDays.includes(dayName)) {
@@ -38,13 +52,25 @@ const filterValidEvents = (events) => {
   now.setHours(0, 0, 0, 0); // Start of today
   
   return events.filter(event => {
-    // If recurring, check if it has future occurrences
-    if (event.is_recurring && event.recurring_days) {
+    // If recurring, check if end_date has passed
+    if (event.is_recurring && event.recurring_day) {
+      // Check end_date first
+      if (event.end_date) {
+        const endDate = new Date(event.end_date);
+        endDate.setHours(23, 59, 59, 999);
+        if (endDate < now) return false; // Event period has ended
+      }
       const nextOccurrence = getNextOccurrence(event);
       return nextOccurrence !== null;
     }
     
-    // For non-recurring events, check event_date
+    // For non-recurring events, check end_date if exists, otherwise event_date
+    if (event.end_date) {
+      const endDate = new Date(event.end_date);
+      endDate.setHours(23, 59, 59, 999);
+      return endDate >= now;
+    }
+    
     if (event.event_date) {
       const eventDate = new Date(event.event_date);
       eventDate.setHours(23, 59, 59, 999); // End of that day
@@ -85,7 +111,7 @@ export default function EventsPage({ onNavigate, onOpenMenu }) {
       const transformedEvents = validEvents.map(event => {
         // Calculate display date for recurring events
         let displayDate = event.event_date;
-        if (event.is_recurring && event.recurring_days) {
+        if (event.is_recurring && event.recurring_day) {
           const nextOccurrence = getNextOccurrence(event);
           if (nextOccurrence) {
             displayDate = nextOccurrence;
@@ -102,7 +128,7 @@ export default function EventsPage({ onNavigate, onOpenMenu }) {
           startTime: event.start_time,
           endTime: event.end_time,
           isRecurring: event.is_recurring,
-          recurringDays: event.recurring_days,
+          recurringDays: event.recurring_day,
           image: event.image_url ? { uri: event.image_url } : require('../../assets/events/market-photo.png'),
         };
       });
