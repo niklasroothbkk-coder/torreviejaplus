@@ -17,8 +17,10 @@ export default function FilterScreen({ onClose, onApply }) {
   const categories = [
     'All',
     'Restaurants',
-    'Sport Bars',
-    'Massage & Spa',
+    'Sport Bars & Pubs',
+    'Sports & Fitness',
+    'Tours & Sightseeing',
+    "Massage & Spa's",
     'Healthcare & Emergency',
     'Nightclubs',
     'Post Offices & Banks',
@@ -88,8 +90,8 @@ export default function FilterScreen({ onClose, onApply }) {
     onApply && onApply({
       category: selectedCategory,
       cuisine: selectedCategory === 'Restaurants' ? selectedCuisine : null,
-      pubTypes: selectedCategory === 'Sport Bars' ? selectedPubTypes : [],
-      spaType: selectedCategory === 'Massage & Spa' ? selectedSpaType : null,
+      pubTypes: selectedCategory === 'Sport Bars & Pubs' ? selectedPubTypes : [],
+      spaType: selectedCategory === "Massage & Spa's" ? selectedSpaType : null,
       healthcareType: selectedCategory === 'Healthcare & Emergency' ? selectedHealthcareType : null,
       prices: selectedPrices,
     });
@@ -102,10 +104,10 @@ export default function FilterScreen({ onClose, onApply }) {
     if (category !== 'Restaurants') {
       setSelectedCuisine('All');
     }
-    if (category !== 'Sport Bars') {
+    if (category !== 'Sport Bars & Pubs') {
       setSelectedPubTypes([]);
     }
-    if (category !== 'Massage & Spa') {
+    if (category !== "Massage & Spa's") {
       setSelectedSpaType('All');
     }
     if (category !== 'Healthcare & Emergency') {
@@ -179,7 +181,7 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
-        {selectedCategory === 'Sport Bars' && (
+        {selectedCategory === 'Sport Bars & Pubs' && (
           <>
             <Text style={styles.sectionTitle}>Features</Text>
             <View style={styles.multiSelectContainer}>
@@ -204,7 +206,7 @@ export default function FilterScreen({ onClose, onApply }) {
           </>
         )}
 
-        {selectedCategory === 'Massage & Spa' && (
+        {selectedCategory === "Massage & Spa's" && (
           <>
             <Text style={styles.sectionTitle}>Type</Text>
             <TouchableOpacity 

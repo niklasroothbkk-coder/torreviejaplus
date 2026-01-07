@@ -309,8 +309,8 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
   };
 
   const handleShare = (platform) => {
-    const shareUrl = `https://huahin.app/venue/${venueId}`;
-    const shareText = `Check out ${venueData?.name} on Hua Hin App!`;
+    const shareUrl = `https://torreviejaplus.com/venue/${venueId}`;
+    const shareText = `Check out ${venueData?.name} on TorreviejaPlus!`;
     
     switch(platform) {
       case 'facebook':

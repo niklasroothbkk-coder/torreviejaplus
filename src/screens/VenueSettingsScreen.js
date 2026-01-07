@@ -50,6 +50,14 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
   // Default benefits fallback
   const getDefaultBenefits = (packageName) => {
+    if (packageName === 'Free') {
+      return [
+        'Public venue listing',
+        'Basic information display',
+        'Location on map',
+        'Opening hours display'
+      ];
+    }
     if (packageName === 'Bronze') {
       return [
         'Basic venue listing',
@@ -122,7 +130,8 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
   // Helper function to get package price
   const getPackagePrice = () => {
-    const pkg = venueData?.package || 'Gold';
+    const pkg = venueData?.package || 'Free';
+    if (pkg === 'Free') return 0;
     if (pkg === 'Bronze') return 99;
     if (pkg === 'Silver') return 199;
     return 499;
@@ -130,6 +139,8 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
 
   // Helper function to format payment date
   const formatPaymentDate = () => {
+    const pkg = venueData?.package || 'Free';
+    if (pkg === 'Free') return ''; // No payment info for free packages
     if (venueData?.payment_date) {
       return `(Paid ${venueData.payment_date})`;
     }
@@ -200,14 +211,16 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons name="star" size={24} color="#FFD700" />
-              <Text style={styles.settingText}>{venueData?.package || 'Gold'} Package</Text>
+              <Text style={styles.settingText}>{venueData?.package || 'Free'} Package</Text>
             </View>
           </View>
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons name="cash-outline" size={24} color="#0077B6" />
-              <Text style={styles.settingText}>{getPackagePrice()} Euro {formatPaymentDate()}</Text>
+              <Text style={styles.settingText}>
+                {getPackagePrice() === 0 ? 'Free' : `${getPackagePrice()} Euro`} {formatPaymentDate()}
+              </Text>
             </View>
           </View>
 
@@ -375,7 +388,7 @@ export default function VenueSettingsScreen({ onNavigate, onOpenMenu }) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{venueData?.package || 'Gold'} Package</Text>
+            <Text style={styles.modalTitle}>{venueData?.package || 'Free'} Package</Text>
             <Text style={styles.modalSubtitle}>Your package includes:</Text>
 
             <View style={styles.benefitsList}>

@@ -1018,21 +1018,21 @@
                     <form id="venueForm">
                 <input type="hidden" id="venueId">
                 
-                <!-- VENUE LOGIN CREDENTIALS (Only for new venues) -->
+                <!-- VENUE LOGIN CREDENTIALS (Optional for public places) -->
                 <div id="venueCredentialsSection" class="credentials-section">
                     <h2>🔐 Venue Login Credentials</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="venue_email">Email (for login) *</label>
+                            <label for="venue_email">Email (for login)</label>
                             <input type="email" id="venue_email" placeholder="venue@example.com">
                         </div>
                         <div class="form-group">
-                            <label for="venue_password">Password (for login) *</label>
+                            <label for="venue_password">Password (for login)</label>
                             <input type="password" id="venue_password" placeholder="Minimum 6 characters">
                         </div>
                     </div>
                     <div class="credentials-note">
-                        <p><strong>⚠️ IMPORTANT:</strong> These credentials will allow the venue to log into the mobile app and manage their deals/events. <strong>Required for new venues only.</strong> Leave blank when editing existing venues.</p>
+                        <p><strong>ℹ️ NOTE:</strong> These credentials allow the venue to log into the mobile app and manage their deals/events. <strong>Optional</strong> - leave blank for public places (beaches, parks, etc.) that don't need login access.</p>
                     </div>
                 </div>
                 
@@ -1045,8 +1045,10 @@
                     <select id="category" required onchange="updateSubCategories()">
                         <option value="">Select category...</option>
                         <option value="Restaurants">Restaurants</option>
-                        <option value="Sport Bars">Sport Bars</option>
-                        <option value="Massage & Spa">Massage & Spa</option>
+                        <option value="Sport Bars & Pubs">Sport Bars & Pubs</option>
+                        <option value="Sports & Fitness">Sports & Fitness</option>
+                        <option value="Tours & Sightseeing">Tours & Sightseeing</option>
+                        <option value="Massage & Spa's">Massage & Spa's</option>
                         <option value="Healthcare & Emergency">Healthcare & Emergency</option>
                         <option value="Nightclubs">Nightclubs</option>
                         <option value="Post Offices & Banks">Post Offices & Banks</option>
@@ -1309,6 +1311,14 @@
                             <input type="checkbox" id="feature_wheelchair">
                             <span>♿ Wheelchair Accessible</span>
                         </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="feature_firstaid">
+                            <span>🩹 First-Aid</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="feature_toilet">
+                            <span>🚻 Mobile Toilet</span>
+                        </label>
                     </div>
                 </div>
 
@@ -1329,9 +1339,10 @@
                     <div class="form-group">
                         <label for="venuePackage">Package</label>
                         <select id="venuePackage">
+                            <option value="Free" selected>Free (Public places)</option>
                             <option value="Bronze">Bronze - €99</option>
                             <option value="Silver">Silver - €199</option>
-                            <option value="Gold" selected>Gold - €499</option>
+                            <option value="Gold">Gold - €499</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1353,9 +1364,10 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="price_range">Price Range *</label>
-                        <select id="price_range" required>
+                        <label for="price_range">Price Range</label>
+                        <select id="price_range">
                             <option value="">Select price...</option>
+                            <option value="Free">Free (Public places)</option>
                             <option value="€">€ (Budget)</option>
                             <option value="€€">€€ (Moderate)</option>
                             <option value="€€€">€€€ (Upscale)</option>
@@ -1548,8 +1560,10 @@
                             <select id="categoryFilter" onchange="filterVenues()">
                                 <option value="">All Categories</option>
                                 <option value="Restaurants">Restaurants</option>
-                                <option value="Sport Bars">Sport Bars</option>
-                                <option value="Massage & Spa">Massage & Spa</option>
+                                <option value="Sport Bars & Pubs">Sport Bars & Pubs</option>
+                                <option value="Sports & Fitness">Sports & Fitness</option>
+                                <option value="Tours & Sightseeing">Tours & Sightseeing</option>
+                                <option value="Massage & Spa's">Massage & Spa's</option>
                                 <option value="Healthcare & Emergency">Healthcare & Emergency</option>
                                 <option value="Nightclubs">Nightclubs</option>
                                 <option value="Post Offices & Banks">Post Offices & Banks</option>
@@ -1966,13 +1980,13 @@ Priority support</textarea>
             
             if (category === 'Restaurants') {
                 document.getElementById('cuisineGroup').classList.remove('hidden');
-            } else if (category === 'Sport Bars') {
+            } else if (category === 'Sport Bars & Pubs') {
                 document.getElementById('pubTypeGroup').classList.remove('hidden');
-            } else if (category === 'Massage & Spa') {
+            } else if (category === "Massage & Spa's") {
                 document.getElementById('spaTypeGroup').classList.remove('hidden');
-            } else if (category === 'Sports Activities') {
+            } else if (category === 'Sports & Fitness') {
                 document.getElementById('sportTypeGroup').classList.remove('hidden');
-            } else if (category === 'Markets & Attractions') {
+            } else if (category === 'Tours & Sightseeing') {
                 document.getElementById('attractionTypeGroup').classList.remove('hidden');
             } else if (category === 'Healthcare & Emergency') {
                 document.getElementById('healthcareTypeGroup').classList.remove('hidden');
@@ -2133,6 +2147,8 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
             if (document.getElementById('feature_seaview').checked) features.push('Sea View');
             if (document.getElementById('feature_smoking').checked) features.push('Smoking Area');
             if (document.getElementById('feature_wheelchair').checked) features.push('Wheelchair Accessible');
+            if (document.getElementById('feature_firstaid').checked) features.push('First-Aid');
+            if (document.getElementById('feature_toilet').checked) features.push('Mobile Toilet');
             
             const cuisineCheckboxes = document.querySelectorAll('input[name="cuisine"]:checked');
             const selectedCuisines = Array.from(cuisineCheckboxes).map(cb => cb.value);
@@ -2147,10 +2163,10 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 cuisine: selectedCuisines.length > 0 && document.getElementById('category').value === 'Restaurants' ? selectedCuisines : null,
-                pub_types: selectedPubTypes.length > 0 && document.getElementById('category').value === 'Sport Bars' ? selectedPubTypes : null,
-                spa_types: selectedSpaTypes.length > 0 && document.getElementById('category').value === 'Massage & Spa' ? selectedSpaTypes : null,
-                sport_types: document.getElementById('sport_type').value && document.getElementById('category').value === 'Sports Activities' ? [document.getElementById('sport_type').value] : null,
-                attraction_types: document.getElementById('attraction_type').value && document.getElementById('category').value === 'Markets & Attractions' ? [document.getElementById('attraction_type').value] : null,
+                pub_types: selectedPubTypes.length > 0 && document.getElementById('category').value === 'Sport Bars & Pubs' ? selectedPubTypes : null,
+                spa_types: selectedSpaTypes.length > 0 && document.getElementById('category').value === "Massage & Spa's" ? selectedSpaTypes : null,
+                sport_types: document.getElementById('sport_type').value && document.getElementById('category').value === 'Sports & Fitness' ? [document.getElementById('sport_type').value] : null,
+                attraction_types: document.getElementById('attraction_type').value && document.getElementById('category').value === 'Tours & Sightseeing' ? [document.getElementById('attraction_type').value] : null,
                 healthcare_type: document.getElementById('healthcare_type').value && document.getElementById('category').value === 'Healthcare & Emergency' ? document.getElementById('healthcare_type').value : null,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
@@ -2236,13 +2252,15 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                     const venueEmail = document.getElementById('venue_email').value;
                     const venuePassword = document.getElementById('venue_password').value;
                     
-                    if (!venueEmail || !venuePassword) {
-                        showError('Email and Password are required for new venues!');
+                    // Validate password length if provided
+                    if (venuePassword && venuePassword.length < 6) {
+                        showError('Password must be at least 6 characters!');
                         return;
                     }
                     
-                    if (venuePassword.length < 6) {
-                        showError('Password must be at least 6 characters!');
+                    // If email provided, password is also required
+                    if (venueEmail && !venuePassword) {
+                        showError('Password is required when email is provided!');
                         return;
                     }
                     
@@ -2255,32 +2273,37 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                     if (venueError) throw venueError;
                     venueId = newVenue.id;
                     
-                    // Step 2: Call Edge Function to create auth user + link profile
-                    try {
-                        const response = await fetch('https://vfponburmjbuqqneigjr.supabase.co/functions/v1/create-venue-user', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                            },
-                            body: JSON.stringify({
-                                email: venueEmail,
-                                password: venuePassword,
-                                venueId: venueId
-                            })
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (!response.ok || result.error) {
-                            throw new Error(result.error || 'Failed to create venue user');
+                    // Only create auth user if email and password are provided
+                    if (venueEmail && venuePassword) {
+                        try {
+                            const response = await fetch('https://vfponburmjbuqqneigjr.supabase.co/functions/v1/create-venue-user', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                                },
+                                body: JSON.stringify({
+                                    email: venueEmail,
+                                    password: venuePassword,
+                                    venueId: venueId
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (!response.ok || result.error) {
+                                throw new Error(result.error || 'Failed to create venue user');
+                            }
+                            
+                            showSuccess(`✅ Venue created successfully! The venue can now log in with email: ${venueEmail}`);
+                        } catch (edgeFunctionError) {
+                            // Edge function failed - rollback venue creation
+                            await supabaseClient.from('venues').delete().eq('id', venueId);
+                            throw new Error(`Failed to create venue user: ${edgeFunctionError.message}`);
                         }
-                        
-                        showSuccess(`✅ Venue created successfully! The venue can now log in with email: ${venueEmail}`);
-                    } catch (edgeFunctionError) {
-                        // Edge function failed - rollback venue creation
-                        await supabaseClient.from('venues').delete().eq('id', venueId);
-                        throw new Error(`Failed to create venue user: ${edgeFunctionError.message}`);
+                    } else {
+                        // Public place without login
+                        showSuccess('✅ Public venue created successfully! (No login credentials)');
                     }
                 }
                 
@@ -2496,6 +2519,8 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 document.getElementById('feature_seaview').checked = data.features && data.features.includes('Sea View');
                 document.getElementById('feature_smoking').checked = data.features && data.features.includes('Smoking Area');
                 document.getElementById('feature_wheelchair').checked = data.features && data.features.includes('Wheelchair Accessible');
+                document.getElementById('feature_firstaid').checked = data.features && data.features.includes('First-Aid');
+                document.getElementById('feature_toilet').checked = data.features && data.features.includes('Mobile Toilet');
                 
                 uploadedImages = data.images || [];
                 renderImagePreviews();
@@ -2520,7 +2545,7 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
             document.querySelectorAll('input[name="pub_types"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('input[name="spa_types"]').forEach(cb => cb.checked = false);
             
-            document.getElementById('venuePackage').value = 'Gold';
+            document.getElementById('venuePackage').value = 'Free';  // Default to Free
             document.getElementById('venuePaymentDate').value = '';
             
             uploadedImages = [];
@@ -3870,7 +3895,7 @@ try {
         let currentPaymentMonth = 1;
         let allPaymentsData = [];
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        const packagePrices = { 'Bronze': 99, 'Silver': 199, 'Gold': 499 };
+        const packagePrices = { 'Free': 0, 'Bronze': 99, 'Silver': 199, 'Gold': 499 };
 
         function switchPaymentMonth(month) {
             currentPaymentMonth = month;

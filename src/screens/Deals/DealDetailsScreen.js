@@ -142,8 +142,8 @@ export default function DealDetailsScreen({ onNavigate, dealId, authParams }) {
   };
 
   const handleShare = (platform) => {
-    const shareUrl = `https://huahin.app/deal/${dealId}`;
-    const shareText = `Check out ${dealData?.name} on Hua Hin App!`;
+    const shareUrl = `https://torreviejaplus.com/deal/${dealId}`;
+    const shareText = `Check out ${dealData?.name} on TorreviejaPlus!`;
     
     switch(platform) {
       case 'facebook':
