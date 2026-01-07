@@ -1284,41 +1284,10 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="featuresGroup" style="display: none;">
                     <label>✨ Features</label>
-                    <div class="checkbox-grid">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_indoor">
-                            <span>🏠 Indoor Seating</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_outdoor">
-                            <span>☀️ Outdoor Seating</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_creditcard">
-                            <span>💳 Accept Credit Cards</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_seaview">
-                            <span>🌊 Sea View</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_smoking">
-                            <span>🚬 Smoking Area</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_wheelchair">
-                            <span>♿ Wheelchair Accessible</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_firstaid">
-                            <span>🩹 First-Aid</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="feature_toilet">
-                            <span>🚻 Mobile Toilet</span>
-                        </label>
+                    <div id="featuresContainer" class="checkbox-grid">
+                        <!-- Features will be dynamically populated based on category -->
                     </div>
                 </div>
 
@@ -1968,6 +1937,120 @@ Priority support</textarea>
         let currentEditingVisitorId = null;
         let currentEditingCustomerId = null;
 
+        // Category to Features mapping - loaded from database
+        let categoryFeatures = {};
+        
+        // Load category features from database on page load
+        async function loadCategoryFeatures() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('category_features')
+                    .select('category, features');
+                
+                if (error) {
+                    console.error('Error loading category features:', error);
+                    return;
+                }
+                
+                // Convert to object format
+                categoryFeatures = {};
+                data.forEach(row => {
+                    categoryFeatures[row.category] = row.features;
+                });
+                
+                console.log('Category features loaded from database');
+            } catch (error) {
+                console.error('Failed to load category features:', error);
+            }
+        }
+        
+        // Feature options per category (reference only - actual data from database)
+        const categoryFeaturesReference = {
+            'Restaurants': [
+                'Accept Credit Card',
+                'Indoor Seating',
+                'Outdoor Seating',
+                'Parking',
+                'Reservations',
+                'Sea View',
+                'Smoking Area',
+                'Wheelchair Accessible',
+                'WiFi'
+            ],
+            'Sport Bars & Pubs': [
+                'Accept Credit Card',
+                'Indoor Seating',
+                'Live Sports',
+                'Outdoor Seating',
+                'Parking',
+                'Smoking Area',
+                'Wheelchair Accessible',
+                'WiFi'
+            ],
+            'Tours & Sightseeing': [
+                'Children Friendly',
+                'Food Included',
+                'Guide Included',
+                'Transport Included'
+            ],
+            'Sports & Fitness': [
+                'Group Classes',
+                'Gym',
+                'Parking',
+                'Personal Trainer',
+                'Pool',
+                'Sauna',
+                'WiFi'
+            ],
+            "Massage & Spa's": [
+                'Accept Credit Card',
+                'Parking',
+                'Pool',
+                'Sauna',
+                'Wheelchair Accessible',
+                'WiFi'
+            ],
+            'Healthcare & Emergency': [
+                '24/7 Service',
+                'Accept Credit Card',
+                'English Speaking',
+                'Parking',
+                'Wheelchair Accessible'
+            ],
+            'Nightclubs': [
+                'Accept Credit Card',
+                'Outdoor Area',
+                'Parking',
+                'VIP Area'
+            ],
+            'Post Offices & Banks': [
+                'English Speaking',
+                'Parking'
+            ],
+            'Car & Bike Rentals': [
+                'Accept Credit Card',
+                'Delivery',
+                'Insurance Included',
+                'Pick up'
+            ],
+            'Shopping Centres': [
+                'Accept Credit Card',
+                'Food Court',
+                'Parking',
+                'Wheelchair Accessible',
+                'WiFi'
+            ],
+            'Beaches': [
+                'First-Aid',
+                'Lifeguard',
+                'Mobile Toilet',
+                'Parking',
+                'Showers',
+                'Sunbeds',
+                'Wheelchair Accessible'
+            ]
+        };
+
         function updateSubCategories() {
             const category = document.getElementById('category').value;
             
@@ -1991,6 +2074,33 @@ Priority support</textarea>
             } else if (category === 'Healthcare & Emergency') {
                 document.getElementById('healthcareTypeGroup').classList.remove('hidden');
             }
+            
+            // Update features based on category
+            updateFeaturesForCategory(category);
+        }
+        
+        function updateFeaturesForCategory(category) {
+            const featuresGroup = document.getElementById('featuresGroup');
+            const featuresContainer = document.getElementById('featuresContainer');
+            
+            if (!category || !categoryFeatures[category]) {
+                featuresGroup.style.display = 'none';
+                featuresContainer.innerHTML = '';
+                return;
+            }
+            
+            featuresGroup.style.display = 'block';
+            const features = categoryFeatures[category];
+            
+            featuresContainer.innerHTML = features.map(feature => {
+                const featureId = 'feature_' + feature.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                return `
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="${featureId}" name="venue_features" value="${feature}">
+                        <span>${feature}</span>
+                    </label>
+                `;
+            }).join('');
         }
 
         window.addEventListener('load', () => {
@@ -2140,15 +2250,9 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 sunday: document.getElementById('sunday_hours').value
             };
             
-            const features = [];
-            if (document.getElementById('feature_indoor').checked) features.push('Indoor Seating');
-            if (document.getElementById('feature_outdoor').checked) features.push('Outdoor Seating');
-            if (document.getElementById('feature_creditcard').checked) features.push('Accept Credit Cards');
-            if (document.getElementById('feature_seaview').checked) features.push('Sea View');
-            if (document.getElementById('feature_smoking').checked) features.push('Smoking Area');
-            if (document.getElementById('feature_wheelchair').checked) features.push('Wheelchair Accessible');
-            if (document.getElementById('feature_firstaid').checked) features.push('First-Aid');
-            if (document.getElementById('feature_toilet').checked) features.push('Mobile Toilet');
+            // Collect all checked features dynamically
+            const featureCheckboxes = document.querySelectorAll('input[name="venue_features"]:checked');
+            const features = Array.from(featureCheckboxes).map(cb => cb.value);
             
             const cuisineCheckboxes = document.querySelectorAll('input[name="cuisine"]:checked');
             const selectedCuisines = Array.from(cuisineCheckboxes).map(cb => cb.value);
@@ -2513,14 +2617,15 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 document.getElementById('venuePackage').value = data.package || 'Gold';
                 document.getElementById('venuePaymentDate').value = data.payment_date || '';
                 
-                document.getElementById('feature_indoor').checked = data.features && data.features.includes('Indoor Seating');
-                document.getElementById('feature_outdoor').checked = data.features && data.features.includes('Outdoor Seating');
-                document.getElementById('feature_creditcard').checked = data.features && data.features.includes('Accept Credit Cards');
-                document.getElementById('feature_seaview').checked = data.features && data.features.includes('Sea View');
-                document.getElementById('feature_smoking').checked = data.features && data.features.includes('Smoking Area');
-                document.getElementById('feature_wheelchair').checked = data.features && data.features.includes('Wheelchair Accessible');
-                document.getElementById('feature_firstaid').checked = data.features && data.features.includes('First-Aid');
-                document.getElementById('feature_toilet').checked = data.features && data.features.includes('Mobile Toilet');
+                // Load features dynamically based on category
+                if (data.features && Array.isArray(data.features)) {
+                    // Wait a moment for the features to be rendered by updateSubCategories
+                    setTimeout(() => {
+                        document.querySelectorAll('input[name="venue_features"]').forEach(checkbox => {
+                            checkbox.checked = data.features.includes(checkbox.value);
+                        });
+                    }, 100);
+                }
                 
                 uploadedImages = data.images || [];
                 renderImagePreviews();
@@ -3887,8 +3992,12 @@ try {
         }
 
         // Initialize dashboard on page load
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load category features from database first
+            await loadCategoryFeatures();
+            
             updateDashboardPeriod();
+            loadVenuesForDealDropdown();
         });
 
         // ===== PAYMENTS TAB FUNCTIONS =====

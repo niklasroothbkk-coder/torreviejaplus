@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../config/supabaseClient';
 
 export default function FilterScreen({ onClose, onApply }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -9,10 +10,40 @@ export default function FilterScreen({ onClose, onApply }) {
   const [selectedSpaType, setSelectedSpaType] = useState('All');
   const [selectedHealthcareType, setSelectedHealthcareType] = useState('All');
   const [selectedPrices, setSelectedPrices] = useState([]);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
   const [showSpaTypeDropdown, setShowSpaTypeDropdown] = useState(false);
   const [showHealthcareTypeDropdown, setShowHealthcareTypeDropdown] = useState(false);
+  const [categoryFeatures, setCategoryFeatures] = useState({});
+
+  // Load category features from database
+  useEffect(() => {
+    loadCategoryFeatures();
+  }, []);
+
+  const loadCategoryFeatures = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('category_features')
+        .select('category, features');
+      
+      if (error) {
+        console.error('Error loading category features:', error);
+        return;
+      }
+      
+      // Convert to object format
+      const featuresMap = {};
+      data.forEach(row => {
+        featuresMap[row.category] = row.features;
+      });
+      
+      setCategoryFeatures(featuresMap);
+    } catch (error) {
+      console.error('Failed to load category features:', error);
+    }
+  };
 
   const categories = [
     'All',
@@ -86,6 +117,14 @@ export default function FilterScreen({ onClose, onApply }) {
     }
   };
 
+  const toggleFeature = (feature) => {
+    if (selectedFeatures.includes(feature)) {
+      setSelectedFeatures(selectedFeatures.filter(f => f !== feature));
+    } else {
+      setSelectedFeatures([...selectedFeatures, feature]);
+    }
+  };
+
   const handleApply = () => {
     onApply && onApply({
       category: selectedCategory,
@@ -94,6 +133,7 @@ export default function FilterScreen({ onClose, onApply }) {
       spaType: selectedCategory === "Massage & Spa's" ? selectedSpaType : null,
       healthcareType: selectedCategory === 'Healthcare & Emergency' ? selectedHealthcareType : null,
       prices: selectedPrices,
+      features: selectedFeatures,
     });
     onClose && onClose();
   };
@@ -101,6 +141,7 @@ export default function FilterScreen({ onClose, onApply }) {
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     setShowDropdown(false);
+    // Reset all category-specific filters
     if (category !== 'Restaurants') {
       setSelectedCuisine('All');
     }
@@ -113,7 +154,12 @@ export default function FilterScreen({ onClose, onApply }) {
     if (category !== 'Healthcare & Emergency') {
       setSelectedHealthcareType('All');
     }
+    // Reset features when category changes
+    setSelectedFeatures([]);
   };
+
+  // Get features for current category
+  const currentFeatures = categoryFeatures[selectedCategory] || [];
 
   return (
     <View style={styles.container}>
@@ -183,7 +229,7 @@ export default function FilterScreen({ onClose, onApply }) {
 
         {selectedCategory === 'Sport Bars & Pubs' && (
           <>
-            <Text style={styles.sectionTitle}>Features</Text>
+            <Text style={styles.sectionTitle}>Pub Type</Text>
             <View style={styles.multiSelectContainer}>
               {pubTypes.map((pubType, index) => (
                 <TouchableOpacity
@@ -273,6 +319,32 @@ export default function FilterScreen({ onClose, onApply }) {
                 ))}
               </View>
             )}
+          </>
+        )}
+
+        {/* Dynamic Features Section - only show if category has features */}
+        {currentFeatures.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Features</Text>
+            <View style={styles.multiSelectContainer}>
+              {currentFeatures.map((feature, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.multiSelectButton,
+                    selectedFeatures.includes(feature) && styles.multiSelectButtonActive
+                  ]}
+                  onPress={() => toggleFeature(feature)}
+                >
+                  <Text style={[
+                    styles.multiSelectText,
+                    selectedFeatures.includes(feature) && styles.multiSelectTextActive
+                  ]}>
+                    {feature}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </>
         )}
 
