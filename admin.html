@@ -6,6 +6,8 @@
     <title>TorreviejaPlus Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1775,6 +1777,180 @@
                 </div>
             </div>
 
+            <!-- Add News Page -->
+            <div id="add-news-page" class="content-page">
+                <div class="page-header">
+                    <h1 id="newsFormTitle">Add News Article</h1>
+                </div>
+                <div class="panel">
+                    <form id="newsForm" onsubmit="submitNews(event)">
+                        <input type="hidden" id="newsId">
+                        
+                        <div class="form-group">
+                            <label for="news_title">Title *</label>
+                            <input type="text" id="news_title" required placeholder="Enter article title..." oninput="updateSeoFromTitle()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="news_description">Article Content *</label>
+                            <div id="news_editor" style="height: 400px; background: white;"></div>
+                            <input type="hidden" id="news_description">
+                        </div>
+
+                        <div class="form-group">
+                            <label>📸 Profile Image</label>
+                            <div class="image-upload-section">
+                                <input type="file" id="newsImageInput" accept="image/*">
+                                <label for="newsImageInput" class="upload-btn">Choose Image</label>
+                                <div class="upload-info">
+                                    JPG, PNG, WebP • Recommended: 1200x630px
+                                </div>
+                                <div id="newsImagePreview" class="image-preview-grid"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>📂 News Categories (Select all that apply)</label>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Food & Drinks">
+                                    <span>Food & Drinks</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Lifestyle">
+                                    <span>Lifestyle</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Markets & Shopping">
+                                    <span>Markets & Shopping</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Beaches & Nature">
+                                    <span>Beaches & Nature</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Culture & Attractions">
+                                    <span>Culture & Attractions</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="News">
+                                    <span>News</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Nightlife">
+                                    <span>Nightlife</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Services">
+                                    <span>Services</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Sports & Fitness">
+                                    <span>Sports & Fitness</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="news_categories" value="Things To Do">
+                                    <span>Things To Do</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>🏷️ Tags</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" id="news_tag_input" placeholder="Type a tag and press Enter..." onkeydown="handleTagInput(event)">
+                                <button type="button" onclick="addNewsTag()" style="white-space: nowrap;">Add Tag</button>
+                            </div>
+                            <div id="newsTagsContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+                            <div id="existingTagsSuggestions" style="margin-top: 10px;">
+                                <small style="color: #666;">Previously used tags (click to add):</small>
+                                <div id="existingTagsList" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;"></div>
+                            </div>
+                            <input type="hidden" id="news_tags" value="[]">
+                        </div>
+
+                        <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label for="news_author">Author</label>
+                                <input type="text" id="news_author" value="TorreviejaPlus" readonly style="background: #f5f5f5;">
+                            </div>
+                            <div class="form-group">
+                                <label for="news_date">Published Date</label>
+                                <input type="date" id="news_date" readonly style="background: #f5f5f5;">
+                            </div>
+                            <div class="form-group">
+                                <label for="news_views">Views</label>
+                                <input type="number" id="news_views" value="0" placeholder="0">
+                            </div>
+                        </div>
+
+                        <!-- SEO Section -->
+                        <div style="background: #f0f7ff; border: 2px solid #2271b1; border-radius: 8px; padding: 20px; margin-top: 25px;">
+                            <h2 style="color: #2271b1; border-color: #2271b1;">🔍 SEO Settings</h2>
+                            
+                            <div class="form-group">
+                                <label for="news_seo_title">SEO Title <small style="color: #666; font-weight: normal;">(<span id="seoTitleCount">0</span>/60 characters)</small></label>
+                                <input type="text" id="news_seo_title" maxlength="60" placeholder="Auto-filled from title..." oninput="updateSeoTitleCount()">
+                                <small style="color: #666;">Auto-filled from article title. Max 60 characters.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="news_focus_keyword">Focus Keyword</label>
+                                <input type="text" id="news_focus_keyword" placeholder="Main keyword for SEO...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="news_permalink">Permalink</label>
+                                <input type="text" id="news_permalink" placeholder="https://www.torreviejaplus.es/the-news/..." style="background: #f5f5f5;">
+                                <small style="color: #666;">Auto-generated from title.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="news_seo_description">Meta Description <small style="color: #666; font-weight: normal;">(<span id="seoDescCount">0</span>/160 characters)</small></label>
+                                <textarea id="news_seo_description" maxlength="160" placeholder="Write a compelling meta description..." style="min-height: 80px;" oninput="updateSeoDescCount()"></textarea>
+                                <small style="color: #666;">Max 160 characters for optimal SEO.</small>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <button type="submit" id="newsSubmitBtn">Publish News</button>
+                            <button type="button" id="newsCancelBtn" onclick="cancelNewsEdit()" style="display: none; background: #95a5a6;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- All News Page -->
+            <div id="all-news-page" class="content-page">
+                <div class="page-header">
+                    <h1>📰 The News</h1>
+                </div>
+                <div class="panel">
+                    <div class="venue-filters">
+                        <div class="search-box">
+                            <input type="text" id="newsSearch" placeholder="🔍 Search by title..." oninput="filterNews()">
+                        </div>
+                        <div class="category-filter">
+                            <select id="newsCategoryFilter" onchange="filterNews()">
+                                <option value="">All Categories</option>
+                                <option value="Food & Drinks">Food & Drinks</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Markets & Shopping">Markets & Shopping</option>
+                                <option value="Beaches & Nature">Beaches & Nature</option>
+                                <option value="Culture & Attractions">Culture & Attractions</option>
+                                <option value="News">News</option>
+                                <option value="Nightlife">Nightlife</option>
+                                <option value="Services">Services</option>
+                                <option value="Sports & Fitness">Sports & Fitness</option>
+                                <option value="Things To Do">Things To Do</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="newsFilterResults" class="filter-results" style="display: none;"></div>
+                    <div id="newsList" class="loading">Loading news...</div>
+                </div>
+            </div>
+
             <!-- Visitors Page -->
             <div id="visitors-page" class="content-page">
                 <div class="page-header">
@@ -1926,6 +2102,10 @@ Priority support</textarea>
                 loadCustomers();
             } else if (pageName === 'packages') {
                 loadPackages();
+            } else if (pageName === 'all-news') {
+                loadNews();
+            } else if (pageName === 'add-news') {
+                initNewsForm();
             }
         }
 
@@ -4446,6 +4626,562 @@ try {
                 showSuccess(packageName + ' package saved!');
             } catch (error) {
                 showError('Error saving package: ' + error.message);
+            }
+        }
+
+        // ===== NEWS JAVASCRIPT =====
+        let editingNews = null;
+        let uploadedNewsImage = null;
+        let allNews = [];
+        let newsTags = [];
+        let existingTags = [];
+        let quillEditor = null;
+
+        // Initialize Quill editor
+        function initQuillEditor() {
+            if (quillEditor) return;
+            
+            // Make Quill use <br> for line breaks instead of new <p> tags
+            const Block = Quill.import('blots/block');
+            Block.tagName = 'DIV';
+            Quill.register(Block, true);
+            
+            const Parchment = Quill.import('parchment');
+            const LineBreakClass = new Parchment.Attributor.Class('linebreak', 'linebreak', {
+                scope: Parchment.Scope.BLOCK
+            });
+            Quill.register(LineBreakClass, true);
+            
+            quillEditor = new Quill('#news_editor', {
+                theme: 'snow',
+                placeholder: 'Write your article content here...',
+                modules: {
+                    keyboard: {
+                        bindings: {
+                            linebreak: {
+                                key: 13,
+                                shiftKey: true,
+                                handler: function(range) {
+                                    this.quill.insertText(range.index, '\n');
+                                    this.quill.setSelection(range.index + 1);
+                                    return false;
+                                }
+                            }
+                        }
+                    },
+                    toolbar: {
+                        container: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'align': [] }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['blockquote'],
+                            ['link', 'image'],
+                            ['clean']
+                        ],
+                        handlers: {
+                            image: imageHandler
+                        }
+                    }
+                }
+            });
+        }
+
+        // Custom image handler for Quill
+        function imageHandler() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+            
+            input.onchange = async () => {
+                const file = input.files[0];
+                if (!file) return;
+                
+                try {
+                    // Show loading
+                    showSuccess('Uploading image...');
+                    
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `news-content-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    
+                    const { data, error } = await supabaseClient.storage
+                        .from('venue-images')
+                        .upload(fileName, file);
+                    
+                    if (error) throw error;
+                    
+                    const { data: { publicUrl } } = supabaseClient.storage
+                        .from('venue-images')
+                        .getPublicUrl(fileName);
+                    
+                    // Insert image at cursor position
+                    const range = quillEditor.getSelection(true);
+                    quillEditor.insertEmbed(range.index, 'image', publicUrl);
+                    quillEditor.setSelection(range.index + 1);
+                    
+                    showSuccess('Image uploaded!');
+                } catch (error) {
+                    showError('Upload failed: ' + error.message);
+                }
+            };
+        }
+
+        // Initialize news form
+        function initNewsForm() {
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('news_date').value = today;
+            
+            // Reset views to 0
+            document.getElementById('news_views').value = 0;
+            
+            // Initialize Quill editor
+            initQuillEditor();
+            
+            // Load existing tags for suggestions
+            loadExistingTags();
+            
+            // Setup image upload listener
+            const newsImageInput = document.getElementById('newsImageInput');
+            if (newsImageInput) {
+                newsImageInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        showError('Please select an image file');
+                        return;
+                    }
+                    await uploadNewsImage(file);
+                });
+            }
+        }
+
+        // Load existing tags from database
+        async function loadExistingTags() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('news')
+                    .select('tags');
+                
+                if (data) {
+                    const allTagsArray = data.flatMap(item => item.tags || []);
+                    existingTags = [...new Set(allTagsArray)];
+                    renderExistingTags();
+                }
+            } catch (error) {
+                console.log('Could not load existing tags:', error);
+            }
+        }
+
+        // Render existing tags as clickable suggestions
+        function renderExistingTags() {
+            const container = document.getElementById('existingTagsList');
+            if (!container) return;
+            
+            const availableTags = existingTags.filter(tag => !newsTags.includes(tag));
+            
+            if (availableTags.length === 0) {
+                container.innerHTML = '<span style="color: #999; font-size: 12px;">No previous tags available</span>';
+                return;
+            }
+            
+            container.innerHTML = availableTags.slice(0, 15).map(tag => 
+                `<span onclick="addExistingTag('${tag.replace(/'/g, "\\'")}')" style="background: #e9ecef; padding: 4px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#dee2e6'" onmouseout="this.style.background='#e9ecef'">${tag}</span>`
+            ).join('');
+        }
+
+        // Add existing tag
+        function addExistingTag(tag) {
+            if (!newsTags.includes(tag)) {
+                newsTags.push(tag);
+                renderNewsTags();
+                renderExistingTags();
+            }
+        }
+
+        // Handle tag input (Enter key)
+        function handleTagInput(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addNewsTag();
+            }
+        }
+
+        // Add new tag
+        function addNewsTag() {
+            const input = document.getElementById('news_tag_input');
+            const tag = input.value.trim();
+            
+            if (tag && !newsTags.includes(tag)) {
+                newsTags.push(tag);
+                renderNewsTags();
+                renderExistingTags();
+            }
+            input.value = '';
+        }
+
+        // Remove tag
+        function removeNewsTag(tag) {
+            newsTags = newsTags.filter(t => t !== tag);
+            renderNewsTags();
+            renderExistingTags();
+        }
+
+        // Render current tags
+        function renderNewsTags() {
+            const container = document.getElementById('newsTagsContainer');
+            if (!container) return;
+            
+            container.innerHTML = newsTags.map(tag => 
+                `<span style="background: #2271b1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                    ${tag}
+                    <span onclick="removeNewsTag('${tag.replace(/'/g, "\\'")}')" style="cursor: pointer; font-weight: bold;">&times;</span>
+                </span>`
+            ).join('');
+            
+            // Update hidden input
+            document.getElementById('news_tags').value = JSON.stringify(newsTags);
+        }
+
+        // Upload news image
+        async function uploadNewsImage(file) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `news-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const { data, error } = await supabaseClient.storage.from('venue-images').upload(fileName, file);
+                if (error) throw error;
+                const { data: { publicUrl } } = supabaseClient.storage.from('venue-images').getPublicUrl(fileName);
+                uploadedNewsImage = publicUrl;
+                renderNewsImagePreview();
+                showSuccess('Image uploaded!');
+            } catch (error) {
+                showError('Upload failed: ' + error.message);
+            }
+        }
+
+        // Render news image preview
+        function renderNewsImagePreview() {
+            const container = document.getElementById('newsImagePreview');
+            if (!container) return;
+            if (!uploadedNewsImage) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = `<div class="image-preview-item main-image"><img src="${uploadedNewsImage}" alt="News image"><div class="main-badge">MAIN</div><button type="button" class="remove-image" onclick="removeNewsImage()">&times;</button></div>`;
+        }
+
+        // Remove news image
+        function removeNewsImage() {
+            uploadedNewsImage = null;
+            renderNewsImagePreview();
+            const input = document.getElementById('newsImageInput');
+            if (input) input.value = '';
+        }
+
+        // Update SEO fields from title
+        function updateSeoFromTitle() {
+            const title = document.getElementById('news_title').value;
+            
+            // Update SEO title (max 60 chars)
+            const seoTitle = document.getElementById('news_seo_title');
+            if (seoTitle && !seoTitle.dataset.manuallyEdited) {
+                seoTitle.value = title.substring(0, 60);
+                updateSeoTitleCount();
+            }
+            
+            // Update permalink
+            const slug = title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .substring(0, 50);
+            document.getElementById('news_permalink').value = `https://www.torreviejaplus.es/the-news/${slug}`;
+        }
+
+        // Update SEO title character count
+        function updateSeoTitleCount() {
+            const seoTitle = document.getElementById('news_seo_title');
+            const count = document.getElementById('seoTitleCount');
+            if (seoTitle && count) {
+                count.textContent = seoTitle.value.length;
+                seoTitle.dataset.manuallyEdited = 'true';
+            }
+        }
+
+        // Update SEO description character count
+        function updateSeoDescCount() {
+            const seoDesc = document.getElementById('news_seo_description');
+            const count = document.getElementById('seoDescCount');
+            if (seoDesc && count) {
+                count.textContent = seoDesc.value.length;
+            }
+        }
+
+        // Submit news form
+        async function submitNews(e) {
+            e.preventDefault();
+            
+            // Get content from Quill editor
+            const editorContent = quillEditor ? quillEditor.root.innerHTML : '';
+            
+            // Get selected categories
+            const categoryCheckboxes = document.querySelectorAll('input[name="news_categories"]:checked');
+            const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+            
+            const newsData = {
+                title: document.getElementById('news_title').value,
+                description: editorContent,
+                image_url: uploadedNewsImage,
+                categories: categories,
+                tags: newsTags,
+                author: document.getElementById('news_author').value || 'TorreviejaPlus',
+                published_at: document.getElementById('news_date').value,
+                seo_title: document.getElementById('news_seo_title').value,
+                focus_keyword: document.getElementById('news_focus_keyword').value,
+                permalink: document.getElementById('news_permalink').value,
+                seo_description: document.getElementById('news_seo_description').value,
+                views: parseInt(document.getElementById('news_views').value) || 0,
+                active: true
+            };
+            
+            try {
+                if (editingNews) {
+                    // Update existing - include views from form
+                    const { error } = await supabaseClient.from('news').update(newsData).eq('id', editingNews);
+                    if (error) throw error;
+                    showSuccess('News updated successfully!');
+                } else {
+                    // New article - set created_at
+                    newsData.created_at = new Date().toISOString();
+                    const { error } = await supabaseClient.from('news').insert([newsData]);
+                    if (error) throw error;
+                    showSuccess('News published successfully!');
+                }
+                cancelNewsEdit();
+                loadNews();
+                switchPage('all-news');
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // Cancel news edit
+        function cancelNewsEdit() {
+            editingNews = null;
+            const form = document.getElementById('newsForm');
+            if (form) form.reset();
+            
+            // Clear Quill editor content
+            if (quillEditor) {
+                quillEditor.setContents([]);
+            }
+            
+            document.getElementById('newsFormTitle').textContent = 'Add News Article';
+            document.getElementById('newsSubmitBtn').textContent = 'Publish News';
+            document.getElementById('newsCancelBtn').style.display = 'none';
+            
+            // Reset tags
+            newsTags = [];
+            renderNewsTags();
+            renderExistingTags();
+            
+            // Reset image
+            uploadedNewsImage = null;
+            renderNewsImagePreview();
+            
+            // Reset SEO fields
+            document.getElementById('news_seo_title').dataset.manuallyEdited = '';
+            document.getElementById('seoTitleCount').textContent = '0';
+            document.getElementById('seoDescCount').textContent = '0';
+            
+            // Reset date to today and views to 0
+            document.getElementById('news_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('news_views').value = 0;
+        }
+
+        // Load all news
+        async function loadNews() {
+            const listDiv = document.getElementById('newsList');
+            if (!listDiv) return;
+            listDiv.innerHTML = '<div class="loading">Loading news...</div>';
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('news')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                allNews = data || [];
+                
+                if (allNews.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;color:#999;">No news articles yet! Click "Add News" to create your first article.</p>';
+                    return;
+                }
+                renderNews(allNews);
+            } catch (error) {
+                showError('Error loading news: ' + error.message);
+                listDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;">Error loading news. Make sure the news table exists in Supabase.</p>';
+            }
+        }
+
+        // Render news list
+        function renderNews(news) {
+            const listDiv = document.getElementById('newsList');
+            if (!listDiv) return;
+            
+            if (news.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center;color:#999;">No news match your filters.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = news.map(article => `
+                <div class="venue-item">
+                    <div class="status-indicator ${article.active !== false ? 'status-active' : 'status-inactive'}" title="${article.active !== false ? 'Published' : 'Draft'}"></div>
+                    <div class="venue-info" style="display: flex; gap: 15px; align-items: flex-start;">
+                        ${article.image_url ? `<img src="${article.image_url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">` : ''}
+                        <div>
+                            <h3>${article.title}</h3>
+                            <p><strong>Categories:</strong> ${(article.categories || []).join(', ') || 'None'}</p>
+                            <p><strong>Tags:</strong> ${(article.tags || []).join(', ') || 'None'}</p>
+                            <p><strong>Author:</strong> ${article.author || 'Admin'} | <strong>Date:</strong> ${article.published_at || article.created_at?.split('T')[0] || 'N/A'}</p>
+                            <p><strong>Views:</strong> ${article.views || 0} | <strong>Status:</strong> ${article.active !== false ? '✅ Published' : '📝 Draft'}</p>
+                        </div>
+                    </div>
+                    <div class="venue-actions">
+                        ${article.active !== false ? 
+                            `<button class="reactivate" onclick="unpublishNews(${article.id}, '${article.title.replace(/'/g, "\\'")}')">📝 Unpublish</button>` : 
+                            `<button class="reactivate" onclick="publishNews(${article.id}, '${article.title.replace(/'/g, "\\'")}')">✅ Publish</button>`
+                        }
+                        <button class="edit" onclick="editNews(${article.id})">Edit</button>
+                        <button class="delete" onclick="deleteNews(${article.id}, '${article.title.replace(/'/g, "\\'")}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter news
+        function filterNews() {
+            const searchTerm = document.getElementById('newsSearch')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('newsCategoryFilter')?.value || '';
+            
+            let filtered = allNews;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(n => n.title.toLowerCase().includes(searchTerm));
+            }
+            
+            if (categoryFilter) {
+                filtered = filtered.filter(n => (n.categories || []).includes(categoryFilter));
+            }
+            
+            const resultsDiv = document.getElementById('newsFilterResults');
+            if (resultsDiv) {
+                if (searchTerm || categoryFilter) {
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.textContent = `Showing ${filtered.length} of ${allNews.length} articles`;
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+            }
+            
+            renderNews(filtered);
+        }
+
+        // Edit news
+        async function editNews(id) {
+            try {
+                const { data, error } = await supabaseClient.from('news').select('*').eq('id', id).single();
+                if (error) throw error;
+                
+                editingNews = id;
+                document.getElementById('newsFormTitle').textContent = 'Edit News Article';
+                document.getElementById('newsSubmitBtn').textContent = 'Update News';
+                document.getElementById('newsCancelBtn').style.display = 'inline-block';
+                
+                // Switch to add-news page
+                const pages = document.querySelectorAll('.content-page');
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById('add-news-page').classList.add('active');
+                
+                // Fill form
+                document.getElementById('news_title').value = data.title || '';
+                
+                // Set Quill editor content
+                if (quillEditor) {
+                    quillEditor.root.innerHTML = data.description || '';
+                }
+                
+                document.getElementById('news_author').value = data.author || 'TorreviejaPlus';
+                document.getElementById('news_date').value = data.published_at || '';
+                document.getElementById('news_views').value = data.views || 0;
+                document.getElementById('news_seo_title').value = data.seo_title || '';
+                document.getElementById('news_focus_keyword').value = data.focus_keyword || '';
+                document.getElementById('news_permalink').value = data.permalink || '';
+                document.getElementById('news_seo_description').value = data.seo_description || '';
+                
+                // Update character counts
+                updateSeoTitleCount();
+                updateSeoDescCount();
+                
+                // Set categories
+                document.querySelectorAll('input[name="news_categories"]').forEach(cb => {
+                    cb.checked = (data.categories || []).includes(cb.value);
+                });
+                
+                // Set tags
+                newsTags = data.tags || [];
+                renderNewsTags();
+                loadExistingTags();
+                
+                // Set image
+                uploadedNewsImage = data.image_url || null;
+                renderNewsImagePreview();
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                showError('Error loading news: ' + error.message);
+            }
+        }
+
+        // Delete news
+        async function deleteNews(id, title) {
+            if (!confirm(`Delete "${title}"?`)) return;
+            
+            try {
+                const { error } = await supabaseClient.from('news').delete().eq('id', id);
+                if (error) throw error;
+                showSuccess('News deleted!');
+                loadNews();
+            } catch (error) {
+                showError('Error deleting news: ' + error.message);
+            }
+        }
+
+        // Publish news
+        async function publishNews(id, title) {
+            try {
+                const { error } = await supabaseClient.from('news').update({ active: true }).eq('id', id);
+                if (error) throw error;
+                showSuccess(`"${title}" published!`);
+                loadNews();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // Unpublish news
+        async function unpublishNews(id, title) {
+            if (!confirm(`Unpublish "${title}"?`)) return;
+            try {
+                const { error } = await supabaseClient.from('news').update({ active: false }).eq('id', id);
+                if (error) throw error;
+                showSuccess(`"${title}" unpublished!`);
+                loadNews();
+            } catch (error) {
+                showError('Error: ' + error.message);
             }
         }
 
