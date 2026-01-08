@@ -50,7 +50,7 @@ export default function FilterScreen({ onClose, onApply }) {
     'Restaurants',
     'Sport Bars & Pubs',
     'Sports & Fitness',
-    'Tours & Sightseeing',
+    'Markets & Tours',
     "Massage & Spa's",
     'Healthcare & Emergency',
     'Nightclubs',

@@ -6,6 +6,7 @@
     <title>TorreviejaPlus Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -472,48 +473,57 @@
         </div>
         <div class="sidebar-menu">
             <div class="menu-item active" onclick="switchPage('dashboard')">
-                <span>🏠</span>
+                <i class="fa-solid fa-house" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>Dashboard</div>
             </div>
             <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
             <div class="menu-item" onclick="switchPage('all-venues')">
-                <span>📋</span>
+                <i class="fa-solid fa-store" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>All Venues</div>
             </div>
             <div class="menu-item" onclick="switchPage('add-venue')">
-                <span style="color: white;">➕</span>
+                <i class="fa-solid fa-plus" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>Add Venue</div>
             </div>
             <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
             <div class="menu-item" onclick="switchPage('all-deals')">
-                <span>🎯</span>
+                <i class="fa-solid fa-tags" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>All Deals</div>
             </div>
             <div class="menu-item" onclick="switchPage('add-deal')">
-                <span style="color: white;">➕</span>
+                <i class="fa-solid fa-plus" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>New Deal</div>
             </div>
             <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
             <div class="menu-item" onclick="switchPage('all-events')">
-                <span>🎉</span>
+                <i class="fa-solid fa-calendar-days" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>All Events</div>
             </div>
             <div class="menu-item" onclick="switchPage('add-event')">
-                <span style="color: white;">➕</span>
+                <i class="fa-solid fa-plus" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>New Event</div>
             </div>
             <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
+            <div class="menu-item" onclick="switchPage('all-news')">
+                <i class="fa-solid fa-newspaper" style="color: white; font-size: 16px; width: 20px;"></i>
+                <div>The News</div>
+            </div>
+            <div class="menu-item" onclick="switchPage('add-news')">
+                <i class="fa-solid fa-plus" style="color: white; font-size: 16px; width: 20px;"></i>
+                <div>Add News</div>
+            </div>
+            <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
             <div class="menu-item" onclick="switchPage('visitors')">
-                <span>👥</span>
+                <i class="fa-solid fa-users" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>Visitors</div>
             </div>
             <div class="menu-item" onclick="switchPage('customers')">
-                <span>🏪</span>
+                <i class="fa-solid fa-building" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>Customers (Venues)</div>
             </div>
             <div style="height: 1px; background: #32373c; margin: 10px 0;"></div>
             <div class="menu-item" onclick="switchPage('packages')">
-                <span>📦</span>
+                <i class="fa-solid fa-box" style="color: white; font-size: 16px; width: 20px;"></i>
                 <div>Packages</div>
             </div>
         </div>
@@ -1047,7 +1057,7 @@
                         <option value="Restaurants">Restaurants</option>
                         <option value="Sport Bars & Pubs">Sport Bars & Pubs</option>
                         <option value="Sports & Fitness">Sports & Fitness</option>
-                        <option value="Tours & Sightseeing">Tours & Sightseeing</option>
+                        <option value="Markets & Tours">Markets & Tours</option>
                         <option value="Massage & Spa's">Massage & Spa's</option>
                         <option value="Healthcare & Emergency">Healthcare & Emergency</option>
                         <option value="Nightclubs">Nightclubs</option>
@@ -1531,7 +1541,7 @@
                                 <option value="Restaurants">Restaurants</option>
                                 <option value="Sport Bars & Pubs">Sport Bars & Pubs</option>
                                 <option value="Sports & Fitness">Sports & Fitness</option>
-                                <option value="Tours & Sightseeing">Tours & Sightseeing</option>
+                                <option value="Markets & Tours">Markets & Tours</option>
                                 <option value="Massage & Spa's">Massage & Spa's</option>
                                 <option value="Healthcare & Emergency">Healthcare & Emergency</option>
                                 <option value="Nightclubs">Nightclubs</option>
@@ -1987,7 +1997,7 @@ Priority support</textarea>
                 'Wheelchair Accessible',
                 'WiFi'
             ],
-            'Tours & Sightseeing': [
+            'Markets & Tours': [
                 'Children Friendly',
                 'Food Included',
                 'Guide Included',
@@ -2069,7 +2079,7 @@ Priority support</textarea>
                 document.getElementById('spaTypeGroup').classList.remove('hidden');
             } else if (category === 'Sports & Fitness') {
                 document.getElementById('sportTypeGroup').classList.remove('hidden');
-            } else if (category === 'Tours & Sightseeing') {
+            } else if (category === 'Markets & Tours') {
                 document.getElementById('attractionTypeGroup').classList.remove('hidden');
             } else if (category === 'Healthcare & Emergency') {
                 document.getElementById('healthcareTypeGroup').classList.remove('hidden');
@@ -2270,7 +2280,7 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 pub_types: selectedPubTypes.length > 0 && document.getElementById('category').value === 'Sport Bars & Pubs' ? selectedPubTypes : null,
                 spa_types: selectedSpaTypes.length > 0 && document.getElementById('category').value === "Massage & Spa's" ? selectedSpaTypes : null,
                 sport_types: document.getElementById('sport_type').value && document.getElementById('category').value === 'Sports & Fitness' ? [document.getElementById('sport_type').value] : null,
-                attraction_types: document.getElementById('attraction_type').value && document.getElementById('category').value === 'Tours & Sightseeing' ? [document.getElementById('attraction_type').value] : null,
+                attraction_types: document.getElementById('attraction_type').value && document.getElementById('category').value === 'Markets & Tours' ? [document.getElementById('attraction_type').value] : null,
                 healthcare_type: document.getElementById('healthcare_type').value && document.getElementById('category').value === 'Healthcare & Emergency' ? document.getElementById('healthcare_type').value : null,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
