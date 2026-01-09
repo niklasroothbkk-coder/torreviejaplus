@@ -9,6 +9,11 @@
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Mapbox -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -1225,6 +1230,24 @@
                     </div>
                 </div>
 
+                <!-- Mapbox Location Picker -->
+                <div class="form-group">
+                    <label>📍 Pin Location on Map</label>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 10px;">Search for address or drag the marker to set exact location</p>
+                    <div id="geocoder-container" style="margin-bottom: 10px;"></div>
+                    <div id="venue-map" style="width: 100%; height: 350px; border-radius: 8px; border: 2px solid #ddd;"></div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="venue_latitude">Latitude</label>
+                            <input type="text" id="venue_latitude" placeholder="Auto-filled..." readonly style="background: #f5f5f5;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="venue_longitude">Longitude</label>
+                            <input type="text" id="venue_longitude" placeholder="Auto-filled..." readonly style="background: #f5f5f5;">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="phone">Phone</label>
@@ -2106,6 +2129,8 @@ Priority support</textarea>
                 loadNews();
             } else if (pageName === 'add-news') {
                 initNewsForm();
+            } else if (pageName === 'add-venue') {
+                initVenueMap();
             }
         }
 
@@ -2122,6 +2147,126 @@ Priority support</textarea>
         let allDeals = [];
         let allVisitors = [];
         let allCustomers = [];
+
+        // ===== MAPBOX CONFIGURATION =====
+        const MAPBOX_TOKEN = 'pk.eyJ1IjoidG9ycmV2aWVqYXBsdXMiLCJhIjoiY21laTltNTRrMDZrdjJqcXdpejUwbGw2dSJ9.RC4fxDtyXHfEZ5_mUtUaKg';
+        let venueMap = null;
+        let venueMarker = null;
+
+        function initVenueMap() {
+            // Only initialize if map container exists and map not already created
+            const mapContainer = document.getElementById('venue-map');
+            if (!mapContainer || venueMap) return;
+
+            mapboxgl.accessToken = MAPBOX_TOKEN;
+            
+            // Default to Torrevieja center
+            const defaultLng = -0.6847;
+            const defaultLat = 37.9786;
+
+            venueMap = new mapboxgl.Map({
+                container: 'venue-map',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [defaultLng, defaultLat],
+                zoom: 14
+            });
+
+            // Add navigation controls
+            venueMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+            // Create draggable marker
+            venueMarker = new mapboxgl.Marker({
+                color: '#667eea',
+                draggable: true
+            })
+            .setLngLat([defaultLng, defaultLat])
+            .addTo(venueMap);
+
+            // Update coordinates when marker is dragged
+            venueMarker.on('dragend', () => {
+                const lngLat = venueMarker.getLngLat();
+                document.getElementById('venue_latitude').value = lngLat.lat.toFixed(8);
+                document.getElementById('venue_longitude').value = lngLat.lng.toFixed(8);
+            });
+
+            // Add geocoder (search box)
+            const geocoder = new MapboxGeocoder({
+                accessToken: MAPBOX_TOKEN,
+                mapboxgl: mapboxgl,
+                marker: false,
+                placeholder: 'Search for address...',
+                proximity: { longitude: defaultLng, latitude: defaultLat },
+                countries: 'es',
+                bbox: [-1.5, 37.5, 0.5, 38.5] // Bounding box around Costa Blanca
+            });
+
+            document.getElementById('geocoder-container').appendChild(geocoder.onAdd(venueMap));
+
+            // When a search result is selected
+            geocoder.on('result', (e) => {
+                const coords = e.result.center;
+                venueMarker.setLngLat(coords);
+                venueMap.flyTo({ center: coords, zoom: 16 });
+                document.getElementById('venue_latitude').value = coords[1].toFixed(8);
+                document.getElementById('venue_longitude').value = coords[0].toFixed(8);
+                
+                // Optionally fill in the address field
+                if (e.result.place_name && !document.getElementById('location').value) {
+                    document.getElementById('location').value = e.result.place_name;
+                }
+            });
+
+            // Click on map to move marker
+            venueMap.on('click', (e) => {
+                venueMarker.setLngLat(e.lngLat);
+                document.getElementById('venue_latitude').value = e.lngLat.lat.toFixed(8);
+                document.getElementById('venue_longitude').value = e.lngLat.lng.toFixed(8);
+            });
+        }
+
+        // Function to set marker position (used when editing a venue)
+        function setMapMarkerPosition(lat, lng) {
+            if (venueMarker && venueMap) {
+                venueMarker.setLngLat([lng, lat]);
+                venueMap.flyTo({ center: [lng, lat], zoom: 16 });
+                document.getElementById('venue_latitude').value = lat;
+                document.getElementById('venue_longitude').value = lng;
+            }
+        }
+
+        // Reset map when canceling edit
+        function resetVenueMap() {
+            if (venueMarker && venueMap) {
+                const defaultLng = -0.6847;
+                const defaultLat = 37.9786;
+                venueMarker.setLngLat([defaultLng, defaultLat]);
+                venueMap.flyTo({ center: [defaultLng, defaultLat], zoom: 14 });
+                document.getElementById('venue_latitude').value = '';
+                document.getElementById('venue_longitude').value = '';
+            }
+        }
+
+        // Geocode an address and move marker there
+        function geocodeAddress(address) {
+            if (!address || !venueMap || !venueMarker) return;
+            
+            const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&country=es&proximity=-0.6847,37.9786&limit=1`;
+            
+            fetch(geocodeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        const coords = data.features[0].center;
+                        venueMarker.setLngLat(coords);
+                        venueMap.flyTo({ center: coords, zoom: 16 });
+                        document.getElementById('venue_latitude').value = coords[1].toFixed(8);
+                        document.getElementById('venue_longitude').value = coords[0].toFixed(8);
+                    }
+                })
+                .catch(error => {
+                    console.log('Geocoding error:', error);
+                });
+        }
         
         // MODAL VARIABLES
         let currentEditingVisitorId = null;
@@ -2465,6 +2610,8 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
                 location_short: document.getElementById('location_short').value,
+                latitude: document.getElementById('venue_latitude').value ? parseFloat(document.getElementById('venue_latitude').value) : null,
+                longitude: document.getElementById('venue_longitude').value ? parseFloat(document.getElementById('venue_longitude').value) : null,
                 rating: parseFloat(document.getElementById('rating').value) || 0,
                 review_count: parseInt(document.getElementById('review_count').value) || 0,
                 price_range: document.getElementById('price_range').value,
@@ -2780,10 +2927,10 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 document.getElementById('description').value = data.description || '';
                 document.getElementById('location').value = data.location || '';
                 document.getElementById('location_short').value = data.location_short || '';
-                document.getElementById('rating').value = data.rating || '';
-                document.getElementById('review_count').value = data.review_count || '';
+                document.getElementById('rating').value = data.rating !== undefined ? data.rating : '';
+                document.getElementById('review_count').value = data.review_count !== undefined ? data.review_count : '';
                 document.getElementById('price_range').value = data.price_range || '';
-                document.getElementById('views').value = data.views || '';
+                document.getElementById('views').value = data.views !== undefined ? data.views : '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('email').value = data.email || '';
                 document.getElementById('whatsapp').value = data.whatsapp || '';
@@ -2806,6 +2953,21 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
                 document.getElementById('registered_date').value = data.registered_date || '';
                 document.getElementById('venuePackage').value = data.package || 'Gold';
                 document.getElementById('venuePaymentDate').value = data.payment_date || '';
+                
+                // Set map marker if coordinates exist, otherwise geocode the address
+                setTimeout(() => {
+                    initVenueMap();
+                    if (data.latitude && data.longitude) {
+                        setTimeout(() => {
+                            setMapMarkerPosition(data.latitude, data.longitude);
+                        }, 500);
+                    } else if (data.location) {
+                        // No coordinates saved - geocode the address
+                        setTimeout(() => {
+                            geocodeAddress(data.location);
+                        }, 500);
+                    }
+                }, 100);
                 
                 // Load features dynamically based on category
                 if (data.features && Array.isArray(data.features)) {
@@ -2846,6 +3008,7 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
             uploadedImages = [];
             renderImagePreviews();
             updateSubCategories();
+            resetVenueMap();
         }
 
         async function deleteVenue(id, name) {
