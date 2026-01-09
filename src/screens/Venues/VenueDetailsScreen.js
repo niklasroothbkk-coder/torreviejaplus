@@ -131,8 +131,9 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
 
   const fetchReviews = async () => {
     try {
+      // Only fetch PUBLISHED reviews
       const response = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=*&order=created_at.desc`,
+        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&status=eq.published&select=*&order=created_at.desc`,
         {
           method: 'GET',
           headers: {
@@ -150,6 +151,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
   };
 
   const submitReview = async () => {
+    // Validate input
     if (!reviewText.trim() || selectedRating === 0) {
       setAlertTitle('Error');
       setAlertMessage('Please select a rating and write a review');
@@ -160,63 +162,70 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
     try {
       setSubmitting(true);
       
+      // Check if user is logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setAlertTitle('Login Required');
+        setAlertMessage('Please sign in to submit a review');
+        setShowAlert(true);
+        setSubmitting(false);
+        return;
+      }
+      
+      // Get user's name from profiles
+      let userName = 'Anonymous';
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profileData?.name) {
+          userName = profileData.name;
+        }
+      } catch (profileError) {
+        console.log('Could not fetch profile name, using default');
+      }
+      
+      // Get session for auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Submit review with status='pending' for admin approval
       const reviewResponse = await fetch(
         'https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews',
         {
           method: 'POST',
           headers: {
             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
+            'Authorization': `Bearer ${session?.access_token || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM'}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal'
           },
           body: JSON.stringify({
-            venue_id: venueId,
-            user_name: 'Anonymous User',
+            venue_id: parseInt(venueId),
+            user_id: user.id,
+            user_name: userName,
             rating: selectedRating,
-            comment: reviewText
+            comment: reviewText,
+            status: 'pending'
           })
         }
       );
 
-      if (!reviewResponse.ok) throw new Error('Failed to submit review');
+      if (!reviewResponse.ok) {
+        const errorData = await reviewResponse.json();
+        throw new Error(errorData.message || 'Failed to submit review');
+      }
 
-      const allReviews = await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/reviews?venue_id=eq.${venueId}&select=rating`,
-        {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-          },
-        }
-      );
-      const reviewsData = await allReviews.json();
-      const avgRating = reviewsData.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviewsData.length;
-
-      await fetch(
-        `https://vfponburmjbuqqneigjr.supabase.co/rest/v1/venues?id=eq.${venueId}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9uYnVybWpidXFxbmVpZ2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MTUwODgsImV4cCI6MjA4MDk5MTA4OH0.4osS6AQ6tUaRpoO8dtwlBBOsbnNymzFR7SB2aWVj7DM',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            rating: Math.round(avgRating * 10) / 10,
-            review_count: reviewsData.length
-          })
-        }
-      );
-
+      // Success! Review submitted for approval
       setAlertTitle('Thank You!');
-      setAlertMessage('Your review is submitted successfully!');
+      setAlertMessage('Your review has been submitted and is pending approval. It will appear once approved by our team.');
       setShowAlert(true);
       setReviewText('');
       setSelectedRating(0);
-      fetchVenueData();
-      fetchReviews();
+      
     } catch (error) {
       console.error('Error submitting review:', error);
       setAlertTitle('Error');
@@ -491,7 +500,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Ionicons name="star" size={14} color="#FFD700" />
-                <Text style={styles.metaText}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                <Text style={styles.metaText}>{Number(venueData.rating).toFixed(1)} ({venueData.review_count || 0} Reviews)</Text>
               </View>
             </View>
           )}
@@ -710,7 +719,7 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
                 <View style={styles.reviewsHeaderLeft}>
                   <Text style={styles.sectionTitle}>Reviews</Text>
                   <View style={styles.starsRow}>{renderStars(venueData.rating)}</View>
-                  <Text style={styles.reviewsCount}>{venueData.rating} ({venueData.review_count || 0} Reviews)</Text>
+                  <Text style={styles.reviewsCount}>{Number(venueData.rating).toFixed(1)} ({venueData.review_count || 0} Reviews)</Text>
                 </View>
               </View>
               

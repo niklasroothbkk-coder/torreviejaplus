@@ -221,7 +221,7 @@ export default function VenuesPage({ onNavigate, onOpenMenu }) {
                     <Image source={venue.image} style={styles.venueImage} />
                     <View style={styles.ratingBadge}>
                       <Ionicons name="star" size={14} color="#FFD700" />
-                      <Text style={styles.ratingText}>{venue.rating}</Text>
+                      <Text style={styles.ratingText}>{Number(venue.rating).toFixed(1)}</Text>
                     </View>
                   </View>
                   

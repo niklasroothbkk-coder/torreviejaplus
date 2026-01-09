@@ -570,6 +570,45 @@
         </div>
     </div>
 
+    <!-- EDIT REVIEW MODAL -->
+    <div id="editReviewModal" class="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Review</h2>
+            </div>
+            <div class="form-group">
+                <label for="modal_review_user_name">User Name</label>
+                <input type="text" id="modal_review_user_name" placeholder="Enter user name...">
+            </div>
+            <div class="form-group">
+                <label for="modal_review_rating">Rating (1-5)</label>
+                <select id="modal_review_rating">
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4)</option>
+                    <option value="3">⭐⭐⭐ (3)</option>
+                    <option value="2">⭐⭐ (2)</option>
+                    <option value="1">⭐ (1)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modal_review_comment">Comment</label>
+                <textarea id="modal_review_comment" rows="4" placeholder="Enter review comment..." style="min-height: 100px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="modal_review_status">Status</label>
+                <select id="modal_review_status">
+                    <option value="published">Published</option>
+                    <option value="pending">Pending</option>
+                    <option value="paused">Paused</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="closeReviewModal()" style="background: #95a5a6;">Cancel</button>
+                <button onclick="saveReview()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container">
@@ -4543,8 +4582,7 @@ try {
                     .from('reviews')
                     .select(`
                         *,
-                        venues!reviews_venue_id_fkey(name),
-                        profiles!reviews_user_id_fkey(name, email)
+                        venues!reviews_venue_id_fkey(name)
                     `)
                     .order('created_at', { ascending: false });
                 
@@ -4630,12 +4668,12 @@ try {
                 return `
                     <div style="display: flex; gap: 15px; padding: 20px; border-bottom: 1px solid #f0f0f0; align-items: flex-start;">
                         <div style="width: 50px; height: 50px; background: #7c3aed; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; flex-shrink: 0;">
-                            ${(review.profiles?.name || review.profiles?.email || 'U').charAt(0).toUpperCase()}
+                            ${(review.user_name || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div style="flex: 1;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                                 <div>
-                                    <strong style="color: #23282d;">${review.profiles?.name || review.profiles?.email || 'Anonymous'}</strong>
+                                    <strong style="color: #23282d;">${review.user_name || 'Anonymous'}</strong>
                                     <span style="color: #999; font-size: 13px; margin-left: 10px;">${date}</span>
                                 </div>
                                 <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
@@ -4648,6 +4686,7 @@ try {
                                     `<button onclick="pauseReview(${review.id})" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">⏸️ Pause</button>` :
                                     `<button onclick="publishReview(${review.id})" style="background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">✅ Publish</button>`
                                 }
+                                <button onclick="editReview(${review.id})" style="background: #2271b1; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">✏️ Edit</button>
                                 <button onclick="deleteReview(${review.id})" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">🗑️ Delete</button>
                             </div>
                         </div>
@@ -4726,6 +4765,51 @@ try {
                 
                 if (error) throw error;
                 showSuccess('Review deleted!');
+                loadReviewsTabData();
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // ===== REVIEW EDIT MODAL FUNCTIONS =====
+        let currentEditingReviewId = null;
+
+        function editReview(reviewId) {
+            const review = allReviewsData.find(r => r.id === reviewId);
+            if (!review) return;
+            
+            currentEditingReviewId = reviewId;
+            document.getElementById('modal_review_user_name').value = review.user_name || '';
+            document.getElementById('modal_review_rating').value = review.rating || 5;
+            document.getElementById('modal_review_comment').value = review.comment || review.text || '';
+            document.getElementById('modal_review_status').value = review.status || 'published';
+            document.getElementById('editReviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('editReviewModal').classList.remove('active');
+            currentEditingReviewId = null;
+        }
+
+        async function saveReview() {
+            if (!currentEditingReviewId) return;
+            
+            const reviewData = {
+                user_name: document.getElementById('modal_review_user_name').value,
+                rating: parseInt(document.getElementById('modal_review_rating').value),
+                comment: document.getElementById('modal_review_comment').value,
+                status: document.getElementById('modal_review_status').value
+            };
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .update(reviewData)
+                    .eq('id', currentEditingReviewId);
+                
+                if (error) throw error;
+                showSuccess('Review updated!');
+                closeReviewModal();
                 loadReviewsTabData();
             } catch (error) {
                 showError('Error: ' + error.message);
