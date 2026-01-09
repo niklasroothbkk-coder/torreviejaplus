@@ -1467,16 +1467,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="deal_phone">Phone</label>
-                        <input type="text" id="deal_phone" placeholder="Type here...">
-                    </div>
-
-                    <div class="form-group">
                         <label for="deal_venue_link">Link to Venue (for contact/hours/rating) *</label>
-                        <select id="deal_venue_link" required>
+                        <select id="deal_venue_link" required onchange="fillPhoneFromVenue('deal')">
                             <option value="">Select venue...</option>
                             <!-- Will be populated with venues from database -->
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deal_phone">Phone</label>
+                        <input type="text" id="deal_phone" placeholder="Type here...">
                     </div>
 
                     <!-- Date & Time Section -->
@@ -1694,13 +1694,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="event_phone">Phone</label>
-                        <input type="text" id="event_phone" placeholder="Type here...">
-                    </div>
+    <label for="event_venue_link">Link to Venue (for contact/hours/rating) *</label>
+    <select id="event_venue_link" required onchange="fillPhoneFromVenue('event')">
+        <option value="">Select venue...</option>
+        <!-- Will be populated with venues from database -->
+    </select>
+</div>
 
                     <div class="form-group">
-                        <label for="event_website">Website / Link</label>
-                        <input type="url" id="event_website" placeholder="Type here...">
+                        <label for="event_phone">Phone</label>
+                        <input type="text" id="event_phone" placeholder="Type here...">
                     </div>
 
                     <div class="form-group">
@@ -2335,6 +2338,31 @@ Priority support</textarea>
                 console.log('Category features loaded from database');
             } catch (error) {
                 console.error('Failed to load category features:', error);
+            }
+        }
+
+        // Auto-fill phone number when venue is selected
+        async function fillPhoneFromVenue(type) {
+            const venueId = document.getElementById(type + '_venue_link').value;
+            const phoneField = document.getElementById(type + '_phone');
+            
+            if (!venueId) {
+                phoneField.value = '';
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('venues')
+                    .select('phone')
+                    .eq('id', venueId)
+                    .single();
+                
+                if (error) throw error;
+                
+                phoneField.value = data.phone || '';
+            } catch (error) {
+                console.error('Error fetching venue phone:', error);
             }
         }
         
@@ -3468,23 +3496,35 @@ try {
         }
 
         async function loadVenuesForDealDropdown() {
-            try {
-                const { data, error } = await supabaseClient.from('venues').select('id, name, location_short').order('name', { ascending: true });
-                if (error) throw error;
-                
-                const dropdown = document.getElementById('deal_venue_link');
-                dropdown.innerHTML = '<option value="">Select venue...</option>';
-                
-                data.forEach(venue => {
-                    const option = document.createElement('option');
-                    option.value = venue.id;
-                    option.textContent = venue.name;
-                    dropdown.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading venues for dropdown:', error);
-            }
-        }
+    try {
+        const { data, error } = await supabaseClient.from('venues').select('id, name, location_short').order('name', { ascending: true });
+        if (error) throw error;
+        
+        // Populate Deal dropdown
+        const dealDropdown = document.getElementById('deal_venue_link');
+        dealDropdown.innerHTML = '<option value="">Select venue...</option>';
+        
+        // Populate Event dropdown
+        const eventDropdown = document.getElementById('event_venue_link');
+        eventDropdown.innerHTML = '<option value="">Select venue...</option>';
+        
+        data.forEach(venue => {
+            // Add to Deal dropdown
+            const dealOption = document.createElement('option');
+            dealOption.value = venue.id;
+            dealOption.textContent = venue.name;
+            dealDropdown.appendChild(dealOption);
+            
+            // Add to Event dropdown
+            const eventOption = document.createElement('option');
+            eventOption.value = venue.id;
+            eventOption.textContent = venue.name;
+            eventDropdown.appendChild(eventOption);
+        });
+    } catch (error) {
+        console.error('Error loading venues for dropdown:', error);
+    }
+}
 
         // ===== EVENTS JAVASCRIPT =====
         let editingEvent = null;
@@ -3593,7 +3633,7 @@ try {
                         category: document.getElementById('event_category').value,
                         description: document.getElementById('event_description').value,
                         phone: document.getElementById('event_phone').value,
-                        website: document.getElementById('event_website').value || null,
+                        venue_id: document.getElementById('event_venue_link').value || null,
                         event_date: eventDate,
                         end_date: calculatedEventEndDate,
                         start_time: document.getElementById('event_start_time').value || null,
@@ -3720,7 +3760,7 @@ try {
                 document.getElementById('event_category').value = data.category || '';
                 document.getElementById('event_description').value = data.description || '';
                 document.getElementById('event_phone').value = data.phone || '';
-                document.getElementById('event_website').value = data.website || '';
+                document.getElementById('event_venue_link').value = data.venue_id || '';
                 document.getElementById('event_date').value = data.event_date || '';
                 document.getElementById('event_start_time').value = data.start_time || '20:00';
                 document.getElementById('event_end_time').value = data.end_time || '23:00';
@@ -3769,7 +3809,7 @@ try {
                 document.getElementById('event_category').value = data.category || '';
                 document.getElementById('event_description').value = data.description || '';
                 document.getElementById('event_phone').value = data.phone || '';
-                document.getElementById('event_website').value = data.website || '';
+                document.getElementById('event_venue_link').value = data.venue_id || '';
                 document.getElementById('event_date').value = '';
                 document.getElementById('event_start_time').value = data.start_time || '20:00';
                 document.getElementById('event_end_time').value = data.end_time || '23:00';
