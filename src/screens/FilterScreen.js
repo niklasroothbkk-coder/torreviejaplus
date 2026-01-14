@@ -82,6 +82,11 @@ export default function FilterScreen({ onClose, onApply }) {
     'Sportbar',
     'Live Band',
     'Serve Food',
+    'Sport on TV',
+    'Café',
+    'Scandinavian Venue',
+    'Pub',
+    'Bar',
   ];
 
   const spaTypes = [

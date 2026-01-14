@@ -179,6 +179,19 @@ export default function UserProfileScreen({ onNavigate, onOpenMenu }) {
         return;
       }
 
+      // ALSO update the profiles table with avatar_url
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        // Don't show error to user, the image is already uploaded
+      } else {
+        console.log('✅ Profile table updated with avatar_url');
+      }
+
       setProfileImage(avatarUrl);
       
       // Force image refresh
