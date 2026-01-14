@@ -16,10 +16,12 @@ export default function FilterScreen({ onClose, onApply }) {
   const [showSpaTypeDropdown, setShowSpaTypeDropdown] = useState(false);
   const [showHealthcareTypeDropdown, setShowHealthcareTypeDropdown] = useState(false);
   const [categoryFeatures, setCategoryFeatures] = useState({});
+  const [pubTypes, setPubTypes] = useState([]);
 
-  // Load category features from database
+  // Load category features and subcategories from database
   useEffect(() => {
     loadCategoryFeatures();
+    loadSubcategories();
   }, []);
 
   const loadCategoryFeatures = async () => {
@@ -42,6 +44,25 @@ export default function FilterScreen({ onClose, onApply }) {
       setCategoryFeatures(featuresMap);
     } catch (error) {
       console.error('Failed to load category features:', error);
+    }
+  };
+
+  const loadSubcategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('venue_subcategories')
+        .select('subcategory')
+        .eq('category', 'Sport Bars & Pubs')
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.error('Error loading subcategories:', error);
+        return;
+      }
+
+      setPubTypes(data.map(row => row.subcategory));
+    } catch (error) {
+      console.error('Failed to load subcategories:', error);
     }
   };
 
@@ -76,18 +97,7 @@ export default function FilterScreen({ onClose, onApply }) {
     'Swedish',
   ];
 
-  const pubTypes = [
-    'English Pub',
-    'Irish Pub',
-    'Sportbar',
-    'Live Band',
-    'Serve Food',
-    'Sport on TV',
-    'Café',
-    'Scandinavian Venue',
-    'Pub',
-    'Bar',
-  ];
+  // pubTypes is now loaded from database via loadSubcategories()
 
   const spaTypes = [
     'All',
