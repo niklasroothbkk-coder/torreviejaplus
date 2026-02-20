@@ -750,20 +750,6 @@ export default function VenueDetailsScreen({ onNavigate, venueId, authParams }) 
             </View>
           )}
 
-          {/* Close Button */}
-          <TouchableOpacity 
-            style={styles.closeVenueButton}
-            onPress={() => {
-              if (authParams?.returnTo === 'favorites' && authParams?.favoriteTab) {
-                onNavigate('favorites', { favoriteTab: authParams.favoriteTab });
-              } else {
-                onNavigate(authParams?.returnTo || 'venues');
-              }
-            }}
-          >
-            <Ionicons name="close-circle-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.closeVenueButtonText}>Close</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -1254,21 +1240,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000000',
     fontWeight: '500',
-  },
-  closeVenueButton: {
-    backgroundColor: '#0077B6',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 25,
-  },
-  closeVenueButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
   },
   socialMediaSection: {
     marginTop: 25,
